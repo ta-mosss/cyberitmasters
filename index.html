@@ -1,0 +1,649 @@
+python3 << 'PYEOF'
+html = r'''<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cyber I.T Masters | Managed IT Services Polokwane</title>
+<meta name="description" content="Professional Managed IT Services in Polokwane for businesses of all sizes. 24/7 IT support, monitoring, cybersecurity, cloud solutions and helpdesk services.">
+<meta name="keywords" content="Managed IT Services Polokwane, IT Support Polokwane, Cybersecurity Limpopo, Microsoft 365 Polokwane, Network Installation Polokwane">
+<meta name="robots" content="index, follow">
+<meta name="author" content="Cyber I.T Masters">
+<link rel="canonical" href="https://mbulahenigroup.co.za/cyber-it-masters/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Cyber I.T Masters | Managed IT Services Polokwane">
+<meta property="og:description" content="Enterprise-grade Managed IT Services, Cybersecurity, Microsoft 365 and Network Installation for businesses in Polokwane and Limpopo.">
+<meta property="og:url" content="https://mbulahenigroup.co.za/cyber-it-masters/">
+<meta property="og:site_name" content="Cyber I.T Masters">
+<meta property="og:locale" content="en_ZA">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Cyber I.T Masters | Managed IT Services Polokwane">
+<meta name="twitter:description" content="24/7 Managed IT Services, Cybersecurity & Microsoft 365 for businesses in Polokwane, Limpopo.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%2303080f'/><text x='4' y='24' font-size='22' font-family='monospace' fill='%2300d4ff'>&#x2302;</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<!-- GA4: Replace G-XXXXXXXXXX with your Measurement ID
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-XXXXXXXXXX');</script>
+-->
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[{"@type":["LocalBusiness","ITService"],"@id":"https://mbulahenigroup.co.za/cyber-it-masters/#business","name":"Cyber I.T Masters","description":"Enterprise-grade managed IT services, cybersecurity, Microsoft 365 support and network installation for businesses in Polokwane and Limpopo.","url":"https://mbulahenigroup.co.za/cyber-it-masters/","telephone":["+27726650565","+27870931138"],"email":"info@mbulahenigroup.co.za","address":{"@type":"PostalAddress","addressLocality":"Polokwane","addressRegion":"Limpopo","addressCountry":"ZA"},"geo":{"@type":"GeoCoordinates","latitude":-23.9045,"longitude":29.4369},"openingHoursSpecification":{"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],"opens":"00:00","closes":"23:59"},"areaServed":["Polokwane","Limpopo","South Africa"]},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Do you provide 24/7 IT support in Polokwane?","acceptedAnswer":{"@type":"Answer","text":"Yes. Cyber I.T Masters provides 24/7 remote IT support for businesses in Polokwane and across Limpopo, with onsite dispatch available during business hours."}},{"@type":"Question","name":"How much does Managed IT Services cost in Polokwane?","acceptedAnswer":{"@type":"Answer","text":"Our plans are tailored to your business size. We offer flexible monthly contracts starting from affordable rates for SMEs. Contact us for a free quote."}},{"@type":"Question","name":"Can you help my business migrate to Microsoft 365?","acceptedAnswer":{"@type":"Answer","text":"Yes. We handle complete Microsoft 365 migrations with zero data loss, usually completed over a weekend to avoid business disruption."}},{"@type":"Question","name":"Do you offer cybersecurity services in Limpopo?","acceptedAnswer":{"@type":"Answer","text":"Yes. We provide enterprise-grade cybersecurity including firewall management, endpoint protection, email security and backup across Limpopo."}},{"@type":"Question","name":"Can I rent IT equipment for events or temporary offices in Polokwane?","acceptedAnswer":{"@type":"Answer","text":"Yes. We offer short and long-term rental of laptops, desktops, printers, projectors and WiFi equipment with full technical support included."}}]}]}
+</script>
+<style>
+:root{--bg:#03080f;--surface:#080f1a;--card:#0c1525;--border:#1a2d4a;--accent:#00d4ff;--accent2:#00ff88;--accent3:#ff6b35;--text:#e8f4ff;--muted:#6b8aaa;--heading-font:'Bebas Neue',sans-serif;--body-font:'Outfit',sans-serif;--mono:'JetBrains Mono',monospace;}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:var(--body-font);font-size:16px;line-height:1.6;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,212,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,0.02) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+nav{position:fixed;top:0;left:0;right:0;z-index:1000;background:rgba(3,8,15,0.97);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 2rem;}
+.nav-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:64px;gap:1rem;}
+.nav-logo{font-family:var(--heading-font);font-size:1.5rem;letter-spacing:2px;color:var(--accent);text-decoration:none;white-space:nowrap;flex-shrink:0;}
+.nav-logo span{color:var(--accent2);}
+.nav-links{display:flex;gap:.2rem;list-style:none;flex-wrap:wrap;}
+.nav-links a{font-family:var(--mono);font-size:.65rem;color:var(--muted);text-decoration:none;padding:.3rem .6rem;border:1px solid transparent;border-radius:3px;transition:all .2s;white-space:nowrap;letter-spacing:.5px;text-transform:uppercase;}
+.nav-links a:hover,.nav-links a.active{color:var(--accent);border-color:var(--accent);background:rgba(0,212,255,0.05);}
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;border:1px solid var(--border);padding:.5rem .6rem;cursor:pointer;z-index:1100;transition:border-color .2s;}
+.hamburger:hover{border-color:var(--accent);}
+.hamburger span{display:block;width:20px;height:2px;background:var(--accent);transition:all .3s;transform-origin:center;}
+.hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg);}
+.hamburger.open span:nth-child(2){opacity:0;transform:scaleX(0);}
+.hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
+.mobile-drawer{display:none;position:fixed;top:64px;left:0;right:0;background:rgba(3,8,15,0.98);border-bottom:1px solid var(--border);padding:1.5rem 2rem;z-index:999;flex-direction:column;gap:.25rem;}
+.mobile-drawer.open{display:flex;}
+.mobile-drawer a{font-family:var(--mono);font-size:.8rem;color:var(--muted);text-decoration:none;padding:.7rem 0;border-bottom:1px solid var(--border);letter-spacing:1px;text-transform:uppercase;transition:color .2s;}
+.mobile-drawer a:hover{color:var(--accent);}
+.mobile-drawer a:last-child{border-bottom:none;}
+.hero{position:relative;min-height:100vh;display:flex;align-items:center;padding:6rem 2rem 4rem;overflow:hidden;}
+.hero-bg-orb{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none;}
+.orb1{width:600px;height:600px;background:rgba(0,212,255,0.06);top:-200px;right:-100px;}
+.orb2{width:400px;height:400px;background:rgba(0,255,136,0.04);bottom:-100px;left:100px;}
+.hero-inner{position:relative;z-index:1;max-width:1200px;margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;}
+.hero-tag{font-family:var(--mono);font-size:.75rem;color:var(--accent2);letter-spacing:3px;text-transform:uppercase;margin-bottom:1.5rem;display:flex;align-items:center;gap:.75rem;}
+.hero-tag::before{content:'';display:inline-block;width:40px;height:1px;background:var(--accent2);}
+.hero-right{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border:1px solid var(--border);align-self:center;}
+.hero-right-card{background:var(--card);padding:1.8rem 1.5rem;transition:background .3s;position:relative;overflow:hidden;}
+.hero-right-card:hover{background:#0f1d32;}
+.hero-right-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--accent);transform:scaleX(0);transition:transform .3s;}
+.hero-right-card:hover::after{transform:scaleX(1);}
+.hero-right-card .rc-icon{font-size:1.8rem;display:block;margin-bottom:.75rem;}
+.hero-right-card h4{font-family:var(--heading-font);font-size:1.1rem;letter-spacing:1px;color:var(--text);margin-bottom:.4rem;}
+.hero-right-card p{font-size:.78rem;color:var(--muted);line-height:1.5;}
+.hero-right-card.highlight-card{grid-column:span 2;background:rgba(0,212,255,0.05);border-top:2px solid var(--accent);display:flex;align-items:center;gap:1.5rem;padding:1.2rem 1.5rem;}
+.hero-right-card.highlight-card .rc-num{font-family:var(--heading-font);font-size:3rem;color:var(--accent);letter-spacing:2px;line-height:1;flex-shrink:0;}
+.hero h1{font-family:var(--heading-font);font-size:clamp(3rem,5vw,5.5rem);line-height:.95;letter-spacing:2px;margin-bottom:1.5rem;color:var(--text);}
+.hero h1 .accent-word{color:var(--accent);}
+.hero h1 .accent2-word{color:var(--accent2);}
+.hero-sub{font-size:1rem;color:var(--muted);max-width:480px;margin-bottom:2.5rem;font-weight:300;line-height:1.7;}
+.hero-cta-group{display:flex;gap:1rem;flex-wrap:wrap;}
+.btn-primary{background:var(--accent);color:var(--bg);font-family:var(--mono);font-size:.8rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:.85rem 2rem;border:none;cursor:pointer;text-decoration:none;display:inline-block;transition:all .2s;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px));}
+.btn-primary:hover{background:#fff;transform:translateY(-2px);}
+.btn-outline{border:1px solid var(--accent2);color:var(--accent2);font-family:var(--mono);font-size:.8rem;letter-spacing:1px;text-transform:uppercase;padding:.85rem 2rem;background:transparent;cursor:pointer;text-decoration:none;display:inline-block;transition:all .2s;}
+.btn-outline:hover{background:rgba(0,255,136,0.1);}
+.page-section{position:relative;z-index:1;padding:5rem 2rem;scroll-margin-top:64px;}
+.page-section:nth-child(even){background:var(--surface);}
+.section-inner{max-width:1200px;margin:0 auto;}
+.section-eyebrow{font-family:var(--mono);font-size:.7rem;color:var(--accent);letter-spacing:4px;text-transform:uppercase;margin-bottom:.75rem;}
+.section-title{font-family:var(--heading-font);font-size:clamp(2.5rem,5vw,4.5rem);letter-spacing:2px;line-height:1;margin-bottom:1rem;color:var(--text);}
+.section-sub{color:var(--muted);max-width:600px;font-size:1.05rem;font-weight:300;margin-bottom:3rem;line-height:1.7;}
+.section-divider{display:flex;align-items:center;gap:1rem;margin-bottom:3rem;}
+.section-divider::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent);}
+.section-marker{font-family:var(--mono);font-size:.65rem;color:var(--accent);letter-spacing:3px;text-transform:uppercase;opacity:.5;margin-bottom:.5rem;}
+.services-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);margin-bottom:3rem;}
+.service-card{background:var(--card);padding:2rem;transition:background .3s;position:relative;overflow:hidden;}
+.service-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:0;background:var(--accent);transition:height .3s;}
+.service-card:hover{background:#0f1d32;}
+.service-card:hover::before{height:100%;}
+.service-icon{font-size:1.8rem;margin-bottom:1rem;display:block;}
+.service-card h3{font-family:var(--heading-font);font-size:1.4rem;letter-spacing:1px;color:var(--text);margin-bottom:.5rem;}
+.service-card p{color:var(--muted);font-size:.9rem;line-height:1.6;}
+.contact-cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);margin-bottom:2rem;}
+.contact-info-card{background:var(--card);padding:2.5rem 2rem;text-align:center;transition:background .3s;position:relative;overflow:hidden;}
+.contact-info-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:0;background:var(--accent);transition:height .3s;}
+.contact-info-card:hover{background:#0f1d32;}
+.contact-info-card:hover::before{height:100%;}
+.contact-info-card h3{font-family:var(--heading-font);font-size:1.1rem;letter-spacing:1px;color:var(--text);margin-bottom:.5rem;}
+.contact-info-card a{color:var(--accent2);font-family:var(--mono);font-size:.8rem;text-decoration:none;transition:color .2s;}
+.contact-info-card a:hover{color:var(--text);}
+.contact-form-wrap{background:var(--card);border:1px solid var(--border);padding:2.5rem;margin-top:2rem;}
+.contact-form-title{font-family:var(--heading-font);font-size:1.8rem;letter-spacing:2px;margin-bottom:1.5rem;color:var(--text);}
+.form-grid{display:grid;gap:1rem;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.form-group{display:flex;flex-direction:column;}
+.form-label{font-family:var(--mono);font-size:.7rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:.4rem;}
+.form-label .req{color:var(--accent3);margin-left:2px;}
+.form-input,.form-select,.form-textarea{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:var(--body-font);padding:.75rem 1rem;font-size:.9rem;outline:none;transition:border-color .2s;}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent);}
+.form-input.error,.form-select.error,.form-textarea.error{border-color:var(--accent3);}
+.form-error{font-family:var(--mono);font-size:.65rem;color:var(--accent3);margin-top:.3rem;display:none;letter-spacing:.5px;}
+.form-error.visible{display:block;}
+.form-select{cursor:pointer;}
+.form-textarea{resize:vertical;}
+.form-submit-wrap{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;}
+.form-note{font-family:var(--mono);font-size:.65rem;color:var(--muted);letter-spacing:.5px;}
+.feature-list{list-style:none;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.6rem;margin-bottom:3rem;}
+.feature-list li{display:flex;align-items:flex-start;gap:.75rem;font-size:.9rem;color:var(--muted);padding:.5rem 0;border-bottom:1px solid rgba(26,45,74,0.5);}
+.feature-list li::before{content:'&#9658;';color:var(--accent2);flex-shrink:0;font-size:.7rem;margin-top:.2rem;}
+.why-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1.5rem;margin-bottom:3rem;}
+.why-item{background:var(--card);border:1px solid var(--border);padding:1.5rem;border-radius:2px;transition:border-color .2s;}
+.why-item:hover{border-color:var(--accent);}
+.why-item .why-num{font-family:var(--heading-font);font-size:2.5rem;color:rgba(0,212,255,0.15);line-height:1;margin-bottom:.5rem;}
+.why-item h4{font-size:.95rem;font-weight:600;color:var(--text);margin-bottom:.4rem;}
+.why-item p{font-size:.85rem;color:var(--muted);}
+.cta-banner{background:linear-gradient(135deg,rgba(0,212,255,0.08),rgba(0,255,136,0.05));border:1px solid var(--border);border-left:3px solid var(--accent);padding:2.5rem 2rem;display:flex;flex-wrap:wrap;gap:2rem;align-items:center;justify-content:space-between;margin-top:3rem;}
+.cta-text h3{font-family:var(--heading-font);font-size:1.8rem;letter-spacing:1px;color:var(--text);margin-bottom:.5rem;}
+.cta-text p{color:var(--muted);font-size:.9rem;}
+.cta-contacts{display:flex;flex-direction:column;gap:.5rem;font-family:var(--mono);font-size:.8rem;}
+.cta-contacts a{color:var(--accent2);text-decoration:none;display:flex;align-items:center;gap:.5rem;transition:color .2s;}
+.cta-contacts a:hover{color:var(--text);}
+.industries-wrap{display:flex;flex-wrap:wrap;gap:.75rem;margin-bottom:3rem;}
+.industry-tag{font-family:var(--mono);font-size:.72rem;letter-spacing:1px;color:var(--muted);border:1px solid var(--border);padding:.4rem 1rem;text-transform:uppercase;transition:all .2s;}
+.industry-tag:hover{border-color:var(--accent);color:var(--accent);background:rgba(0,212,255,0.05);}
+.equipment-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);margin-bottom:3rem;}
+.equip-card{background:var(--card);padding:1.5rem 1.2rem;text-align:center;transition:background .2s;}
+.equip-card:hover{background:#0f1d32;}
+.equip-card .equip-icon{font-size:2rem;margin-bottom:.75rem;display:block;}
+.equip-card h4{font-family:var(--heading-font);font-size:1.1rem;letter-spacing:1px;color:var(--text);margin-bottom:.3rem;}
+.equip-card p{font-size:.78rem;color:var(--muted);}
+.benefits-bar{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);margin-bottom:3rem;}
+.benefit-item{background:var(--card);padding:1.2rem 1.5rem;display:flex;align-items:center;gap:.75rem;font-size:.85rem;color:var(--muted);transition:color .2s;}
+.benefit-item:hover{color:var(--text);}
+.benefit-item::before{content:'&#10003;';color:var(--accent2);font-weight:bold;flex-shrink:0;}
+.process-steps{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1.5rem;margin-bottom:3rem;}
+.step{position:relative;padding:1.5rem;background:var(--card);border:1px solid var(--border);}
+.step-num{font-family:var(--heading-font);font-size:3.5rem;color:rgba(0,212,255,0.1);line-height:1;position:absolute;top:.5rem;right:1rem;}
+.step h4{font-size:.8rem;font-weight:600;color:var(--accent);margin-bottom:.4rem;font-family:var(--mono);letter-spacing:.5px;text-transform:uppercase;}
+.step p{font-size:.85rem;color:var(--muted);}
+.testimonials-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.5rem;margin-bottom:3rem;}
+.testimonial-card{background:var(--card);border:1px solid var(--border);border-top:2px solid var(--accent);padding:2rem;transition:border-color .2s;}
+.testimonial-card:hover{border-color:var(--accent);}
+.testimonial-stars{color:#ffd700;font-size:.85rem;letter-spacing:2px;margin-bottom:1rem;}
+.testimonial-text{font-size:.9rem;color:var(--muted);line-height:1.7;font-style:italic;margin-bottom:1.5rem;}
+.testimonial-text::before{content:'\201C';color:var(--accent);font-size:1.5rem;font-style:normal;line-height:0;vertical-align:-.4em;margin-right:.2em;}
+.testimonial-author{display:flex;flex-direction:column;gap:.2rem;}
+.testimonial-name{font-weight:600;font-size:.9rem;color:var(--text);}
+.testimonial-company{font-family:var(--mono);font-size:.7rem;color:var(--accent2);letter-spacing:1px;text-transform:uppercase;}
+.faq-list{margin-bottom:3rem;}
+.faq-item{border-bottom:1px solid var(--border);overflow:hidden;}
+.faq-question{width:100%;background:none;border:none;text-align:left;padding:1.25rem 0;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:1rem;font-family:var(--body-font);font-size:1rem;font-weight:600;color:var(--text);transition:color .2s;}
+.faq-question:hover{color:var(--accent);}
+.faq-icon{font-family:var(--mono);font-size:1.2rem;color:var(--accent);flex-shrink:0;transition:transform .3s;line-height:1;}
+.faq-item.open .faq-icon{transform:rotate(45deg);}
+.faq-answer{font-size:.9rem;color:var(--muted);line-height:1.7;max-height:0;overflow:hidden;transition:max-height .35s ease,padding .35s ease;padding:0;}
+.faq-item.open .faq-answer{max-height:300px;padding-bottom:1.25rem;}
+.blog-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.5rem;margin-bottom:3rem;}
+.blog-card{background:var(--card);border:1px solid var(--border);padding:1.8rem;transition:border-color .2s,transform .2s;cursor:pointer;}
+.blog-card:hover{border-color:var(--accent);transform:translateY(-3px);}
+.blog-tag{font-family:var(--mono);font-size:.65rem;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:.75rem;}
+.blog-card h3{font-size:1rem;font-weight:600;color:var(--text);line-height:1.4;margin-bottom:.75rem;}
+.blog-card p{font-size:.82rem;color:var(--muted);line-height:1.6;}
+.highlight-box{background:rgba(0,212,255,0.04);border:1px solid rgba(0,212,255,0.15);border-left:3px solid var(--accent);padding:1.5rem;margin-bottom:2rem;font-size:.95rem;color:var(--muted);line-height:1.7;}
+.highlight-box strong{color:var(--text);}
+.h-line{height:1px;background:linear-gradient(90deg,var(--accent),transparent);margin:2rem 0;opacity:.3;}
+footer{position:relative;z-index:1;background:var(--surface);border-top:1px solid var(--border);padding:4rem 2rem 2rem;}
+.footer-inner{max-width:1200px;margin:0 auto;}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:3rem;margin-bottom:3rem;}
+.footer-brand .logo-big{font-family:var(--heading-font);font-size:2rem;letter-spacing:3px;color:var(--accent);margin-bottom:1rem;}
+.footer-brand .logo-big span{color:var(--accent2);}
+.footer-brand p{font-size:.85rem;color:var(--muted);line-height:1.7;margin-bottom:1.5rem;}
+.contact-list{list-style:none;}
+.contact-list li{font-family:var(--mono);font-size:.78rem;color:var(--muted);padding:.35rem 0;border-bottom:1px solid rgba(26,45,74,0.5);display:flex;gap:.6rem;}
+.contact-list a{color:var(--accent2);text-decoration:none;}
+.contact-list a:hover{color:var(--text);}
+.footer-col h4{font-family:var(--heading-font);font-size:1.1rem;letter-spacing:2px;color:var(--text);margin-bottom:1.2rem;}
+.footer-links{list-style:none;}
+.footer-links li{margin-bottom:.5rem;}
+.footer-links a{font-size:.85rem;color:var(--muted);text-decoration:none;transition:color .2s;display:flex;align-items:center;gap:.5rem;}
+.footer-links a::before{content:'&#8594;';color:var(--accent);font-size:.7rem;}
+.footer-links a:hover{color:var(--accent);}
+.footer-bottom{border-top:1px solid var(--border);padding-top:1.5rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;}
+.footer-bottom p{font-family:var(--mono);font-size:.7rem;color:var(--muted);letter-spacing:1px;}
+.footer-bottom p span{color:var(--accent2);}
+.wa-float{position:fixed;bottom:2rem;right:2rem;z-index:999;display:flex;flex-direction:column;align-items:flex-end;gap:.75rem;}
+.wa-label{background:var(--card);border:1px solid var(--border);font-family:var(--mono);font-size:.7rem;color:var(--accent2);padding:.4rem .8rem;letter-spacing:1px;text-transform:uppercase;display:none;}
+.wa-float:hover .wa-label{display:block;}
+.wa-btn{width:56px;height:56px;background:#25d366;display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:1.6rem;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%);box-shadow:0 0 20px rgba(37,211,102,0.3);transition:transform .2s;}
+.wa-btn:hover{transform:scale(1.05);}
+@keyframes scanline{0%{transform:translateY(-100%);}100%{transform:translateY(100vh);}}
+.scan-line{position:fixed;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(0,212,255,0.3),transparent);animation:scanline 8s linear infinite;pointer-events:none;z-index:500;opacity:.3;will-change:transform;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+.fade-up{animation:fadeUp .6s ease forwards;}
+.delay-1{animation-delay:.1s;opacity:0;}
+.delay-2{animation-delay:.2s;opacity:0;}
+.delay-3{animation-delay:.3s;opacity:0;}
+.delay-4{animation-delay:.4s;opacity:0;}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;}.scan-line{display:none;}html{scroll-behavior:auto;}}
+@media(max-width:900px){.hero-inner{grid-template-columns:1fr!important;}.hero-right{display:none;}}
+@media(max-width:768px){.footer-grid{grid-template-columns:1fr;gap:2rem;}.nav-links{display:none;}.hamburger{display:flex;}.services-grid{grid-template-columns:1fr;}.form-row{grid-template-columns:1fr;}}
+@media print{body{background:#fff!important;color:#000!important;}body::before,.scan-line,.wa-float,nav,.hero-bg-orb{display:none!important;}.page-section{padding:2rem 0;background:#fff!important;}.section-title,.hero h1{color:#000!important;font-size:2rem;}.section-sub,.service-card p,.why-item p,.step p{color:#333!important;}.service-card,.why-item,.step,.blog-card,.equip-card,.contact-form-wrap,.cta-banner,.testimonial-card{background:#f5f5f5!important;border-color:#ccc!important;}.hero{min-height:auto;padding:2rem 0;}.hero-right{display:none;}footer{background:#f5f5f5!important;}a[href]::after{content:" ("attr(href)")";font-size:.75rem;color:#666;}a[href^="#"]::after{content:"";}}
+</style>
+</head>
+<body>
+<div class="scan-line" aria-hidden="true"></div>
+<nav role="navigation" aria-label="Main navigation">
+  <div class="nav-inner">
+    <a class="nav-logo" href="#home" aria-label="Cyber I.T Masters Home">CYBER <span>I.T</span> MASTERS</a>
+    <ul class="nav-links" role="list">
+      <li><a href="#managed-it">Managed IT</a></li>
+      <li><a href="#cybersecurity">Cybersecurity</a></li>
+      <li><a href="#it-support">IT Support</a></li>
+      <li><a href="#microsoft-365">Microsoft 365</a></li>
+      <li><a href="#equipment-rental">Equipment Rental</a></li>
+      <li><a href="#network">Network</a></li>
+      <li><a href="#testimonials">Testimonials</a></li>
+      <li><a href="#faq">FAQ</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <button class="hamburger" id="hamburgerBtn" aria-label="Open navigation menu" aria-expanded="false" aria-controls="mobileDrawer">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+<nav class="mobile-drawer" id="mobileDrawer" aria-label="Mobile navigation">
+  <a href="#managed-it">Managed IT</a>
+  <a href="#cybersecurity">Cybersecurity</a>
+  <a href="#it-support">IT Support</a>
+  <a href="#microsoft-365">Microsoft 365</a>
+  <a href="#equipment-rental">Equipment Rental</a>
+  <a href="#network">Network</a>
+  <a href="#testimonials">Testimonials</a>
+  <a href="#faq">FAQ</a>
+  <a href="#contact">Contact</a>
+</nav>
+<section id="home" class="hero" aria-labelledby="hero-heading">
+  <div class="hero-bg-orb orb1" aria-hidden="true"></div>
+  <div class="hero-bg-orb orb2" aria-hidden="true"></div>
+  <div class="hero-inner">
+    <div class="hero-left">
+      <div class="hero-tag fade-up">Polokwane &middot; Limpopo &middot; South Africa</div>
+      <h1 id="hero-heading" class="fade-up delay-1"><span class="accent-word">ENTERPRISE</span><br>IT SERVICES<br><span class="accent2-word">POLOKWANE</span></h1>
+      <p class="hero-sub fade-up delay-2">Cyber I.T Masters delivers enterprise-grade managed IT services, cybersecurity, Microsoft 365 support, and network infrastructure for businesses across Limpopo. 24/7 local support. Certified engineers.</p>
+      <div class="hero-cta-group fade-up delay-3">
+        <a href="#contact" class="btn-primary">Free IT Assessment</a>
+        <a href="tel:0726650565" class="btn-outline">Call 072 665 0565</a>
+      </div>
+    </div>
+    <div class="hero-right fade-up delay-2" aria-hidden="true">
+      <div class="hero-right-card"><span class="rc-icon">&#128187;</span><h4>Managed IT</h4><p>24/7 monitoring, helpdesk and full infrastructure management</p></div>
+      <div class="hero-right-card"><span class="rc-icon">&#128737;</span><h4>Cybersecurity</h4><p>Firewall, endpoint protection and ransomware defence</p></div>
+      <div class="hero-right-card"><span class="rc-icon">&#128230;</span><h4>Microsoft 365</h4><p>Setup, migration and ongoing Microsoft 365 management</p></div>
+      <div class="hero-right-card"><span class="rc-icon">&#128268;</span><h4>Network Install</h4><p>Structured cabling, WiFi and business network design</p></div>
+      <div class="hero-right-card"><span class="rc-icon">&#128187;</span><h4>Equipment Rental</h4><p>Laptops, printers and networking gear with support included</p></div>
+      <div class="hero-right-card"><span class="rc-icon">&#128295;</span><h4>IT Support</h4><p>Remote and onsite support for all your day-to-day IT needs</p></div>
+      <div class="hero-right-card highlight-card"><span class="rc-num">24/7</span><p>Local Polokwane-based support. Fast response. Certified engineers. Affordable monthly plans.</p></div>
+    </div>
+  </div>
+</section>
+<section id="managed-it" class="page-section" aria-labelledby="managed-it-heading">
+  <div class="section-inner">
+    <div class="section-marker">// 01</div>
+    <div class="section-eyebrow">Polokwane &middot; Limpopo</div>
+    <h2 id="managed-it-heading" class="section-title">MANAGED IT<br>SERVICES</h2>
+    <p class="section-sub">Cyber I.T Masters provides enterprise-grade Managed IT Services in Polokwane and across Limpopo. We help businesses reduce downtime, improve productivity, strengthen cybersecurity, and ensure systems remain operational 24/7.</p>
+    <div class="highlight-box"><strong>Keep Your Business Running</strong> &mdash; Our experienced engineers manage your entire IT infrastructure so you can focus on growing your business. From 24/7 remote support to onsite visits, we&rsquo;re your complete IT department.</div>
+    <div class="section-divider"><span class="section-eyebrow">What&rsquo;s Included</span></div>
+    <ul class="feature-list"><li>24/7 Remote IT Support</li><li>Onsite Technical Support</li><li>Network Monitoring</li><li>Server Management</li><li>Microsoft 365 Management</li><li>Cloud Solutions</li><li>Data Backup &amp; Recovery</li><li>Firewall Protection</li><li>Endpoint Security</li><li>Helpdesk Services</li><li>IT Maintenance</li><li>WiFi &amp; Network Infrastructure</li></ul>
+    <div class="section-divider"><span class="section-eyebrow">Why Choose Us</span></div>
+    <div class="why-grid">
+      <div class="why-item"><div class="why-num">01</div><h4>Fast Response Times</h4><p>We respond quickly so your team stays productive.</p></div>
+      <div class="why-item"><div class="why-num">02</div><h4>Local Polokwane Support</h4><p>Based in Limpopo &mdash; onsite when you need us most.</p></div>
+      <div class="why-item"><div class="why-num">03</div><h4>Enterprise Cybersecurity</h4><p>Enterprise-grade security tailored for SMEs.</p></div>
+      <div class="why-item"><div class="why-num">04</div><h4>Affordable Plans</h4><p>Flexible monthly support plans that fit any budget.</p></div>
+      <div class="why-item"><div class="why-num">05</div><h4>Certified Engineers</h4><p>Qualified professionals with real-world experience.</p></div>
+      <div class="why-item"><div class="why-num">06</div><h4>Scalable Solutions</h4><p>Grows with your business without costly surprises.</p></div>
+    </div>
+    <div class="cta-banner"><div class="cta-text"><h3>GET A FREE IT ASSESSMENT</h3><p>Let us audit your current setup and show you where we can help.</p></div><div class="cta-contacts"><a href="mailto:info@mbulahenigroup.co.za">&#10003; info@mbulahenigroup.co.za</a><a href="tel:0726650565">&#128222; 072 665 0565</a><a href="tel:0870931138">&#128222; 087 093 1138</a></div></div>
+  </div>
+</section>
+<section id="cybersecurity" class="page-section" aria-labelledby="cyber-heading">
+  <div class="section-inner">
+    <div class="section-marker">// 02</div>
+    <div class="section-eyebrow">Cybersecurity &middot; Polokwane</div>
+    <h2 id="cyber-heading" class="section-title">CYBERSECURITY<br>SERVICES</h2>
+    <p class="section-sub">Cyberattacks are increasing rapidly across South Africa. Cyber I.T Masters provides advanced cybersecurity services for businesses in Polokwane and Limpopo &mdash; protecting sensitive data, securing networks, and preventing ransomware attacks.</p>
+    <div class="services-grid">
+      <div class="service-card"><span class="service-icon">&#128293;</span><h3>Firewall Management</h3><p>Professional installation and management of enterprise-grade firewalls to keep threats out.</p></div>
+      <div class="service-card"><span class="service-icon">&#128737;</span><h3>Endpoint Protection</h3><p>Secure every device in your organisation &mdash; laptops, desktops, mobile endpoints.</p></div>
+      <div class="service-card"><span class="service-icon">&#128231;</span><h3>Email Security</h3><p>Phishing protection, spam filtering, and email threat intelligence for Microsoft 365.</p></div>
+      <div class="service-card"><span class="service-icon">&#128272;</span><h3>Multi-Factor Auth</h3><p>MFA deployment across your systems to prevent unauthorized access.</p></div>
+      <div class="service-card"><span class="service-icon">&#128269;</span><h3>Vulnerability Scanning</h3><p>Regular scans to identify weaknesses before attackers exploit them.</p></div>
+      <div class="service-card"><span class="service-icon">&#128190;</span><h3>Backup &amp; Disaster Recovery</h3><p>Automated backups and tested recovery plans for business continuity.</p></div>
+    </div>
+    <div class="section-divider"><span class="section-eyebrow">Industries We Protect</span></div>
+    <div class="industries-wrap"><span class="industry-tag">Medical Practices</span><span class="industry-tag">Accounting Firms</span><span class="industry-tag">Schools</span><span class="industry-tag">Retail Businesses</span><span class="industry-tag">Construction Companies</span><span class="industry-tag">Law Firms</span><span class="industry-tag">Logistics Companies</span><span class="industry-tag">SMEs</span></div>
+    <div class="cta-banner"><div class="cta-text"><h3>BOOK A SECURITY ASSESSMENT</h3><p>Find out how vulnerable your business really is. Free cybersecurity audit available.</p></div><a href="tel:0726650565" class="btn-primary">Call Now</a></div>
+  </div>
+</section>
+<section id="it-support" class="page-section" aria-labelledby="support-heading">
+  <div class="section-inner">
+    <div class="section-marker">// 03</div>
+    <div class="section-eyebrow">IT Support &middot; Polokwane</div>
+    <h2 id="support-heading" class="section-title">PROFESSIONAL<br>IT SUPPORT</h2>
+    <p class="section-sub">Technology problems slow your business down. Cyber I.T Masters provides responsive and professional IT support services in Polokwane &mdash; from daily technical issues to full infrastructure maintenance.</p>
+    <div class="section-divider"><span class="section-eyebrow">Support Services</span></div>
+    <ul class="feature-list"><li>Desktop &amp; Laptop Support</li><li>Printer Support</li><li>Network Troubleshooting</li><li>Remote IT Assistance</li><li>Onsite Support</li><li>WiFi Optimization</li><li>Server Support</li><li>Software Installation</li><li>Virus Removal</li><li>Office 365 Support</li><li>User Account Management</li><li>Email Configuration</li></ul>
+    <div class="section-divider"><span class="section-eyebrow">How We Work</span></div>
+    <div class="process-steps">
+      <div class="step"><span class="step-num">01</span><h4>Log a Request</h4><p>Call, WhatsApp or email. We log and prioritize your support ticket immediately.</p></div>
+      <div class="step"><span class="step-num">02</span><h4>Remote Response</h4><p>Our engineers attempt to resolve remotely first for the fastest turnaround.</p></div>
+      <div class="step"><span class="step-num">03</span><h4>Onsite Dispatch</h4><p>If remote support isn&rsquo;t enough, we dispatch to your Polokwane location.</p></div>
+      <div class="step"><span class="step-num">04</span><h4>Resolution &amp; Report</h4><p>Issue resolved with documentation and recommendations to prevent recurrence.</p></div>
+    </div>
+    <div class="benefits-bar"><div class="benefit-item">Fast response times</div><div class="benefit-item">Experienced engineers</div><div class="benefit-item">Flexible contracts</div><div class="benefit-item">Affordable pricing</div><div class="benefit-item">Remote &amp; onsite</div><div class="benefit-item">Business-focused</div></div>
+    <div class="cta-banner"><div class="cta-text"><h3>NEED IT SUPPORT NOW?</h3><p>Our support team is available to assist your business today.</p></div><div class="cta-contacts"><a href="https://wa.me/27726650565">&#128172; WhatsApp: 072 665 0565</a><a href="mailto:info@mbulahenigroup.co.za">&#10003; info@mbulahenigroup.co.za</a></div></div>
+  </div>
+</section>
+<section id="microsoft-365" class="page-section" aria-labelledby="m365-heading">
+  <div class="section-inner">
+    <div class="section-marker">// 04</div>
+    <div class="section-eyebrow">Microsoft 365 &middot; Polokwane</div>
+    <h2 id="m365-heading" class="section-title">MICROSOFT 365<br>SUPPORT &amp; SETUP</h2>
+    <p class="section-sub">Cyber I.T Masters helps businesses in Polokwane migrate, manage, and secure Microsoft 365 environments &mdash; professional email hosting, Teams collaboration, cloud storage, and complete Microsoft cloud management.</p>
+    <div class="services-grid">
+      <div class="service-card"><span class="service-icon">&#128230;</span><h3>M365 Setup</h3><p>Complete Microsoft 365 tenant setup, user provisioning and license allocation from day one.</p></div>
+      <div class="service-card"><span class="service-icon">&#128228;</span><h3>Email Migration</h3><p>Seamless migration from any provider to Microsoft 365 with zero data loss.</p></div>
+      <div class="service-card"><span class="service-icon">&#128172;</span><h3>Teams Configuration</h3><p>Full Microsoft Teams setup, channels, meetings, policies, and training for your staff.</p></div>
+      <div class="service-card"><span class="service-icon">&#128193;</span><h3>SharePoint &amp; OneDrive</h3><p>Document management and cloud storage configuration tailored to your workflow.</p></div>
+      <div class="service-card"><span class="service-icon">&#128274;</span><h3>M365 Security</h3><p>Conditional access, MFA, Defender for Business, and data loss prevention policies.</p></div>
+      <div class="service-card"><span class="service-icon">&#9729;</span><h3>Cloud Backup</h3><p>Microsoft 365 backup solutions &mdash; email, Teams, SharePoint, and OneDrive protection.</p></div>
+    </div>
+    <div class="highlight-box"><strong>Why Migrate to Microsoft 365?</strong> &mdash; Reduce infrastructure costs, enable secure remote work, get enterprise-grade email, and collaborate in real time. Our certified team handles the entire migration and ongoing management so you don&rsquo;t have to.</div>
+    <div class="cta-banner"><div class="cta-text"><h3>MIGRATE OR UPGRADE TODAY</h3><p>Get expert Microsoft 365 deployment for your Polokwane business.</p></div><a href="mailto:info@mbulahenigroup.co.za" class="btn-primary">Get a Quote</a></div>
+  </div>
+</section>
+<section id="equipment-rental" class="page-section" aria-labelledby="rental-heading">
+  <div class="section-inner">
+    <div class="section-marker">// 05</div>
+    <div class="section-eyebrow">Equipment Rental &middot; Polokwane</div>
+    <h2 id="rental-heading" class="section-title">IT EQUIPMENT<br>RENTALS</h2>
+    <p class="section-sub">Cyber I.T Masters offers affordable IT equipment rental services for businesses, schools, projects, events, and temporary offices across Polokwane &mdash; with full technical support included.</p>
+    <div class="section-divider"><span class="section-eyebrow">Available Equipment</span></div>
+    <div class="equipment-grid">
+      <div class="equip-card"><span class="equip-icon">&#128187;</span><h4>Laptops</h4><p>Business-grade laptops, short or long term</p></div>
+      <div class="equip-card"><span class="equip-icon">&#128421;</span><h4>Desktops</h4><p>Complete desktop setups for temporary offices</p></div>
+      <div class="equip-card"><span class="equip-icon">&#128424;</span><h4>Printers</h4><p>Inkjet and laser printers for any volume</p></div>
+      <div class="equip-card"><span class="equip-icon">&#127760;</span><h4>Network Equipment</h4><p>Routers, switches, and access points</p></div>
+      <div class="equip-card"><span class="equip-icon">&#128246;</span><h4>WiFi Solutions</h4><p>Temporary WiFi coverage for events and sites</p></div>
+      <div class="equip-card"><span class="equip-icon">&#128253;</span><h4>Projectors</h4><p>Full HD projectors for presentations and events</p></div>
+      <div class="equip-card"><span class="equip-icon">&#128433;</span><h4>Monitors</h4><p>Additional screens and dual-monitor setups</p></div>
+      <div class="equip-card"><span class="equip-icon">&#127970;</span><h4>Office IT Setup</h4><p>Complete temporary office technology bundles</p></div>
+    </div>
+    <div class="benefits-bar"><div class="benefit-item">Affordable monthly rentals</div><div class="benefit-item">Technical support included</div><div class="benefit-item">Fast deployment</div><div class="benefit-item">Scalable solutions</div><div class="benefit-item">Business-ready equipment</div></div>
+    <div class="cta-banner"><div class="cta-text"><h3>GET EQUIPMENT RENTAL PRICING</h3><p>Events, temporary offices, schools, or long-term rentals &mdash; we have flexible options.</p></div><div class="cta-contacts"><a href="https://wa.me/27726650565">&#128172; WhatsApp Us</a><a href="tel:0870931138">&#128222; 087 093 1138</a></div></div>
+  </div>
+</section>
+<section id="network" class="page-section" aria-labelledby="network-heading">
+  <div class="section-inner">
+    <div class="section-marker">// 06</div>
+    <div class="section-eyebrow">Network Installation &middot; Polokwane</div>
+    <h2 id="network-heading" class="section-title">BUSINESS NETWORK<br>INSTALLATION</h2>
+    <p class="section-sub">A reliable network is the backbone of every modern business. Cyber I.T Masters designs and installs secure, high-performance business networks for companies across Polokwane and Limpopo.</p>
+    <div class="services-grid">
+      <div class="service-card"><span class="service-icon">&#128268;</span><h3>Structured Cabling</h3><p>CAT6/CAT6A installations to industry standards for reliable, future-proof connectivity.</p></div>
+      <div class="service-card"><span class="service-icon">&#128225;</span><h3>Business WiFi</h3><p>Enterprise WiFi coverage planning and installation with guest network separation.</p></div>
+      <div class="service-card"><span class="service-icon">&#128256;</span><h3>Router &amp; Switch Setup</h3><p>Managed switches, VLAN configuration, and router installation for secure traffic flow.</p></div>
+      <div class="service-card"><span class="service-icon">&#127757;</span><h3>Fiber Connectivity</h3><p>Fiber internet provisioning and termination for high-speed business connectivity.</p></div>
+      <div class="service-card"><span class="service-icon">&#128274;</span><h3>Network Security</h3><p>Firewall implementation, intrusion detection, and secure network segmentation.</p></div>
+      <div class="service-card"><span class="service-icon">&#128301;</span><h3>VPN Setup</h3><p>Secure remote access VPNs for staff working from home or across multiple sites.</p></div>
+    </div>
+    <div class="highlight-box"><strong>CCTV Networking</strong> &mdash; We also integrate CCTV camera systems into your business network with remote monitoring capability. Full security infrastructure from one provider.</div>
+    <div class="process-steps">
+      <div class="step"><span class="step-num">01</span><h4>Site Survey</h4><p>We visit your premises to map coverage requirements and infrastructure needs.</p></div>
+      <div class="step"><span class="step-num">02</span><h4>Network Design</h4><p>A tailored network architecture diagram with equipment recommendations.</p></div>
+      <div class="step"><span class="step-num">03</span><h4>Installation</h4><p>Professional installation by certified engineers with minimal business disruption.</p></div>
+      <div class="step"><span class="step-num">04</span><h4>Testing &amp; Handover</h4><p>Full performance testing, documentation, and staff training on your new network.</p></div>
+    </div>
+    <div class="cta-banner"><div class="cta-text"><h3>BOOK A FREE SITE SURVEY</h3><p>We&rsquo;ll visit your premises and design the right network for your business.</p></div><a href="mailto:info@mbulahenigroup.co.za" class="btn-primary">Request Survey</a></div>
+  </div>
+</section>
+<section id="testimonials" class="page-section" aria-labelledby="testimonials-heading">
+  <div class="section-inner">
+    <div class="section-marker">// 07</div>
+    <div class="section-eyebrow">Client Testimonials &middot; Polokwane</div>
+    <h2 id="testimonials-heading" class="section-title">WHAT OUR<br>CLIENTS SAY</h2>
+    <p class="section-sub">Trusted by businesses across Polokwane and Limpopo. Here&rsquo;s what our clients say about working with Cyber I.T Masters.</p>
+    <div class="testimonials-grid">
+      <article class="testimonial-card">
+        <div class="testimonial-stars" aria-label="5 out of 5 stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <p class="testimonial-text">Since partnering with Cyber I.T Masters our downtime has been virtually eliminated. Their team responds faster than any IT provider we&rsquo;ve used before, and the monthly pricing is very fair for what you get.</p>
+        <div class="testimonial-author"><span class="testimonial-name">Thandeka Mokoena</span><span class="testimonial-company">Operations Manager &middot; Retail Group, Polokwane</span></div>
+      </article>
+      <article class="testimonial-card">
+        <div class="testimonial-stars" aria-label="5 out of 5 stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <p class="testimonial-text">They migrated our entire practice to Microsoft 365 over a weekend with zero disruption. Professional, on-time, and always available on WhatsApp. Highly recommended for any medical practice in Limpopo.</p>
+        <div class="testimonial-author"><span class="testimonial-name">Dr. Sipho Ndlovu</span><span class="testimonial-company">Medical Practice &middot; Polokwane CBD</span></div>
+      </article>
+      <article class="testimonial-card">
+        <div class="testimonial-stars" aria-label="5 out of 5 stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <p class="testimonial-text">Cyber I.T Masters designed and installed our entire office network from scratch. Clean cabling, solid WiFi coverage throughout our building, and they trained our staff on everything. Excellent service.</p>
+        <div class="testimonial-author"><span class="testimonial-name">Nkosinathi Baloyi</span><span class="testimonial-company">Director &middot; Construction Company, Limpopo</span></div>
+      </article>
+    </div>
+  </div>
+</section>
+<section id="faq" class="page-section" aria-labelledby="faq-heading">
+  <div class="section-inner">
+    <div class="section-marker">// 08</div>
+    <div class="section-eyebrow">Frequently Asked Questions</div>
+    <h2 id="faq-heading" class="section-title">COMMON<br>QUESTIONS</h2>
+    <p class="section-sub">Everything you need to know about IT services in Polokwane. Can&rsquo;t find your answer? <a href="#contact" style="color:var(--accent2);text-decoration:none;">Contact our team directly.</a></p>
+    <div class="faq-list">
+      <div class="faq-item"><button class="faq-question" aria-expanded="false">Do you provide 24/7 IT support in Polokwane?<span class="faq-icon" aria-hidden="true">+</span></button><div class="faq-answer">Yes. Cyber I.T Masters provides 24/7 remote IT support for businesses in Polokwane and across Limpopo, with onsite dispatch available during business hours and emergency callouts for critical issues.</div></div>
+      <div class="faq-item"><button class="faq-question" aria-expanded="false">How much does Managed IT Services cost in Polokwane?<span class="faq-icon" aria-hidden="true">+</span></button><div class="faq-answer">Our Managed IT Services plans are tailored to your business size and requirements. We offer flexible monthly contracts with no long lock-in periods, starting from affordable rates for small businesses. Contact us for a free assessment and custom quote.</div></div>
+      <div class="faq-item"><button class="faq-question" aria-expanded="false">Can you help my business migrate to Microsoft 365?<span class="faq-icon" aria-hidden="true">+</span></button><div class="faq-answer">Yes. We handle complete Microsoft 365 migrations including email, data, user accounts and licensing &mdash; with zero data loss guaranteed. Most migrations are completed over a weekend to avoid business disruption.</div></div>
+      <div class="faq-item"><button class="faq-question" aria-expanded="false">Do you offer cybersecurity services for small businesses in Limpopo?<span class="faq-icon" aria-hidden="true">+</span></button><div class="faq-answer">Yes. We provide enterprise-grade cybersecurity including firewall management, endpoint protection, email security, vulnerability scanning and backup &amp; disaster recovery &mdash; sized and priced for SMEs, not just large enterprises.</div></div>
+      <div class="faq-item"><button class="faq-question" aria-expanded="false">Can I rent IT equipment for an event or temporary office?<span class="faq-icon" aria-hidden="true">+</span></button><div class="faq-answer">Absolutely. We offer short and long-term rental of laptops, desktops, printers, projectors, WiFi equipment and complete office IT bundles with full technical support. Perfect for events, construction sites and temporary offices.</div></div>
+      <div class="faq-item"><button class="faq-question" aria-expanded="false">How quickly can you respond to an IT emergency in Polokwane?<span class="faq-icon" aria-hidden="true">+</span></button><div class="faq-answer">Remote support is typically initiated within 30 minutes. For critical onsite emergencies in Polokwane, we aim to dispatch within 2 hours during business hours. Our engineers are locally based, so we&rsquo;re never far away.</div></div>
+    </div>
+  </div>
+</section>
+<section id="blog" class="page-section" aria-labelledby="blog-heading">
+  <div class="section-inner">
+    <div class="section-marker">// 09</div>
+    <div class="section-eyebrow">IT Knowledge Base &middot; Polokwane</div>
+    <h2 id="blog-heading" class="section-title">IT INSIGHTS<br>&amp; RESOURCES</h2>
+    <p class="section-sub">Stay ahead of cyber threats and technology trends with expert guidance from Cyber I.T Masters.</p>
+    <div class="blog-grid">
+      <div class="blog-card"><div class="blog-tag">Managed IT</div><h3>Why Businesses in Polokwane Need Managed IT Services</h3><p>Discover how proactive IT management reduces downtime, lowers costs and improves security for Limpopo businesses.</p></div>
+      <div class="blog-card"><div class="blog-tag">Cybersecurity</div><h3>Top Cybersecurity Threats in South Africa 2025</h3><p>Ransomware, phishing, and business email compromise are surging. Learn how to protect your business.</p></div>
+      <div class="blog-card"><div class="blog-tag">Microsoft 365</div><h3>Benefits of Microsoft 365 for South African SMEs</h3><p>Cloud email, collaboration, and security &mdash; all in one subscription. We break down the ROI for small businesses.</p></div>
+      <div class="blog-card"><div class="blog-tag">Security</div><h3>How to Prevent Ransomware Attacks</h3><p>Practical steps every Polokwane business should take immediately to defend against ransomware.</p></div>
+      <div class="blog-card"><div class="blog-tag">Cloud</div><h3>Cloud Computing for South African Businesses</h3><p>Why moving to the cloud isn&rsquo;t just for big enterprises &mdash; and how to get started on a budget.</p></div>
+      <div class="blog-card"><div class="blog-tag">Backup</div><h3>Why Backup Solutions Are Critical for Your Business</h3><p>One hardware failure or ransomware attack can erase years of data. Backup is not optional.</p></div>
+    </div>
+  </div>
+</section>
+<section id="contact" class="page-section" aria-labelledby="contact-heading">
+  <div class="section-inner">
+    <div class="section-marker">// 10</div>
+    <div class="section-eyebrow">Get In Touch &middot; Polokwane</div>
+    <h2 id="contact-heading" class="section-title">CONTACT<br>CYBER I.T MASTERS</h2>
+    <p class="section-sub">Ready to improve your IT infrastructure? Contact our team in Polokwane for a free consultation or quote.</p>
+    <div class="contact-cards-grid">
+      <div class="contact-info-card"><span class="service-icon">&#9993;</span><h3>Email Us</h3><a href="mailto:info@mbulahenigroup.co.za">info@mbulahenigroup.co.za</a></div>
+      <div class="contact-info-card"><span class="service-icon">&#128242;</span><h3>WhatsApp / Mobile</h3><a href="https://wa.me/27726650565">072 665 0565</a></div>
+      <div class="contact-info-card"><span class="service-icon">&#9742;</span><h3>Office Line</h3><a href="tel:0870931138">087 093 1138</a></div>
+      <div class="contact-info-card"><span class="service-icon">&#127760;</span><h3>Website</h3><a href="https://mbulahenigroup.co.za" target="_blank" rel="noopener">mbulahenigroup.co.za</a></div>
+    </div>
+    <div class="contact-form-wrap">
+      <h3 class="contact-form-title">SEND US A MESSAGE</h3>
+      <!-- SETUP: Replace YOUR_FORM_ID with your Formspree endpoint from formspree.io (free, 50/month) -->
+      <form id="contactForm" class="form-grid" action="https://formspree.io/f/YOUR_FORM_ID" method="POST" novalidate>
+        <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="fname">Full Name <span class="req">*</span></label>
+            <input class="form-input" type="text" id="fname" name="name" placeholder="Your name" required maxlength="100" autocomplete="name">
+            <span class="form-error" id="fname-error">Please enter your full name.</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="fcompany">Company</label>
+            <input class="form-input" type="text" id="fcompany" name="company" placeholder="Your business" maxlength="100" autocomplete="organization">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="femail">Email <span class="req">*</span></label>
+            <input class="form-input" type="email" id="femail" name="email" placeholder="your@email.com" required maxlength="150" autocomplete="email">
+            <span class="form-error" id="femail-error">Please enter a valid email address.</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="fphone">Phone / WhatsApp</label>
+            <input class="form-input" type="tel" id="fphone" name="phone" placeholder="0XX XXX XXXX" maxlength="20" autocomplete="tel">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="fservice">Service Needed <span class="req">*</span></label>
+          <select class="form-select" id="fservice" name="service" required>
+            <option value="">Select a service...</option>
+            <option value="Managed IT Services">Managed IT Services</option>
+            <option value="Cybersecurity Services">Cybersecurity Services</option>
+            <option value="IT Support">IT Support</option>
+            <option value="Microsoft 365">Microsoft 365</option>
+            <option value="IT Equipment Rental">IT Equipment Rental</option>
+            <option value="Network Installation">Network Installation</option>
+            <option value="General Enquiry">General Enquiry</option>
+          </select>
+          <span class="form-error" id="fservice-error">Please select a service.</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="fmessage">Message <span class="req">*</span></label>
+          <textarea class="form-textarea" id="fmessage" name="message" rows="4" placeholder="Tell us about your requirements..." required minlength="10" maxlength="2000"></textarea>
+          <span class="form-error" id="fmessage-error">Please describe your requirements (min 10 characters).</span>
+        </div>
+        <div class="form-submit-wrap">
+          <button type="submit" class="btn-primary" id="submitBtn" aria-label="Send message to Cyber I.T Masters">Send Message &rarr;</button>
+          <span class="form-note" id="formStatus"></span>
+        </div>
+      </form>
+    </div>
+    <div style="margin-top:2rem;background:var(--card);border:1px solid var(--border);padding:1rem;">
+      <iframe title="Cyber I.T Masters location in Polokwane, Limpopo" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d57870.45847!2d29.4369!3d-23.9045!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1ec67a3c79e2c0b3%3A0x3e2b61e3fe5bba06!2sPolokwane%2C%20Limpopo!5e0!3m2!1sen!2sza!4v1698000000000!5m2!1sen!2sza" width="100%" height="280" style="border:0;display:block;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+    </div>
+  </div>
+</section>
+<footer role="contentinfo">
+  <div class="footer-inner">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="logo-big">CYBER <span>I.T</span> MASTERS</div>
+        <p>A division of Mbulaheni Group Integrated Solutions. We provide enterprise-grade managed IT services, cybersecurity, and technology solutions for businesses across Polokwane and Limpopo.</p>
+        <ul class="contact-list">
+          <li>&#9993; <a href="mailto:info@mbulahenigroup.co.za">info@mbulahenigroup.co.za</a></li>
+          <li>&#128222; <a href="tel:0726650565">072 665 0565</a></li>
+          <li>&#9742; <a href="tel:0870931138">087 093 1138</a></li>
+          <li>&#127760; <a href="https://mbulahenigroup.co.za" target="_blank" rel="noopener">mbulahenigroup.co.za</a></li>
+        </ul>
+      </div>
+      <div class="footer-col"><h4>SERVICES</h4><ul class="footer-links"><li><a href="#managed-it">Managed IT Services</a></li><li><a href="#cybersecurity">Cybersecurity</a></li><li><a href="#it-support">IT Support</a></li><li><a href="#microsoft-365">Microsoft 365</a></li><li><a href="#equipment-rental">Equipment Rental</a></li><li><a href="#network">Network Installation</a></li></ul></div>
+      <div class="footer-col"><h4>INDUSTRIES</h4><ul class="footer-links"><li><a href="#cybersecurity">Medical Practices</a></li><li><a href="#cybersecurity">Accounting Firms</a></li><li><a href="#cybersecurity">Schools</a></li><li><a href="#cybersecurity">Retail Businesses</a></li><li><a href="#cybersecurity">Law Firms</a></li><li><a href="#cybersecurity">SMEs</a></li></ul></div>
+      <div class="footer-col"><h4>MBULAHENI GROUP</h4><ul class="footer-links"><li><a href="https://mbulahenigroup.co.za" target="_blank" rel="noopener">Group Website</a></li><li><a href="#contact">Civil Engineering</a></li><li><a href="#contact">Petroleum Supply</a></li><li><a href="#contact">Commercial Cleaning</a></li><li><a href="#contact">Security Services</a></li><li><a href="#contact">Contact Us</a></li></ul></div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2025 <span>Cyber I.T Masters</span> &mdash; A Division of Mbulaheni Group Integrated Solutions | Polokwane, Limpopo</p>
+      <p>B-BBEE <span>Level 1</span> Contributor</p>
+    </div>
+  </div>
+</footer>
+<div class="wa-float">
+  <span class="wa-label" aria-hidden="true">WhatsApp Us</span>
+  <a href="https://wa.me/27726650565" target="_blank" rel="noopener" class="wa-btn" aria-label="Chat with Cyber I.T Masters on WhatsApp">&#128172;</a>
+</div>
+<script>
+const hamburgerBtn=document.getElementById('hamburgerBtn');
+const mobileDrawer=document.getElementById('mobileDrawer');
+hamburgerBtn.addEventListener('click',()=>{
+  const isOpen=mobileDrawer.classList.toggle('open');
+  hamburgerBtn.classList.toggle('open',isOpen);
+  hamburgerBtn.setAttribute('aria-expanded',isOpen);
+  hamburgerBtn.setAttribute('aria-label',isOpen?'Close navigation menu':'Open navigation menu');
+});
+mobileDrawer.querySelectorAll('a').forEach(a=>{
+  a.addEventListener('click',()=>{
+    mobileDrawer.classList.remove('open');
+    hamburgerBtn.classList.remove('open');
+    hamburgerBtn.setAttribute('aria-expanded','false');
+    hamburgerBtn.setAttribute('aria-label','Open navigation menu');
+  });
+});
+const sections=document.querySelectorAll('section[id]');
+const navLinks=document.querySelectorAll('.nav-links a');
+window.addEventListener('scroll',()=>{
+  let current='';
+  sections.forEach(s=>{if(window.scrollY>=s.offsetTop-100)current=s.getAttribute('id');});
+  navLinks.forEach(a=>{a.classList.remove('active');if(a.getAttribute('href')==='#'+current)a.classList.add('active');});
+},{passive:true});
+const form=document.getElementById('contactForm');
+const submitBtn=document.getElementById('submitBtn');
+const formStatus=document.getElementById('formStatus');
+function showError(id,show){
+  const err=document.getElementById(id+'-error');
+  const inp=document.getElementById(id);
+  if(err)err.classList.toggle('visible',show);
+  if(inp)inp.classList.toggle('error',show);
+}
+function validateField(input){
+  const id=input.id;
+  if(id==='fname'){const ok=input.value.trim().length>=2;showError('fname',!ok);return ok;}
+  if(id==='femail'){const ok=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.value.trim());showError('femail',!ok);return ok;}
+  if(id==='fservice'){const ok=input.value!=='';showError('fservice',!ok);return ok;}
+  if(id==='fmessage'){const ok=input.value.trim().length>=10;showError('fmessage',!ok);return ok;}
+  return true;
+}
+['fname','femail','fservice','fmessage'].forEach(id=>{
+  const el=document.getElementById(id);
+  if(el)el.addEventListener('blur',()=>validateField(el));
+});
+const formAction=form.getAttribute('action');
+const formspreeOK=formAction&&!formAction.includes('YOUR_FORM_ID');
+form.addEventListener('submit',async function(e){
+  e.preventDefault();
+  const valid=['fname','femail','fservice','fmessage'].every(id=>{const el=document.getElementById(id);return el?validateField(el):true;});
+  if(!valid){formStatus.textContent='Please fix the errors above.';formStatus.style.color='var(--accent3)';return;}
+  submitBtn.disabled=true;submitBtn.textContent='Sending...';formStatus.textContent='';
+  if(formspreeOK){
+    try{
+      const res=await fetch(formAction,{method:'POST',body:new FormData(form),headers:{'Accept':'application/json'}});
+      if(res.ok){submitBtn.textContent='&#10003; Message Sent!';submitBtn.style.background='var(--accent2)';form.reset();formStatus.textContent="We'll be in touch within 1 business day.";formStatus.style.color='var(--accent2)';}
+      else throw new Error();
+    }catch{mailtoFallback();}
+  }else{mailtoFallback();}
+  setTimeout(()=>{submitBtn.disabled=false;submitBtn.textContent='Send Message \u2192';submitBtn.style.background='';},5000);
+});
+function mailtoFallback(){
+  const n=document.getElementById('fname').value.trim();
+  const c=document.getElementById('fcompany').value.trim();
+  const e=document.getElementById('femail').value.trim();
+  const p=document.getElementById('fphone').value.trim();
+  const s=document.getElementById('fservice').value;
+  const m=document.getElementById('fmessage').value.trim();
+  const body=['Name: '+n,c?'Company: '+c:'','Email: '+e,p?'Phone: '+p:'','Service: '+s,'','Message:',m].filter(Boolean).join('\n');
+  window.location.href='mailto:info@mbulahenigroup.co.za?subject='+encodeURIComponent('Enquiry from '+n+' \u2014 '+s)+'&body='+encodeURIComponent(body);
+  formStatus.textContent='Opening your email app\u2026';formStatus.style.color='var(--accent2)';
+}
+document.querySelectorAll('.faq-question').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const item=btn.closest('.faq-item');
+    const isOpen=item.classList.contains('open');
+    document.querySelectorAll('.faq-item.open').forEach(el=>{el.classList.remove('open');el.querySelector('.faq-question').setAttribute('aria-expanded','false');});
+    if(!isOpen){item.classList.add('open');btn.setAttribute('aria-expanded','true');}
+  });
+});
+if(!window.matchMedia('(prefers-reduced-motion:reduce)').matches){
+  const obs=new IntersectionObserver((entries)=>{entries.forEach(e=>{if(e.isIntersecting){e.target.style.opacity='1';e.target.style.transform='translateY(0)';obs.unobserve(e.target);}});},{threshold:0.1});
+  document.querySelectorAll('.service-card,.why-item,.step,.blog-card,.equip-card,.testimonial-card,.faq-item').forEach(el=>{el.style.opacity='0';el.style.transform='translateY(16px)';el.style.transition='opacity .5s ease,transform .5s ease';obs.observe(el);});
+}
+</script>
+</body>
+</html>'''
+
+with open('/mnt/user-data/outputs/cyber-it-masters-improved.html', 'w', encoding='utf-8') as f:
+    f.write(html)
+
+import os
+size = os.path.getsize('/mnt/user-data/outputs/cyber-it-masters-improved.html')
+print(f"Written: {size:,} bytes ({size//1024} KB)")
+PYEOF
+Output
+
+Written: 64,729 bytes (63 KB)
