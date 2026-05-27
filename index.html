@@ -619,7 +619,14 @@ img,iframe{max-width:100%;height:auto;}
 </style>
 
 <script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+html{
+  scroll-behavior:smooth;
+}
+</style>
 </head>
+
 <body>
 
 <!-- ── Skip to Content (Accessibility) ───────────────────── -->
@@ -654,12 +661,12 @@ img,iframe{max-width:100%;height:auto;}
   </button>
 
   <div class="services-dropdown-menu" style="display:none;position:absolute;top:42px;left:0;background:#08111f;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px;min-width:260px;z-index:9999;box-shadow:0 20px 40px rgba(0,0,0,.35);">
-    <a href="#enterprise-services" style="display:block;padding:10px;border-radius:10px;color:#fff;">Managed IT</a>
-    <a href="#enterprise-services" style="display:block;padding:10px;border-radius:10px;color:#fff;">Cybersecurity</a>
-    <a href="#enterprise-services" style="display:block;padding:10px;border-radius:10px;color:#fff;">IT Support</a>
-    <a href="#enterprise-services" style="display:block;padding:10px;border-radius:10px;color:#fff;">Microsoft 365</a>
-    <a href="#enterprise-services" style="display:block;padding:10px;border-radius:10px;color:#fff;">Equipment Rental</a>
-    <a href="#enterprise-services" style="display:block;padding:10px;border-radius:10px;color:#fff;">Network</a>
+    <a href="#managed-it" style="display:block;padding:10px;border-radius:10px;color:#fff;">Managed IT</a>
+    <a href="#cybersecurity" style="display:block;padding:10px;border-radius:10px;color:#fff;">Cybersecurity</a>
+    <a href="#it-support" style="display:block;padding:10px;border-radius:10px;color:#fff;">IT Support</a>
+    <a href="#microsoft-365" style="display:block;padding:10px;border-radius:10px;color:#fff;">Microsoft 365</a>
+    <a href="#equipment-rental" style="display:block;padding:10px;border-radius:10px;color:#fff;">Equipment Rental</a>
+    <a href="#network" style="display:block;padding:10px;border-radius:10px;color:#fff;">Network</a>
   </div>
 </div>
 </li>
@@ -683,12 +690,12 @@ img,iframe{max-width:100%;height:auto;}
   </button>
 
   <div class="services-dropdown-menu" style="display:none;position:absolute;top:42px;left:0;background:#08111f;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px;min-width:260px;z-index:9999;box-shadow:0 20px 40px rgba(0,0,0,.35);">
-    <a href="#enterprise-services" style="display:block;padding:10px;border-radius:10px;color:#fff;">Managed IT</a>
-    <a href="#enterprise-services" style="display:block;padding:10px;border-radius:10px;color:#fff;">Cybersecurity</a>
-    <a href="#enterprise-services" style="display:block;padding:10px;border-radius:10px;color:#fff;">IT Support</a>
-    <a href="#enterprise-services" style="display:block;padding:10px;border-radius:10px;color:#fff;">Microsoft 365</a>
-    <a href="#enterprise-services" style="display:block;padding:10px;border-radius:10px;color:#fff;">Equipment Rental</a>
-    <a href="#enterprise-services" style="display:block;padding:10px;border-radius:10px;color:#fff;">Network</a>
+    <a href="#managed-it" style="display:block;padding:10px;border-radius:10px;color:#fff;">Managed IT</a>
+    <a href="#cybersecurity" style="display:block;padding:10px;border-radius:10px;color:#fff;">Cybersecurity</a>
+    <a href="#it-support" style="display:block;padding:10px;border-radius:10px;color:#fff;">IT Support</a>
+    <a href="#microsoft-365" style="display:block;padding:10px;border-radius:10px;color:#fff;">Microsoft 365</a>
+    <a href="#equipment-rental" style="display:block;padding:10px;border-radius:10px;color:#fff;">Equipment Rental</a>
+    <a href="#network" style="display:block;padding:10px;border-radius:10px;color:#fff;">Network</a>
   </div>
 </div>
 
@@ -887,6 +894,7 @@ img,iframe{max-width:100%;height:auto;}
   </div>
 </section>
 
+<section id="managed-it"></section>
 <!-- ── Managed IT ─────────────────────────────────────────── -->
 <section id="managed-it" class="page-section" aria-labelledby="managed-it-heading">
   <div class="section-inner">
@@ -910,6 +918,7 @@ img,iframe{max-width:100%;height:auto;}
   </div>
 </section>
 
+<section id="cybersecurity"></section>
 <!-- ── Cybersecurity ───────────────────────────────────────── -->
 <section id="cybersecurity" class="page-section" aria-labelledby="cyber-heading">
   <div class="section-inner">
@@ -931,6 +940,7 @@ img,iframe{max-width:100%;height:auto;}
   </div>
 </section>
 
+<section id="it-support"></section>
 <!-- ── IT Support ─────────────────────────────────────────── -->
 <section id="it-support" class="page-section" aria-labelledby="support-heading">
   <div class="section-inner">
@@ -952,6 +962,7 @@ img,iframe{max-width:100%;height:auto;}
   </div>
 </section>
 
+<section id="microsoft-365"></section>
 <!-- ── Microsoft 365 ───────────────────────────────────────── -->
 <section id="microsoft-365" class="page-section" aria-labelledby="m365-heading">
   <div class="section-inner">
@@ -972,6 +983,7 @@ img,iframe{max-width:100%;height:auto;}
   </div>
 </section>
 
+<section id="equipment-rental"></section>
 <!-- ── Equipment Rental ───────────────────────────────────── -->
 <section id="equipment-rental" class="page-section" aria-labelledby="rental-heading">
   <div class="section-inner">
@@ -995,6 +1007,7 @@ img,iframe{max-width:100%;height:auto;}
   </div>
 </section>
 
+<section id="network"></section>
 <!-- ── Network Installation ───────────────────────────────── -->
 <section id="network" class="page-section" aria-labelledby="network-heading">
   <div class="section-inner">
@@ -1761,7 +1774,21 @@ document.addEventListener("DOMContentLoaded", function(){
   }
 });
 </script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+  document.querySelectorAll('a, button').forEach(function(el){
+    if(el.textContent.toLowerCase().includes('log a ticket')){
+      el.addEventListener('click', function(e){
+        e.preventDefault();
+        window.location.href = 'support(1).html';
+      });
+    }
+  });
+});
+</script>
 </body>
+
 
 
 </html>
