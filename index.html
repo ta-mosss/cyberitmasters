@@ -647,12 +647,22 @@ img,iframe{max-width:100%;height:auto;}
       <span class="nav-logo-text">CYBER <span>I.T</span> MASTERS</span>
     </a>
     <ul class="nav-links" role="list">
-      <li><a href="#managed-it">Managed IT</a></li>
-      <li><a href="#cybersecurity">Cybersecurity</a></li>
-      <li><a href="#it-support">IT Support</a></li>
-      <li><a href="#microsoft-365">Microsoft 365</a></li>
-      <li><a href="#equipment-rental">Equipment Rental</a></li>
-      <li><a href="#network">Network</a></li>
+      <li>
+<div class="services-dropdown-nav" style="position:relative;display:flex;align-items:center;">
+  <button class="services-dropdown-btn" style="background:none;border:none;color:#8bbcff;font-weight:700;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;padding:10px 14px;">
+    Services ▾
+  </button>
+
+  <div class="services-dropdown-menu" style="display:none;position:absolute;top:42px;left:0;background:#08111f;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px;min-width:260px;z-index:9999;box-shadow:0 20px 40px rgba(0,0,0,.35);">
+    <a href="#enterprise-services" style="display:block;padding:10px;border-radius:10px;color:#fff;">Managed IT</a>
+    <a href="#enterprise-services" style="display:block;padding:10px;border-radius:10px;color:#fff;">Cybersecurity</a>
+    <a href="#enterprise-services" style="display:block;padding:10px;border-radius:10px;color:#fff;">IT Support</a>
+    <a href="#enterprise-services" style="display:block;padding:10px;border-radius:10px;color:#fff;">Microsoft 365</a>
+    <a href="#enterprise-services" style="display:block;padding:10px;border-radius:10px;color:#fff;">Equipment Rental</a>
+    <a href="#enterprise-services" style="display:block;padding:10px;border-radius:10px;color:#fff;">Network</a>
+  </div>
+</div>
+</li>
       <li><a href="#pricing">Pricing</a></li>
       <li><a href="#testimonials">Testimonials</a></li>
       <li><a href="#faq">FAQ</a></li>
@@ -666,12 +676,22 @@ img,iframe{max-width:100%;height:auto;}
 
 <!-- ── Mobile Drawer ──────────────────────────────────────── -->
 <div class="mobile-drawer" id="mobileDrawer" role="dialog" aria-label="Mobile navigation menu" aria-modal="false">
-  <a href="#managed-it">Managed IT</a>
-  <a href="#cybersecurity">Cybersecurity</a>
-  <a href="#it-support">IT Support</a>
-  <a href="#microsoft-365">Microsoft 365</a>
-  <a href="#equipment-rental">Equipment Rental</a>
-  <a href="#network">Network</a>
+  
+<div class="services-dropdown-nav" style="position:relative;display:flex;align-items:center;">
+  <button class="services-dropdown-btn" style="background:none;border:none;color:#8bbcff;font-weight:700;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;padding:10px 14px;">
+    Services ▾
+  </button>
+
+  <div class="services-dropdown-menu" style="display:none;position:absolute;top:42px;left:0;background:#08111f;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px;min-width:260px;z-index:9999;box-shadow:0 20px 40px rgba(0,0,0,.35);">
+    <a href="#enterprise-services" style="display:block;padding:10px;border-radius:10px;color:#fff;">Managed IT</a>
+    <a href="#enterprise-services" style="display:block;padding:10px;border-radius:10px;color:#fff;">Cybersecurity</a>
+    <a href="#enterprise-services" style="display:block;padding:10px;border-radius:10px;color:#fff;">IT Support</a>
+    <a href="#enterprise-services" style="display:block;padding:10px;border-radius:10px;color:#fff;">Microsoft 365</a>
+    <a href="#enterprise-services" style="display:block;padding:10px;border-radius:10px;color:#fff;">Equipment Rental</a>
+    <a href="#enterprise-services" style="display:block;padding:10px;border-radius:10px;color:#fff;">Network</a>
+  </div>
+</div>
+
   <a href="#pricing">Pricing</a>
   <a href="#testimonials">Testimonials</a>
   <a href="#faq">FAQ</a>
@@ -1723,6 +1743,30 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
+
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+  const btn = document.querySelector(".services-dropdown-btn");
+  const menu = document.querySelector(".services-dropdown-menu");
+
+  if(btn && menu){
+    btn.addEventListener("click", function(e){
+      e.stopPropagation();
+      menu.style.display = menu.style.display === "block" ? "none" : "block";
+    });
+
+    document.addEventListener("click", function(){
+      menu.style.display = "none";
+    });
+  }
+});
+</script>
 </body>
 
+
 </html>
+HTMLEOF
+echo "File written: $(wc -l < /home/claude/cyber-it-masters-v3.html) lines, $(wc -c < /home/claude/cyber-it-masters-v3.html) bytes"
+Output
+
+Command argument is 101_700 bytes, exceeding the 100_000-byte per-argument limit. For large content, pipe via stdin or use a file-write API instead of embedding the content inline in the command. Argument preview: 'LOGO_B64=$(cat /tmp/logo_b64.txt)\n\ncat > /home/claude/cyber-it-masters-v3.html << HTMLEOF\n<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-wid'
