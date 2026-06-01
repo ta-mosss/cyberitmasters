@@ -1,8 +1,4 @@
-bash
-
-LOGO_B64=$(cat /tmp/logo_b64.txt)
-
-cat > /home/claude/cyber-it-masters-v3.html << HTMLEOF
+<< HTMLEOF
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -616,6 +612,24 @@ footer{position:relative;z-index:1;background:var(--surface);border-top:1px soli
   a[href^="#"]::after{content:"";}
 }
 img,iframe{max-width:100%;height:auto;}
+
+@media(max-width:768px){
+  .cta-banner{
+    display:none !important;
+  }
+
+  .hero-mobile-assessment{
+    display:block;
+    margin-top:1rem;
+  }
+}
+
+@media(min-width:769px){
+  .hero-mobile-assessment{
+    display:none;
+  }
+}
+
 </style>
 
 <script src="https://cdn.tailwindcss.com"></script>
@@ -1757,23 +1771,52 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 
 
-<script>
-document.addEventListener("DOMContentLoaded", function(){
-  const btn = document.querySelector(".services-dropdown-btn");
-  const menu = document.querySelector(".services-dropdown-menu");
 
-  if(btn && menu){
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  // Desktop + Mobile Services dropdowns
+  document.querySelectorAll(".services-dropdown-nav").forEach(function(dropdown){
+
+    const btn = dropdown.querySelector(".services-dropdown-btn");
+    const menu = dropdown.querySelector(".services-dropdown-menu");
+
+    if(!btn || !menu) return;
+
     btn.addEventListener("click", function(e){
+      e.preventDefault();
       e.stopPropagation();
-      menu.style.display = menu.style.display === "block" ? "none" : "block";
+
+      const isOpen = menu.style.display === "block";
+
+      document.querySelectorAll(".services-dropdown-menu").forEach(function(m){
+        m.style.display = "none";
+      });
+
+      menu.style.display = isOpen ? "none" : "block";
     });
 
-    document.addEventListener("click", function(){
+    menu.querySelectorAll("a").forEach(function(link){
+      link.addEventListener("click", function(){
+        menu.style.display = "none";
+
+        const drawer = document.getElementById("mobileDrawer");
+        if(drawer) drawer.classList.remove("open");
+
+        const burger = document.getElementById("hamburgerBtn");
+        if(burger) burger.classList.remove("open");
+      });
+    });
+  });
+
+  document.addEventListener("click", function(){
+    document.querySelectorAll(".services-dropdown-menu").forEach(function(menu){
       menu.style.display = "none";
     });
-  }
+  });
 });
 </script>
+
 
 <script>
 document.addEventListener("DOMContentLoaded", function(){
@@ -1792,8 +1835,3 @@ document.addEventListener("DOMContentLoaded", function(){
 
 
 </html>
-HTMLEOF
-echo "File written: $(wc -l < /home/claude/cyber-it-masters-v3.html) lines, $(wc -c < /home/claude/cyber-it-masters-v3.html) bytes"
-Output
-
-Command argument is 101_700 bytes, exceeding the 100_000-byte per-argument limit. For large content, pipe via stdin or use a file-write API instead of embedding the content inline in the command. Argument preview: 'LOGO_B64=$(cat /tmp/logo_b64.txt)\n\ncat > /home/claude/cyber-it-masters-v3.html << HTMLEOF\n<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-wid'
