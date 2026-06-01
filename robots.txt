@@ -1,0 +1,13 @@
+# robots.txt — Cyber I.T Masters
+# https://cyberit.mbulahenigroup.co.za/robots.txt
+
+User-agent: *
+Allow: /
+
+# Block any admin or private paths if they exist
+Disallow: /admin/
+Disallow: /support-admin/
+Disallow: /private/
+
+# Sitemap location
+Sitemap: https://cyberit.mbulahenigroup.co.za/sitemap.xml
