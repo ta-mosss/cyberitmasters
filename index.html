@@ -686,6 +686,25 @@ max-height:calc(100vh - 64px);
 }
 }
 
+
+.form-success{
+  margin-bottom:20px;
+  padding:15px;
+  border-radius:12px;
+  background:rgba(0,200,150,.12);
+  border:1px solid rgba(0,200,150,.3);
+  color:#6ef7c8;
+  font-weight:600;
+}
+.form-error-global{
+  margin-bottom:20px;
+  padding:15px;
+  border-radius:12px;
+  background:rgba(255,0,0,.12);
+  border:1px solid rgba(255,0,0,.25);
+  color:#ff8080;
+}
+
 </style>
 
 <script src="https://cdn.tailwindcss.com"></script>
@@ -1289,9 +1308,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <!--
         SETUP REQUIRED: Replace YOUR_FORMSPREE_ID with your actual Formspree form ID.
         Register free at https://formspree.io — create a form and copy the ID (e.g. xpwzabcd).
-        Then change action="https://formspree.io/f/YOUR_FORMSPREE_ID"
+        Then change action="https://formspree.io/f/mykvqdoj"
       -->
-      <form id="contactForm" class="form-grid" action="https://formspree.io/f/YOUR_FORMSPREE_ID" method="POST" novalidate>
+      <form id="contactForm" class="form-grid" action="https://formspree.io/f/mykvqdoj" method="POST" novalidate>
         <input type="text" name="_gotcha" class="visually-hidden" tabindex="-1" autocomplete="off" aria-hidden="true">
         <div class="form-row">
           <div class="form-group">
@@ -1870,5 +1889,31 @@ document.addEventListener("DOMContentLoaded", function(){
   });
 });
 </script>
+
+<script>
+window.formspree = window.formspree || function () {
+  (formspree.q = formspree.q || []).push(arguments);
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+  formspree('initForm', {
+    formElement: '#contactForm',
+    formId: 'mykvqdoj'
+  });
+});
+</script>
+<script src="https://unpkg.com/@formspree/ajax@1" defer></script>
+
+<script>
+document.addEventListener('submit', function(e){
+  if(e.target.id === 'contactForm' && typeof gtag === 'function'){
+    gtag('event','lead_submit',{
+      event_category:'Contact Form',
+      event_label:'Website Lead'
+    });
+  }
+});
+</script>
 </body>
+
 </html>
