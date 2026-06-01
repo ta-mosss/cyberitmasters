@@ -22,6 +22,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <meta name="robots" content="index, follow">
 <meta name="author" content="Cyber I.T Masters">
 <link rel="canonical" href="https://cyberit.mbulahenigroup.co.za/">
+<!-- robots.txt should exist at https://cyberit.mbulahenigroup.co.za/robots.txt — see included robots.txt file -->
 
 <!-- ── Preload logo for LCP performance ───────────────────── -->
 <link rel="preload" as="image" href="logo.png">
@@ -48,6 +49,12 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <meta name="twitter:description" content="24/7 Managed IT Services, Cybersecurity &amp; Microsoft 365 for businesses in Polokwane, Limpopo.">
 <meta name="twitter:image" content="https://cyberit.mbulahenigroup.co.za/og-image.jpg">
 
+<!-- ── Geo Meta Tags (local SEO) ──────────────────────────── -->
+<meta name="geo.region" content="ZA-LP">
+<meta name="geo.placename" content="Polokwane, Limpopo">
+<meta name="geo.position" content="-23.9045;29.4369">
+<meta name="ICBM" content="-23.9045, 29.4369">
+
 <!-- ── GA4 (loaded only after POPIA consent) ──────────────── -->
 <script>
 /* GA4 is gated — fires only after user accepts cookies (see consent banner below) */
@@ -64,7 +71,11 @@ function loadGA4() {
     function gtag(){ dataLayer.push(arguments); }
     window.gtag = gtag;
     gtag('js', new Date());
-    gtag('config', 'G-4EE53YBFZB');
+    gtag('config', 'G-4EE53YBFZB', {
+      anonymize_ip: true,
+      allow_google_signals: false,
+      allow_ad_personalization_signals: false
+    });
   };
 }
 /* Auto-load if user already consented in a previous visit */
@@ -82,7 +93,7 @@ if (localStorage.getItem('citm_cookie_consent') === 'accepted') { loadGA4(); }
 
 <!-- ── Schema.org Structured Data ────────────────────────── -->
 <script type="application/ld+json">
-{"@context":"https://schema.org","@graph":[{"@type":["LocalBusiness","ITService"],"@id":"https://cyberit.mbulahenigroup.co.za/#business","name":"Cyber I.T Masters","description":"Enterprise-grade managed IT services, cybersecurity, Microsoft 365 support and network installation for businesses in Polokwane and Limpopo.","url":"https://cyberit.mbulahenigroup.co.za/","telephone":["+27726650565","+27870931138"],"email":"info@mbulahenigroup.co.za","address":{"@type":"PostalAddress","addressLocality":"Polokwane","addressRegion":"Limpopo","addressCountry":"ZA"},"geo":{"@type":"GeoCoordinates","latitude":-23.9045,"longitude":29.4369},"openingHoursSpecification":{"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],"opens":"00:00","closes":"23:59"},"areaServed":["Polokwane","Limpopo","South Africa"]},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Do you provide 24/7 IT support in Polokwane?","acceptedAnswer":{"@type":"Answer","text":"Yes. Cyber I.T Masters provides 24/7 remote IT support for businesses in Polokwane and across Limpopo, with onsite dispatch available during business hours."}},{"@type":"Question","name":"How much does Managed IT Services cost in Polokwane?","acceptedAnswer":{"@type":"Answer","text":"Our plans start from R2,500/month for small businesses and scale to enterprise requirements. Contact us for a free assessment and custom quote."}},{"@type":"Question","name":"Can you help my business migrate to Microsoft 365?","acceptedAnswer":{"@type":"Answer","text":"Yes. We handle complete Microsoft 365 migrations with zero data loss, usually completed over a weekend to avoid business disruption."}},{"@type":"Question","name":"Do you offer cybersecurity services in Limpopo?","acceptedAnswer":{"@type":"Answer","text":"Yes. We provide enterprise-grade cybersecurity including firewall management, endpoint protection, email security and backup across Limpopo."}}]}]}
+{"@context":"https://schema.org","@graph":[{"@type":["LocalBusiness","ITService"],"@id":"https://cyberit.mbulahenigroup.co.za/#business","name":"Cyber I.T Masters","description":"Enterprise-grade managed IT services, cybersecurity, Microsoft 365 support and network installation for businesses in Polokwane and Limpopo.","url":"https://cyberit.mbulahenigroup.co.za/","telephone":["+27726650565","+27870931138"],"email":"info@mbulahenigroup.co.za","address":{"@type":"PostalAddress","addressLocality":"Polokwane","addressRegion":"Limpopo","addressCountry":"ZA"},"geo":{"@type":"GeoCoordinates","latitude":-23.9045,"longitude":29.4369},"openingHoursSpecification":{"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],"opens":"00:00","closes":"23:59"},"priceRange":"R2,500 - R5,500+/month","areaServed":["Polokwane","Limpopo","South Africa"]},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Do you provide 24/7 IT support in Polokwane?","acceptedAnswer":{"@type":"Answer","text":"Yes. Cyber I.T Masters provides 24/7 remote IT support for businesses in Polokwane and across Limpopo, with onsite dispatch available during business hours."}},{"@type":"Question","name":"How much does Managed IT Services cost in Polokwane?","acceptedAnswer":{"@type":"Answer","text":"Our plans start from R2,500/month for small businesses and scale to enterprise requirements. Contact us for a free assessment and custom quote."}},{"@type":"Question","name":"Can you help my business migrate to Microsoft 365?","acceptedAnswer":{"@type":"Answer","text":"Yes. We handle complete Microsoft 365 migrations with zero data loss, usually completed over a weekend to avoid business disruption."}},{"@type":"Question","name":"Do you offer cybersecurity services in Limpopo?","acceptedAnswer":{"@type":"Answer","text":"Yes. We provide enterprise-grade cybersecurity including firewall management, endpoint protection, email security and backup across Limpopo."}}]}]}
 </script>
 <style>
 /* ── Design Tokens ──────────────────────────────────────────── */
@@ -148,14 +159,16 @@ body{
 
 /* ── Navigation ─────────────────────────────────────────── */
 nav{position:fixed;top:0;left:0;right:0;z-index:1000;background:rgba(7,17,31,.92);backdrop-filter:blur(18px);border-bottom:1px solid var(--border-subtle);box-shadow:0 4px 20px rgba(0,0,0,.2);padding:0 2rem;}
-.nav-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:64px;gap:1rem;}
+.nav-inner{max-width:1400px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:64px;gap:1rem;}
 .nav-logo{display:flex;align-items:center;gap:.65rem;text-decoration:none;flex-shrink:0;}
-.nav-logo img{height:40px;width:auto;display:block;}
+.nav-logo img{height:58px;width:auto;display:block;object-fit:contain;}
 .nav-logo-text{font-family:var(--heading-font);font-size:1.35rem;letter-spacing:2px;color:var(--accent);white-space:nowrap;line-height:1;}
 .nav-logo-text span{color:var(--accent2);}
 .nav-links{display:flex;gap:.2rem;list-style:none;flex-wrap:wrap;}
 .nav-links a{font-family:var(--mono);font-size:.65rem;color:var(--muted);text-decoration:none;padding:.3rem .6rem;border:1px solid transparent;border-radius:3px;transition:all .2s;white-space:nowrap;letter-spacing:.5px;text-transform:uppercase;}
 .nav-links a:hover,.nav-links a.active{color:var(--accent);border-color:var(--accent);background:rgba(77,163,255,0.05);}
+.nav-cta{display:inline-flex;align-items:center;padding:10px 18px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#07111f;font-weight:700;text-decoration:none;font-family:var(--mono);font-size:.75rem;letter-spacing:.5px;transition:opacity .2s;}
+.nav-cta:hover{opacity:.88;}
 .hamburger{display:none;flex-direction:column;gap:5px;background:none;border:1px solid var(--border);padding:.5rem .6rem;cursor:pointer;z-index:1100;transition:border-color .2s;border-radius:6px;}
 .hamburger:hover{border-color:var(--accent);}
 .hamburger span{display:block;width:20px;height:2px;background:var(--accent);transition:all .3s;transform-origin:center;}
@@ -163,8 +176,15 @@ nav{position:fixed;top:0;left:0;right:0;z-index:1000;background:rgba(7,17,31,.92
 .hamburger.open span:nth-child(2){opacity:0;transform:scaleX(0);}
 .hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
 
+/* ── Services Dropdown ───────────────────────────────────── */
+.services-dropdown-btn{background:linear-gradient(135deg,rgba(77,163,255,.12),rgba(110,247,200,.08));border:1px solid rgba(77,163,255,.25);border-radius:12px;color:#8bbcff;font-weight:700;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;padding:10px 14px;}
+.services-dropdown-menu{display:none;position:absolute;top:46px;left:0;background:rgba(8,17,31,.98);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px;min-width:340px;z-index:9999;box-shadow:0 20px 40px rgba(0,0,0,.35);backdrop-filter:blur(18px);}
+.services-dropdown-menu a{display:block;padding:14px;border-radius:10px;color:#fff;text-decoration:none;transition:background .2s;}
+.services-dropdown-menu a:hover{background:rgba(77,163,255,.08);}
+.services-dropdown-nav{position:relative;display:flex;align-items:center;}
+
 /* ── Mobile Drawer ────────────────────────────────────────── */
-.mobile-drawer{display:none;position:fixed;top:64px;left:0;right:0;background:rgba(7,17,31,.98);border-bottom:1px solid var(--border);padding:1.5rem 2rem;z-index:999;flex-direction:column;gap:.25rem;}
+.mobile-drawer{display:none;position:fixed;top:64px;left:0;right:0;background:rgba(7,17,31,.98);border-bottom:1px solid var(--border);padding:1.5rem 2rem;z-index:999;flex-direction:column;gap:.25rem;overflow-y:auto;max-height:calc(100vh - 64px);}
 .mobile-drawer.open{display:flex;}
 .mobile-drawer a{font-family:var(--mono);font-size:.8rem;color:var(--muted);text-decoration:none;padding:.7rem 0;border-bottom:1px solid var(--border);letter-spacing:1px;text-transform:uppercase;transition:color .2s;}
 .mobile-drawer a:hover{color:var(--accent);}
@@ -627,9 +647,7 @@ footer{position:relative;z-index:1;background:var(--surface);border-top:1px soli
 img,iframe{max-width:100%;height:auto;}
 
 @media(max-width:768px){
-  .cta-banner{
-    display:none !important;
-  }
+  .nav-cta{display:none;}
 
   .hero-mobile-assessment{
     display:block;
@@ -644,47 +662,19 @@ img,iframe{max-width:100%;height:auto;}
 }
 
 
-/* ===== PREMIUM MSP NAVIGATION ===== */
-.nav-inner{max-width:1400px!important;}
-.nav-logo img{height:64px!important;}
-.services-dropdown-btn{
-background:linear-gradient(135deg,rgba(77,163,255,.12),rgba(110,247,200,.08))!important;
-border:1px solid rgba(77,163,255,.25)!important;
-border-radius:12px!important;
-}
-.services-dropdown-menu{
-min-width:340px!important;
-backdrop-filter:blur(18px);
-background:rgba(8,17,31,.98)!important;
-}
-.services-dropdown-menu a{
-padding:14px!important;
-border-radius:10px;
-text-decoration:none;
-}
-.services-dropdown-menu a:hover{
-background:rgba(77,163,255,.08);
-}
-.nav-cta{
-display:inline-flex;
-align-items:center;
-padding:10px 18px;
-border-radius:12px;
-background:linear-gradient(135deg,var(--accent),var(--accent2));
-color:#07111f!important;
-font-weight:700;
-text-decoration:none;
-font-family:var(--mono);
-}
-@media(max-width:768px){
-.nav-cta{display:none;}
-.mobile-drawer{
-overflow-y:auto;
-max-height:calc(100vh - 64px);
-}
-}
+/* ── Hero logo brand block ───────────────────────────────── */
+.logo-container{display:flex;align-items:center;gap:12px;}
+.logo-fallback{display:none;align-items:center;justify-content:center;width:52px;height:52px;border-radius:12px;background:linear-gradient(135deg,#00C896,#0EA5E9);font-weight:800;color:#050810;font-size:22px;}
+.logo-brand-name{font-size:20px;font-weight:800;color:#fff;}
+.logo-brand-sub{font-size:12px;letter-spacing:0.08em;color:#94A3B8;text-transform:uppercase;}
+/* ── Metrics section header ──────────────────────────────── */
+.metrics-header{text-align:center;margin-bottom:3rem;}
+.metrics-header .section-eyebrow{display:block;margin-bottom:.75rem;}
+.metrics-header .section-sub{max-width:700px;margin:0 auto;}
 
-/* visually-hidden utility — for honeypot inputs and screen-reader-only content */
+
+.footer-logo-img{object-fit:contain;}
+.map-iframe{display:none;width:100%;height:280px;border:0;}
 .visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
 </style>
 
@@ -716,23 +706,20 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <nav role="navigation" aria-label="Main navigation">
   <div class="nav-inner">
     <a class="nav-logo" href="#home" aria-label="Cyber I.T Masters Home">
-      <img src="logo.png" alt="Cyber I.T Masters Logo" style="height:58px;width:auto;object-fit:contain;">
+      <img src="logo.png" alt="Cyber I.T Masters Logo">
       <span class="nav-logo-text">CYBER <span>I.T</span> MASTERS</span>
     </a>
     <ul class="nav-links" role="list">
       <li>
-<div class="services-dropdown-nav" style="position:relative;display:flex;align-items:center;">
-  <button class="services-dropdown-btn" style="background:none;border:none;color:#8bbcff;font-weight:700;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;padding:10px 14px;">
-    Services ▾
-  </button>
-
-  <div class="services-dropdown-menu" style="display:none;position:absolute;top:42px;left:0;background:#08111f;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px;min-width:260px;z-index:9999;box-shadow:0 20px 40px rgba(0,0,0,.35);">
-    <a href="#managed-it" style="display:block;padding:10px;border-radius:10px;color:#fff;">Managed IT</a>
-    <a href="#cybersecurity" style="display:block;padding:10px;border-radius:10px;color:#fff;">Cybersecurity</a>
-    <a href="#it-support" style="display:block;padding:10px;border-radius:10px;color:#fff;">IT Support</a>
-    <a href="#microsoft-365" style="display:block;padding:10px;border-radius:10px;color:#fff;">Microsoft 365</a>
-    <a href="#equipment-rental" style="display:block;padding:10px;border-radius:10px;color:#fff;">Equipment Rental</a>
-    <a href="#network" style="display:block;padding:10px;border-radius:10px;color:#fff;">Network</a>
+<div class="services-dropdown-nav">
+  <button class="services-dropdown-btn">Services ▾</button>
+  <div class="services-dropdown-menu">
+    <a href="#managed-it">Managed IT</a>
+    <a href="#cybersecurity">Cybersecurity</a>
+    <a href="#it-support">IT Support</a>
+    <a href="#microsoft-365">Microsoft 365</a>
+    <a href="#equipment-rental">Equipment Rental</a>
+    <a href="#network">Network</a>
   </div>
 </div>
 </li>
@@ -750,18 +737,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- ── Mobile Drawer ──────────────────────────────────────── -->
 <div class="mobile-drawer" id="mobileDrawer" role="dialog" aria-label="Mobile navigation menu" aria-modal="false">
   
-<div class="services-dropdown-nav" style="position:relative;display:flex;align-items:center;">
-  <button class="services-dropdown-btn" style="background:none;border:none;color:#8bbcff;font-weight:700;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;padding:10px 14px;">
-    Services ▾
-  </button>
-
-  <div class="services-dropdown-menu" style="display:none;position:absolute;top:42px;left:0;background:#08111f;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px;min-width:260px;z-index:9999;box-shadow:0 20px 40px rgba(0,0,0,.35);">
-    <a href="#managed-it" style="display:block;padding:10px;border-radius:10px;color:#fff;">Managed IT</a>
-    <a href="#cybersecurity" style="display:block;padding:10px;border-radius:10px;color:#fff;">Cybersecurity</a>
-    <a href="#it-support" style="display:block;padding:10px;border-radius:10px;color:#fff;">IT Support</a>
-    <a href="#microsoft-365" style="display:block;padding:10px;border-radius:10px;color:#fff;">Microsoft 365</a>
-    <a href="#equipment-rental" style="display:block;padding:10px;border-radius:10px;color:#fff;">Equipment Rental</a>
-    <a href="#network" style="display:block;padding:10px;border-radius:10px;color:#fff;">Network</a>
+<div class="services-dropdown-nav">
+  <button class="services-dropdown-btn">Services ▾</button>
+  <div class="services-dropdown-menu">
+    <a href="#managed-it">Managed IT</a>
+    <a href="#cybersecurity">Cybersecurity</a>
+    <a href="#it-support">IT Support</a>
+    <a href="#microsoft-365">Microsoft 365</a>
+    <a href="#equipment-rental">Equipment Rental</a>
+    <a href="#network">Network</a>
   </div>
 </div>
 
@@ -778,16 +762,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="hero-inner">
     <div class="hero-left">
       <div class="hero-logo-badge fade-up">
-<div class="logo-container" style="display:flex;align-items:center;gap:12px;">
+<div class="logo-container">
   <img src="logo.png" alt="Cyber I.T Masters Logo"
        style="height:52px;width:auto;object-fit:contain;"
        onerror="this.style.display='none';document.getElementById('logoFallback').style.display='flex';">
-  <div id="logoFallback" style="display:none;align-items:center;justify-content:center;width:52px;height:52px;border-radius:12px;background:linear-gradient(135deg,#00C896,#0EA5E9);font-weight:800;color:#050810;font-size:22px;">
-    ⚡
-  </div>
+  <div id="logoFallback" class="logo-fallback">⚡</div>
   <div>
-    <div style="font-size:20px;font-weight:800;color:#fff;">Cyber I.T Masters</div>
-    <div style="font-size:12px;letter-spacing:0.08em;color:#94A3B8;text-transform:uppercase;">Enterprise MSP Solutions</div>
+    <div class="logo-brand-name">Cyber I.T Masters</div>
+    <div class="logo-brand-sub">Enterprise MSP Solutions</div>
   </div>
 </div>
 </div>
@@ -1163,10 +1145,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- ── Enterprise Metrics ─────────────────────────────────── -->
 <section class="metrics-section" aria-labelledby="metrics-heading">
   <div class="section-inner">
-    <div style="text-align:center;margin-bottom:3rem;">
-      <div class="section-eyebrow" style="display:block;margin-bottom:.75rem;">Enterprise Technology Partner</div>
+    <div class="metrics-header">
+      <div class="section-eyebrow">Enterprise Technology Partner</div>
       <h2 id="metrics-heading" class="section-title">MODERN MANAGED IT<br>INFRASTRUCTURE</h2>
-      <p class="section-sub" style="max-width:700px;margin:0 auto;">Cyber I.T Masters delivers enterprise-grade IT support, cybersecurity, infrastructure management, cloud services, and business technology solutions designed for growing organisations across South Africa.</p>
+      <p class="section-sub">Cyber I.T Masters delivers enterprise-grade IT support, cybersecurity, infrastructure management, cloud services, and business technology solutions designed for growing organisations across South Africa.</p>
     </div>
     <div class="metrics-grid">
       <div class="metric-card green"><div class="metric-num green">24/7</div><div class="metric-label">Monitoring &amp; Support</div><p class="metric-desc">Enterprise-grade proactive support and infrastructure monitoring services.</p></div>
@@ -1273,9 +1255,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="contact-form-wrap">
       <h3 class="contact-form-title">SEND US A MESSAGE</h3>
       <!--
-        SETUP REQUIRED: Replace YOUR_FORMSPREE_ID with your actual Formspree form ID.
-        Register free at https://formspree.io — create a form and copy the ID (e.g. xpwzabcd).
-        Then change action="https://formspree.io/f/YOUR_FORMSPREE_ID"
+        FORMSPREE SETUP: Register free at https://formspree.io
+        Create a form, copy your form ID (e.g. xpwzabcd), then replace:
+          action="https://formspree.io/f/YOUR_FORMSPREE_ID"
+        Until configured, the form falls back to a mailto: link automatically.
       -->
       <form id="contactForm" class="form-grid" action="https://formspree.io/f/YOUR_FORMSPREE_ID" method="POST" novalidate>
         <input type="text" name="_gotcha" class="visually-hidden" tabindex="-1" autocomplete="off" aria-hidden="true">
@@ -1343,7 +1326,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         src=""
         data-src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d57870.45847!2d29.4369!3d-23.9045!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1ec67a3c79e2c0b3%3A0x3e2b61e3fe5bba06!2sPolokwane%2C%20Limpopo!5e0!3m2!1sen!2sza!4v1698000000000!5m2!1sen!2sza"
         width="100%" height="280"
-        style="border:0;display:none;"
+        class="map-iframe"
         allowfullscreen
         referrerpolicy="no-referrer-when-downgrade">
       </iframe>
@@ -1449,7 +1432,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <h3>ENTERPRISE DIGITAL TRANSFORMATION</h3>
         <p>Modern enterprise IT architecture built for scale, automation, and conversions.</p>
       </div>
-      <a href="support.html" class="btn-primary">Log a Ticket</a>
+      <a href="#contact" class="btn-primary">Log a Ticket</a>
     </div>
   </div>
 </section>
@@ -1459,7 +1442,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="footer-grid">
       <div class="footer-brand">
         <div class="footer-brand-logo">
-          <img src="logo.png" alt="Cyber I.T Masters logo" width="52" height="52" style="object-fit:contain;">
+          <img src="logo.png" alt="Cyber I.T Masters logo" width="52" height="52" class="footer-logo-img">
           <div class="footer-brand-logo-text">CYBER <span>I.T</span> MASTERS</div>
         </div>
         <p>A division of Mbulaheni Group Integrated Solutions. We provide enterprise-grade managed IT services, cybersecurity, and technology solutions for businesses across Polokwane and Limpopo.</p>
