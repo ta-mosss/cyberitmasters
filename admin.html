@@ -468,11 +468,13 @@ _${CFG.bizName} — ${CFG.tagline}_`
 }
 
 function buildStatusUpdateMsg(t,newStatus,statement){
-  const statusLabel=ST[newStatus]?.l||newStatus;
-  const svc=SVCS.find(s=>s.id===t.serviceType)?.label||t.serviceType||"—";
-  const emoji={resolved:"✅",closed:"🔒",awaiting:"📦","in-progress":"🔧"}[newStatus]||"📋";
-  const resolvedBlock=newStatus==="resolved"?`
+  const signoffLink =
+`https://YOURDOMAIN.CO.ZA/client-signoff.html?ticket=${t.ref}`;
+
+const resolvedBlock = newStatus === "resolved" ? `
+
 ━━━━━━━━━━━━━━━━━━━━━━
+
 ✅ *YOUR ISSUE HAS BEEN RESOLVED*
 
 Before we close your ticket, please complete your digital sign-off.
@@ -499,6 +501,8 @@ ${CFG.googleReview}
 Thank you for choosing *${CFG.bizName}*.
 
 ━━━━━━━━━━━━━━━━━━━━━━
+
+` : "";
 
   return(
 `${emoji} *Ticket Update — ${t.ref}*
