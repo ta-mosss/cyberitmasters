@@ -335,6 +335,7 @@ const CFG={
   adWin:"https://download.anydesk.com/AnyDesk.exe",
   adMac:"https://download.anydesk.com/anydesk.dmg",
   adAndroid:"https://play.google.com/store/apps/details?id=com.anydesk.anydeskandroid",
+  googleReview:"https://g.page/r/CUSUmJkZZNmSEBM/review",
 };
 const AC="#00C896",AC2="#0EA5E9";
 
@@ -470,6 +471,26 @@ function buildStatusUpdateMsg(t,newStatus,statement){
   const statusLabel=ST[newStatus]?.l||newStatus;
   const svc=SVCS.find(s=>s.id===t.serviceType)?.label||t.serviceType||"—";
   const emoji={resolved:"✅",closed:"🔒",awaiting:"📦","in-progress":"🔧"}[newStatus]||"📋";
+  const resolvedBlock=newStatus==="resolved"?`
+━━━━━━━━━━━━━━━━━━━━━━
+✅ *YOUR ISSUE HAS BEEN RESOLVED*
+
+Before we close your ticket, please do the following:
+
+*Step 1 — Confirm satisfaction:*
+Reply to this message with:
+  ✅ *SATISFIED* — All good, issue resolved
+  ⚠️  *ISSUE* — Something is still not right
+
+*Step 2 — Client sign-off:*
+Visit us in-store or reply *SIGNOFF* and we will arrange your sign-off on the job card.
+
+*Step 3 — Rate our service (30 seconds):*
+⭐ Leave us a Google Review — it really helps our small business:
+${CFG.googleReview}
+
+Thank you for choosing *${CFG.bizName}*! 🙏
+━━━━━━━━━━━━━━━━━━━━━━`:"";
   return(
 `${emoji} *Ticket Update — ${t.ref}*
 
@@ -484,8 +505,7 @@ Your support ticket status has been updated.
 
 *Engineer Note:*
 ${statement||"No additional details provided."}
-
-${newStatus==="resolved"?"✅ Your issue has been resolved. Please confirm you are satisfied and we will close the ticket.":""}
+${resolvedBlock}
 ${newStatus==="awaiting"?"📦 We are waiting on parts. We will update you as soon as they arrive.":""}
 ${newStatus==="closed"?"🔒 This ticket is now closed. Thank you for choosing "+CFG.bizName+".":""}
 
@@ -1385,6 +1405,209 @@ function SuccessScreen({ticket,onBack}){
 /* ════════════════════════════════════════════════════
    ADMIN PORTAL
 ════════════════════════════════════════════════════ */
+/* ── SIGNOFF MODAL ── */
+function SignoffModal({ticket,clientName,setClientName,clientPosition,setClientPosition,onSave,onClose}){
+  const [satisfaction,setSatisfaction]=React.useState(""); // "yes"|"no"|"partial"
+  const [serviceRating,setServiceRating]=React.useState(0);
+  const [responseTime,setResponseTime]=React.useState("");
+  const [wouldRecommend,setWouldRecommend]=React.useState("");
+  const [clientFeedback,setClientFeedback]=React.useState("");
+  const [signoffStep,setSignoffStep]=React.useState(1); // 1=survey, 2=signature
+
+  const RATINGS=[1,2,3,4,5];
+  const ratingLabels={1:"Very Poor",2:"Poor",3:"Average",4:"Good",5:"Excellent"};
+  const AC="#00C896";
+
+  // Wire up signature pad when step=2
+  React.useEffect(()=>{
+    if(signoffStep!==2) return;
+    const canvas=document.getElementById("signature-pad");
+    if(!canvas) return;
+    const ctx=canvas.getContext("2d");
+    let drawing=false;
+    const getXY=(e)=>{const rect=canvas.getBoundingClientRect();const src=e.touches?e.touches[0]:e;return[src.clientX-rect.left,src.clientY-rect.top];};
+    const start=(e)=>{e.preventDefault();drawing=true;const[x,y]=getXY(e);ctx.beginPath();ctx.moveTo(x,y);};
+    const move=(e)=>{e.preventDefault();if(!drawing)return;const[x,y]=getXY(e);ctx.lineWidth=2;ctx.lineCap="round";ctx.strokeStyle="#00C896";ctx.lineTo(x,y);ctx.stroke();};
+    const stop=()=>{drawing=false;};
+    canvas.addEventListener("mousedown",start);
+    canvas.addEventListener("mousemove",move);
+    canvas.addEventListener("mouseup",stop);
+    canvas.addEventListener("touchstart",start,{passive:false});
+    canvas.addEventListener("touchmove",move,{passive:false});
+    canvas.addEventListener("touchend",stop);
+    const clearBtn=document.getElementById("clearSignature");
+    const clearFn=()=>{ctx.clearRect(0,0,canvas.width,canvas.height);};
+    if(clearBtn) clearBtn.addEventListener("click",clearFn);
+    return()=>{
+      canvas.removeEventListener("mousedown",start);
+      canvas.removeEventListener("mousemove",move);
+      canvas.removeEventListener("mouseup",stop);
+      canvas.removeEventListener("touchstart",start);
+      canvas.removeEventListener("touchmove",move);
+      canvas.removeEventListener("touchend",stop);
+      if(clearBtn) clearBtn.removeEventListener("click",clearFn);
+    };
+  },[signoffStep]);
+
+  const satisfactionOk=satisfaction==="yes"||satisfaction==="partial";
+
+  const SurveyChip=({val,label,active,color,onClick})=>(
+    <button onClick={onClick} style={{padding:"8px 16px",borderRadius:8,border:`2px solid ${active?color:"var(--border)"}`,background:active?color+"18":"var(--bg)",color:active?color:"var(--text3)",fontWeight:600,fontSize:12,cursor:"pointer",fontFamily:"inherit",transition:"all 0.15s"}}>
+      {label}
+    </button>
+  );
+
+  return(
+    <div className="modal-overlay" onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
+      <div className="modal-box fu" style={{maxWidth:640}}>
+        <div className="modal-header">
+          <div>
+            <div style={{fontSize:16,fontWeight:700,color:"var(--text)"}}>✍ Client Sign-Off — {ticket.ref}</div>
+            <div style={{fontSize:12,color:"var(--text3)",marginTop:2}}>{ticket.clientName||ticket.name}
+              {" · "}
+              <span style={{color:signoffStep===1?AC:"var(--text4)",fontWeight:600}}>Step 1: Satisfaction</span>
+              {" → "}
+              <span style={{color:signoffStep===2?AC:"var(--text4)",fontWeight:600}}>Step 2: Signature</span>
+            </div>
+          </div>
+          <button className="btn btn-ghost btn-sm" onClick={onClose}>✕</button>
+        </div>
+        <div className="modal-body">
+
+          {/* ── STEP 1: SATISFACTION SURVEY ── */}
+          {signoffStep===1&&(
+            <div>
+              <div style={{background:"rgba(0,200,150,0.06)",border:"1px solid rgba(0,200,150,0.2)",borderRadius:10,padding:"12px 16px",marginBottom:18,fontSize:13,color:"var(--text2)"}}>
+                📋 Please answer a few quick questions before the client signs off. This helps us maintain service quality.
+              </div>
+
+              {/* Q1 — Overall satisfaction */}
+              <div style={{marginBottom:18}}>
+                <div style={{fontSize:12,fontWeight:700,color:"var(--text)",marginBottom:8}}>1. Is the client satisfied with the service and outcome? <span style={{color:"#F87171"}}>*</span></div>
+                <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                  <SurveyChip val="yes" label="✅ Yes — Fully Satisfied" active={satisfaction==="yes"} color="#10B981" onClick={()=>setSatisfaction("yes")}/>
+                  <SurveyChip val="partial" label="⚠️ Partially Satisfied" active={satisfaction==="partial"} color="#F59E0B" onClick={()=>setSatisfaction("partial")}/>
+                  <SurveyChip val="no" label="❌ Not Satisfied" active={satisfaction==="no"} color="#EF4444" onClick={()=>setSatisfaction("no")}/>
+                </div>
+                {satisfaction==="no"&&(
+                  <div style={{marginTop:10,padding:"10px 14px",background:"rgba(239,68,68,0.08)",border:"1px solid rgba(239,68,68,0.25)",borderRadius:8,fontSize:12,color:"#F87171"}}>
+                    ⚠️ Client is not satisfied. Please resolve any outstanding issues before proceeding to sign-off. You may still record the sign-off after discussion.
+                  </div>
+                )}
+              </div>
+
+              {/* Q2 — Service Rating */}
+              <div style={{marginBottom:18}}>
+                <div style={{fontSize:12,fontWeight:700,color:"var(--text)",marginBottom:8}}>2. How would the client rate our overall service quality?</div>
+                <div style={{display:"flex",gap:8,alignItems:"center"}}>
+                  {RATINGS.map(r=>(
+                    <button key={r} onClick={()=>setServiceRating(r)} style={{width:40,height:40,borderRadius:8,border:`2px solid ${serviceRating>=r?"#F59E0B":"var(--border)"}`,background:serviceRating>=r?"rgba(245,158,11,0.15)":"var(--bg)",color:serviceRating>=r?"#F59E0B":"var(--text4)",fontSize:18,cursor:"pointer",fontFamily:"inherit",transition:"all 0.15s"}}>
+                      ★
+                    </button>
+                  ))}
+                  {serviceRating>0&&<span style={{fontSize:12,color:"#F59E0B",fontWeight:700,marginLeft:4}}>{ratingLabels[serviceRating]}</span>}
+                </div>
+              </div>
+
+              {/* Q3 — Response time */}
+              <div style={{marginBottom:18}}>
+                <div style={{fontSize:12,fontWeight:700,color:"var(--text)",marginBottom:8}}>3. Was the response and turnaround time acceptable?</div>
+                <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                  {["Yes, very prompt","Acceptable","Could be faster","Too slow"].map(opt=>(
+                    <SurveyChip key={opt} label={opt} active={responseTime===opt} color={AC} onClick={()=>setResponseTime(opt)}/>
+                  ))}
+                </div>
+              </div>
+
+              {/* Q4 — Would recommend */}
+              <div style={{marginBottom:18}}>
+                <div style={{fontSize:12,fontWeight:700,color:"var(--text)",marginBottom:8}}>4. Would the client recommend Cyber I.T Masters to others?</div>
+                <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                  <SurveyChip label="👍 Definitely Yes" active={wouldRecommend==="yes"} color="#10B981" onClick={()=>setWouldRecommend("yes")}/>
+                  <SurveyChip label="🤔 Maybe" active={wouldRecommend==="maybe"} color="#F59E0B" onClick={()=>setWouldRecommend("maybe")}/>
+                  <SurveyChip label="👎 Probably Not" active={wouldRecommend==="no"} color="#EF4444" onClick={()=>setWouldRecommend("no")}/>
+                </div>
+              </div>
+
+              {/* Q5 — Additional feedback */}
+              <div style={{marginBottom:20}}>
+                <div style={{fontSize:12,fontWeight:700,color:"var(--text)",marginBottom:6}}>5. Any additional comments or feedback from the client? (optional)</div>
+                <textarea className="field-input" style={{minHeight:72,marginTop:2}} value={clientFeedback} onChange={e=>setClientFeedback(e.target.value)} placeholder="e.g. Engineer was very helpful and professional..."/>
+              </div>
+
+              {/* Google Review nudge */}
+              {(satisfaction==="yes"||(satisfaction==="partial"&&serviceRating>=3))&&(
+                <div style={{background:"rgba(251,191,36,0.07)",border:"1px solid rgba(251,191,36,0.25)",borderRadius:10,padding:"12px 16px",marginBottom:18,display:"flex",alignItems:"center",gap:14}}>
+                  <span style={{fontSize:28}}>⭐</span>
+                  <div>
+                    <div style={{fontSize:13,fontWeight:700,color:"var(--text)",marginBottom:2}}>Remind client to leave a Google Review</div>
+                    <div style={{fontSize:11,color:"var(--text3)",marginBottom:6}}>It only takes 30 seconds and helps our business grow. Show the client this link:</div>
+                    <a href={CFG.googleReview} target="_blank" rel="noreferrer" style={{display:"inline-flex",alignItems:"center",gap:6,background:"#F59E0B",color:"#050810",padding:"6px 14px",borderRadius:7,fontSize:12,fontWeight:700,textDecoration:"none"}}>
+                      ⭐ Open Google Review →
+                    </a>
+                  </div>
+                </div>
+              )}
+
+              <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}>
+                <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
+                <button className="btn btn-primary" disabled={!satisfaction} onClick={()=>{if(satisfaction)setSignoffStep(2);}}>
+                  {satisfaction?"Next — Capture Signature →":"Select satisfaction to continue"}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ── STEP 2: NAME + SIGNATURE ── */}
+          {signoffStep===2&&(
+            <div>
+              {satisfaction==="partial"&&(
+                <div style={{background:"rgba(245,158,11,0.08)",border:"1px solid rgba(245,158,11,0.25)",borderRadius:8,padding:"8px 14px",marginBottom:14,fontSize:12,color:"#F59E0B"}}>
+                  ⚠️ Partial satisfaction recorded — ensure any pending items are logged in the ticket notes.
+                </div>
+              )}
+              {satisfaction==="no"&&(
+                <div style={{background:"rgba(239,68,68,0.08)",border:"1px solid rgba(239,68,68,0.25)",borderRadius:8,padding:"8px 14px",marginBottom:14,fontSize:12,color:"#F87171"}}>
+                  ⚠️ Client recorded as not satisfied. Sign-off is being captured for documentation purposes.
+                </div>
+              )}
+              {serviceRating>0&&(
+                <div style={{display:"inline-flex",alignItems:"center",gap:6,background:"rgba(245,158,11,0.1)",border:"1px solid rgba(245,158,11,0.2)",borderRadius:20,padding:"4px 12px",marginBottom:14,fontSize:11,color:"#F59E0B",fontWeight:700}}>
+                  {"★".repeat(serviceRating)}{"☆".repeat(5-serviceRating)} {ratingLabels[serviceRating]} rating recorded
+                </div>
+              )}
+              <div style={{display:"flex",gap:10,marginBottom:12}}>
+                <div style={{flex:1}}>
+                  <Lbl c="Client Name *"/>
+                  <input className="field-input" style={{marginTop:4}} type="text" placeholder="Full name" value={clientName} onChange={e=>setClientName(e.target.value)}/>
+                </div>
+                <div style={{flex:1}}>
+                  <Lbl c="Position / Designation"/>
+                  <input className="field-input" style={{marginTop:4}} type="text" placeholder="e.g. IT Manager, Owner" value={clientPosition} onChange={e=>setClientPosition(e.target.value)}/>
+                </div>
+              </div>
+              <div style={{fontSize:11,fontWeight:700,color:"var(--text3)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6}}>Client Signature</div>
+              <canvas id="signature-pad" width="600" height="180" style={{width:"100%",border:"1px solid var(--border2)",borderRadius:10,background:"#fff",display:"block",touchAction:"none"}}/>
+              <div style={{display:"flex",gap:8,marginTop:12}}>
+                <button id="clearSignature" className="btn btn-secondary btn-sm">🗑 Clear Signature</button>
+                <button className="btn btn-ghost btn-sm" onClick={()=>setSignoffStep(1)}>← Back to Survey</button>
+                <div style={{flex:1}}/>
+                <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
+                <button className="btn btn-primary" onClick={()=>onSave(ticket,{satisfaction,serviceRating,responseTime,wouldRecommend,clientFeedback})}>✅ Save Sign-Off</button>
+              </div>
+              {ticket.clientSignoff?.signed&&(
+                <div style={{marginTop:12,background:"rgba(16,185,129,0.08)",border:"1px solid rgba(16,185,129,0.2)",borderRadius:8,padding:"8px 12px",fontSize:12,color:"#10B981"}}>
+                  ✓ Previously signed by <strong>{ticket.clientSignoff.clientName}</strong> on {new Date(ticket.clientSignoff.signedAt).toLocaleString("en-ZA")}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Admin({tickets,loading,authed,onAuth,onUpdate,onAddNote,onBack,onNewTicket,theme,toggleTheme}){
   const [pw,setPw]=useState(""); const [pwErr,setPwErr]=useState("");
   const [sel,setSel]=useState(null);
@@ -1591,41 +1814,7 @@ function Admin({tickets,loading,authed,onAuth,onUpdate,onAddNote,onBack,onNewTic
       {historyModal&&<ClientHistoryModal ticket={historyModal} allTickets={tickets} onClose={()=>setHistoryModal(null)}/>}
       {fixesModal&&<KnownFixesModal onInsert={txt=>setNote(n=>n?n+"\n\n"+txt:txt)} onClose={()=>setFixesModal(false)}/>}
       {followUpModal&&<FollowUpModal tickets={tickets} onClose={()=>setFollowUpModal(false)}/>}
-      {signoffModal&&(
-        <div className="modal-overlay" onClick={e=>{if(e.target===e.currentTarget)setSignoffModal(null);}}>
-          <div className="modal-box fu" style={{maxWidth:640}}>
-            <div className="modal-header">
-              <div><div style={{fontSize:16,fontWeight:700,color:"var(--text)"}}>✍ Client Sign-Off</div><div style={{fontSize:12,color:"var(--text3)",marginTop:2}}>{signoffModal.ref} — {signoffModal.clientName||signoffModal.name}</div></div>
-              <button className="btn btn-ghost btn-sm" onClick={()=>setSignoffModal(null)}>✕</button>
-            </div>
-            <div className="modal-body">
-              <div style={{display:"flex",gap:10,marginBottom:12}}>
-                <div style={{flex:1}}>
-                  <Lbl c="Client Name *"/>
-                  <input className="field-input" style={{marginTop:4}} type="text" placeholder="Full name" value={clientName} onChange={e=>setClientName(e.target.value)}/>
-                </div>
-                <div style={{flex:1}}>
-                  <Lbl c="Position / Designation"/>
-                  <input className="field-input" style={{marginTop:4}} type="text" placeholder="e.g. IT Manager, Owner" value={clientPosition} onChange={e=>setClientPosition(e.target.value)}/>
-                </div>
-              </div>
-              <div style={{fontSize:11,fontWeight:700,color:"var(--text3)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6}}>Client Signature</div>
-              <canvas id="signature-pad" width="600" height="180" style={{width:"100%",border:"1px solid var(--border2)",borderRadius:10,background:"#fff",display:"block",touchAction:"none"}}/>
-              <div style={{display:"flex",gap:8,marginTop:12}}>
-                <button id="clearSignature" className="btn btn-secondary btn-sm">🗑 Clear Signature</button>
-                <div style={{flex:1}}/>
-                <button className="btn btn-secondary" onClick={()=>setSignoffModal(null)}>Cancel</button>
-                <button className="btn btn-primary" onClick={()=>saveClientSignoff(signoffModal)}>✅ Save Sign-Off</button>
-              </div>
-              {signoffModal.clientSignoff?.signed&&(
-                <div style={{marginTop:12,background:"rgba(16,185,129,0.08)",border:"1px solid rgba(16,185,129,0.2)",borderRadius:8,padding:"8px 12px",fontSize:12,color:"#10B981"}}>
-                  ✓ Previously signed by <strong>{signoffModal.clientSignoff.clientName}</strong> on {new Date(signoffModal.clientSignoff.signedAt).toLocaleString("en-ZA")}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      {signoffModal&&<SignoffModal ticket={signoffModal} clientName={clientName} setClientName={setClientName} clientPosition={clientPosition} setClientPosition={setClientPosition} onSave={saveClientSignoff} onClose={()=>setSignoffModal(null)}/>}
 
       {/* ── SIDEBAR ── */}
       <div className="sidebar">
