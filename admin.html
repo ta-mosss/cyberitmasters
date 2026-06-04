@@ -343,21 +343,23 @@ const SLA_HOURS={Urgent:4,High:8,Medium:24,Low:48};
 
 /* ── STATUS LOOKUP ── */
 const ST={
-  open:           {l:"Open",           c:"#3B82F6"},
-  "in-progress":  {l:"In Progress",    c:"#F59E0B"},
-  awaiting:       {l:"Awaiting Parts", c:"#8B5CF6"},
-  resolved:       {l:"Resolved",       c:"#10B981"},
-  closed:         {l:"Closed",         c:"#6B7280"},
-  quoted:         {l:"Quoted",         c:"#EC4899"},
+  open:              {l:"Open",                   c:"#3B82F6"},
+  "in-progress":     {l:"In Progress",            c:"#F59E0B"},
+  awaiting:          {l:"Awaiting Parts",          c:"#8B5CF6"},
+  resolved:          {l:"Resolved",               c:"#10B981"},
+  "awaiting-signoff":{l:"Awaiting Client Sign-Off",c:"#F97316"},
+  closed:            {l:"Closed",                 c:"#6B7280"},
+  quoted:            {l:"Quoted",                 c:"#EC4899"},
 };
 
 /* Statuses that trigger client notification */
-const NOTIFY_STATUSES=["resolved","closed","awaiting","in-progress"];
+const NOTIFY_STATUSES=["resolved","closed","awaiting","in-progress","awaiting-signoff"];
 const NOTIFY_LABELS={
   resolved:"Your ticket has been resolved",
   closed:"Your ticket has been closed",
   awaiting:"Your ticket is awaiting parts",
   "in-progress":"Work has begun on your ticket",
+  "awaiting-signoff":"Your ticket is ready for collection — sign-off required",
 };
 
 const SVCS=[
@@ -595,7 +597,14 @@ function generateJobCard(ticket){
 </div>
 <div class="sig-section">
   <div class="sig-box"><div class="sig-line"></div><div class="sig-lbl">Engineer Signature &amp; Date</div></div>
-  <div class="sig-box"><div class="sig-line"></div><div class="sig-lbl">Client Signature &amp; Date (Device Collection)</div></div>
+  <div class="sig-box">
+    <h3 style="font-size:12px;font-weight:700;color:#333;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid #ddd;padding-bottom:4px;">Client Acceptance</h3>
+    <p style="font-size:11px;color:#444;margin-bottom:2px;">Name: ${ticket.clientSignoff?.clientName||""}</p>
+    <p style="font-size:11px;color:#444;margin-bottom:2px;">Position: ${ticket.clientSignoff?.clientPosition||""}</p>
+    <p style="font-size:11px;color:#444;margin-bottom:6px;">Signed: ${ticket.clientSignoff?.signedAt?new Date(ticket.clientSignoff.signedAt).toLocaleString("en-ZA"):""}</p>
+    ${ticket.clientSignoff?.signatureImage?`<img src="${ticket.clientSignoff.signatureImage}" style="height:60px;border:1px solid #ddd;border-radius:4px;"/>`:
+    `<div style="border-bottom:1px solid #333;height:40px;margin-bottom:4px;"></div><div style="font-size:10px;color:#666;">Client Signature &amp; Date (Device Collection)</div>`}
+  </div>
 </div>
 <div class="footer">${CFG.bizName} · ${CFG.tagline} · ${CFG.email} · Generated ${new Date().toLocaleString("en-ZA")}</div>
 <div style="text-align:center;margin-top:16px">
@@ -1400,6 +1409,9 @@ function Admin({tickets,loading,authed,onAuth,onUpdate,onAddNote,onBack,onNewTic
   const [historyModal,setHistoryModal]=useState(null);
   const [fixesModal,setFixesModal]=useState(false);
   const [followUpModal,setFollowUpModal]=useState(false);
+  const [signoffModal,setSignoffModal]=useState(null);
+  const [clientName,setClientName]=useState("");
+  const [clientPosition,setClientPosition]=useState("");
 
   /* ── NEW: Subscribe to presence from RTDB ── */
   useEffect(()=>{
@@ -1425,6 +1437,59 @@ function Admin({tickets,loading,authed,onAuth,onUpdate,onAddNote,onBack,onNewTic
     });
     return()=>unsubs.forEach(u=>u());
   },[authed,tickets.length]);
+
+  /* ── SIGNATURE PAD EFFECT ── */
+  useEffect(()=>{
+    if(!signoffModal) return;
+    const canvas=document.getElementById("signature-pad");
+    if(!canvas) return;
+    const ctx=canvas.getContext("2d");
+    let drawing=false;
+    const getXY=(e)=>{
+      const rect=canvas.getBoundingClientRect();
+      const src=e.touches?e.touches[0]:e;
+      return[src.clientX-rect.left,src.clientY-rect.top];
+    };
+    const start=(e)=>{e.preventDefault();drawing=true;const[x,y]=getXY(e);ctx.beginPath();ctx.moveTo(x,y);};
+    const move=(e)=>{e.preventDefault();if(!drawing)return;const[x,y]=getXY(e);ctx.lineWidth=2;ctx.lineCap="round";ctx.strokeStyle="#00C896";ctx.lineTo(x,y);ctx.stroke();};
+    const stop=()=>{drawing=false;};
+    canvas.addEventListener("mousedown",start);
+    canvas.addEventListener("mousemove",move);
+    canvas.addEventListener("mouseup",stop);
+    canvas.addEventListener("touchstart",start,{passive:false});
+    canvas.addEventListener("touchmove",move,{passive:false});
+    canvas.addEventListener("touchend",stop);
+    // Clear button
+    const clearBtn=document.getElementById("clearSignature");
+    const clearFn=()=>{ctx.clearRect(0,0,canvas.width,canvas.height);};
+    if(clearBtn) clearBtn.addEventListener("click",clearFn);
+    return()=>{
+      canvas.removeEventListener("mousedown",start);
+      canvas.removeEventListener("mousemove",move);
+      canvas.removeEventListener("mouseup",stop);
+      canvas.removeEventListener("touchstart",start);
+      canvas.removeEventListener("touchmove",move);
+      canvas.removeEventListener("touchend",stop);
+      if(clearBtn) clearBtn.removeEventListener("click",clearFn);
+    };
+  },[signoffModal]);
+
+  /* ── SAVE CLIENT SIGN-OFF ── */
+  const saveClientSignoff=async(ticket)=>{
+    if(!clientName.trim()){alert("Please enter the client name.");return;}
+    const canvas=document.getElementById("signature-pad");
+    const signatureImage=canvas.toDataURL("image/png");
+    try{
+      await db.collection("tickets").doc(ticket.ref).update({
+        clientSignoff:{signed:true,clientName,clientPosition,signedAt:new Date().toISOString(),signatureImage},
+        status:"awaiting-signoff",
+        updatedAt:ts()
+      });
+      try{await sendSysMsg(ticket.ref,`Client sign-off captured — ${clientName} (${clientPosition||"no position"})`);}catch(e){}
+      showToast("Client sign-off saved ✓");
+      setSignoffModal(null);
+    }catch(e){console.error(e);alert("Failed to save sign-off. Please try again.");}
+  };
 
   const tryLogin=()=>{if(pw===CFG.adminPw)onAuth();else setPwErr("Incorrect password");};
 
@@ -1471,6 +1536,10 @@ function Admin({tickets,loading,authed,onAuth,onUpdate,onAddNote,onBack,onNewTic
   const totalChatActivity=Object.values(chatCounts).reduce((a,c)=>a+c,0);
 
   const doStatusClick=(ticket,newStatus)=>{
+    if(newStatus==="closed"&&!ticket.clientSignoff?.signed){
+      alert("A client sign-off is required before closing this ticket. Please use the ✍ Client Sign-Off button in the Actions tab.");
+      return;
+    }
     if(NOTIFY_STATUSES.includes(newStatus)){
       setStatusModal({ticket,newStatus});
     } else {
@@ -1522,6 +1591,41 @@ function Admin({tickets,loading,authed,onAuth,onUpdate,onAddNote,onBack,onNewTic
       {historyModal&&<ClientHistoryModal ticket={historyModal} allTickets={tickets} onClose={()=>setHistoryModal(null)}/>}
       {fixesModal&&<KnownFixesModal onInsert={txt=>setNote(n=>n?n+"\n\n"+txt:txt)} onClose={()=>setFixesModal(false)}/>}
       {followUpModal&&<FollowUpModal tickets={tickets} onClose={()=>setFollowUpModal(false)}/>}
+      {signoffModal&&(
+        <div className="modal-overlay" onClick={e=>{if(e.target===e.currentTarget)setSignoffModal(null);}}>
+          <div className="modal-box fu" style={{maxWidth:640}}>
+            <div className="modal-header">
+              <div><div style={{fontSize:16,fontWeight:700,color:"var(--text)"}}>✍ Client Sign-Off</div><div style={{fontSize:12,color:"var(--text3)",marginTop:2}}>{signoffModal.ref} — {signoffModal.clientName||signoffModal.name}</div></div>
+              <button className="btn btn-ghost btn-sm" onClick={()=>setSignoffModal(null)}>✕</button>
+            </div>
+            <div className="modal-body">
+              <div style={{display:"flex",gap:10,marginBottom:12}}>
+                <div style={{flex:1}}>
+                  <Lbl c="Client Name *"/>
+                  <input className="field-input" style={{marginTop:4}} type="text" placeholder="Full name" value={clientName} onChange={e=>setClientName(e.target.value)}/>
+                </div>
+                <div style={{flex:1}}>
+                  <Lbl c="Position / Designation"/>
+                  <input className="field-input" style={{marginTop:4}} type="text" placeholder="e.g. IT Manager, Owner" value={clientPosition} onChange={e=>setClientPosition(e.target.value)}/>
+                </div>
+              </div>
+              <div style={{fontSize:11,fontWeight:700,color:"var(--text3)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6}}>Client Signature</div>
+              <canvas id="signature-pad" width="600" height="180" style={{width:"100%",border:"1px solid var(--border2)",borderRadius:10,background:"#fff",display:"block",touchAction:"none"}}/>
+              <div style={{display:"flex",gap:8,marginTop:12}}>
+                <button id="clearSignature" className="btn btn-secondary btn-sm">🗑 Clear Signature</button>
+                <div style={{flex:1}}/>
+                <button className="btn btn-secondary" onClick={()=>setSignoffModal(null)}>Cancel</button>
+                <button className="btn btn-primary" onClick={()=>saveClientSignoff(signoffModal)}>✅ Save Sign-Off</button>
+              </div>
+              {signoffModal.clientSignoff?.signed&&(
+                <div style={{marginTop:12,background:"rgba(16,185,129,0.08)",border:"1px solid rgba(16,185,129,0.2)",borderRadius:8,padding:"8px 12px",fontSize:12,color:"#10B981"}}>
+                  ✓ Previously signed by <strong>{signoffModal.clientSignoff.clientName}</strong> on {new Date(signoffModal.clientSignoff.signedAt).toLocaleString("en-ZA")}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── SIDEBAR ── */}
       <div className="sidebar">
@@ -1916,7 +2020,14 @@ function Admin({tickets,loading,authed,onAuth,onUpdate,onAddNote,onBack,onNewTic
                         <button className="btn btn-secondary btn-sm" onClick={()=>setHistoryModal(tk)}>👤 Client History</button>
                         <button className="btn btn-secondary btn-sm" onClick={()=>setPartsModal(tk)}>🔩 Manage Parts</button>
                         <button className="btn btn-ghost btn-sm" style={{fontSize:11}} onClick={()=>setFixesModal(true)}>💡 Known Fixes</button>
+                        <button className="btn btn-primary btn-sm" onClick={()=>{setClientName(tk.clientName||tk.name||"");setClientPosition("");setSignoffModal(tk);}}>✍ Client Sign-Off</button>
                       </div>
+                      {tk.clientSignoff?.signed&&(
+                        <div style={{display:"inline-flex",alignItems:"center",gap:6,background:"#10B981",color:"#fff",padding:"5px 12px",borderRadius:20,fontWeight:700,fontSize:12,marginBottom:8}}>
+                          ✓ Client Signed — {tk.clientSignoff.clientName}
+                          {tk.clientSignoff.signatureImage&&<img src={tk.clientSignoff.signatureImage} alt="sig" style={{height:24,borderRadius:4,background:"#fff",marginLeft:4}}/>}
+                        </div>
+                      )}
 
                       <div className="divider"/>
 
@@ -1983,7 +2094,7 @@ function Root(){
     try{
       const num=await nextTicketNumber();
       const ref=makeTktRef(num);
-      const ticket={...form,ref,ticketNumber:num,status:"open",createdAt:ts(),updatedAt:ts(),notes:[],quotationRef:"",parts:[],assignedEngineer:form.assignedEngineer||"Unassigned"};
+      const ticket={...form,ref,ticketNumber:num,status:"open",createdAt:ts(),updatedAt:ts(),notes:[],quotationRef:"",parts:[],assignedEngineer:form.assignedEngineer||"Unassigned",clientSignoff:{signed:false,clientName:"",clientPosition:"",signedAt:null,signatureImage:""}};
       await db.collection("tickets").doc(ref).set(ticket);
       // NEW: post opening system message to RTDB chat
       try{await sendSysMsg(ref,`Ticket ${ref} created — ${SVCS.find(s=>s.id===form.serviceType)?.label||form.serviceType}`);}catch(e){}
