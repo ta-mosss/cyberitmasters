@@ -397,6 +397,20 @@ padding:8px 12px;border-radius:8px;border:1px solid #ccc;cursor:pointer;backgrou
 .logo-img{height:38px;width:auto;border-radius:6px;}
 
 </style>
+
+<!-- PHASE 1 & 2 ENTERPRISE PORTAL EXTENSIONS -->
+<script>
+window.CIM_ENTERPRISE_FEATURES = {
+  engineerMessaging:true,
+  quotationViewer:true,
+  invoiceViewer:true,
+  ticketHistory:true,
+  deviceHistory:true,
+  satisfactionSurvey:true,
+  googleReviewAutomation:true
+};
+</script>
+
 </head>
 <body>
 <div id="root"></div>
@@ -940,5 +954,23 @@ function Root(){
 
 ReactDOM.render(<Root/>,document.getElementById("root"));
 </script>
+
+<div style="display:none" id="enterprise-feature-notes">
+Phase 1:
+- Engineer Messaging / Notes
+- Online Quotation Viewer (Accept / Reject / Request Changes)
+- Invoice Viewer
+- Customer Ticket History
+
+Phase 2:
+- Device History Timeline
+- Customer Satisfaction Survey
+- Google Review Automation
+
+Firestore fields:
+ticketMessages, quoteLink, invoiceLink, invoiceNumber,
+invoiceStatus, rating, review, deviceHistory
+</div>
+
 </body>
 </html>
