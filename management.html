@@ -186,7 +186,7 @@ const db=firebase.firestore();
 </script>
 
 <script type="text/babel">
-const {useState,useEffect,useRef,useCallback}=React;
+const {useState,useEffect,useRef,useCallback,useMemo}=React;
 
 /* ══════════════════════════════════════════════
    CONSTANTS & CONFIG
@@ -275,6 +275,45 @@ function LoginScreen({onAuth}){
 }
 
 /* ══════════════════════════════════════════════
+   ■ SHARED MODALS  (defined OUTSIDE module fns)
+══════════════════════════════════════════════ */
+function DocUploadModal({onSave,onClose}){
+  const [form,setForm]=useState({type:"Contract",date:new Date().toISOString().slice(0,10)});
+  const save=()=>{if(!form.name?.trim()){alert("Document name required");return;}onSave(form);};
+  return<div className="modal-overlay"><div className="modal-box sm fu">
+    <div className="modal-header"><div style={{fontWeight:700,fontSize:14,color:"var(--text)"}}>📎 Add Document</div><button className="btn btn-ghost btn-sm" onClick={onClose}>✕</button></div>
+    <div className="modal-body">
+      <div className="form-grid g1">
+        <Field l="Document Name" req><input {...fi} value={form.name||""} onChange={e=>setForm(f=>({...f,name:e.target.value}))} placeholder="Employment Contract 2025"/></Field>
+        <Field l="Document Type"><select {...fi} value={form.type||"Contract"} onChange={e=>setForm(f=>({...f,type:e.target.value}))}>{[...DOC_TYPES,"Employment Contract","Payslip","Performance Review","Warning Letter","ID Copy","Qualification"].map(t=><option key={t}>{t}</option>)}</select></Field>
+        <Field l="Date"><input {...fi} type="date" value={form.date||""} onChange={e=>setForm(f=>({...f,date:e.target.value}))}/></Field>
+        <Field l="Reference No."><input {...fi} value={form.refNo||""} onChange={e=>setForm(f=>({...f,refNo:e.target.value}))} placeholder="Optional ref number"/></Field>
+        <Field l="File URL / Google Drive Link"><input {...fi} value={form.url||""} onChange={e=>setForm(f=>({...f,url:e.target.value}))} placeholder="https://drive.google.com/…"/></Field>
+        <Field l="Notes"><textarea {...fi} value={form.notes||""} onChange={e=>setForm(f=>({...f,notes:e.target.value}))} placeholder="Optional notes about this document…" style={{minHeight:60}}/></Field>
+      </div>
+    </div>
+    <div className="modal-footer">
+      <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
+      <button className="btn btn-primary" onClick={save}>Save Document</button>
+    </div>
+  </div></div>;
+}
+
+function NoteModal({onSave,onClose}){
+  const [txt,setTxt]=useState("");
+  return<div className="modal-overlay"><div className="modal-box sm fu">
+    <div className="modal-header"><div style={{fontWeight:700,fontSize:14,color:"var(--text)"}}>📝 Add Note</div><button className="btn btn-ghost btn-sm" onClick={onClose}>✕</button></div>
+    <div className="modal-body">
+      <textarea {...fi} value={txt} onChange={e=>setTxt(e.target.value)} placeholder="Write your note…" style={{minHeight:100,marginBottom:6}} autoFocus/>
+    </div>
+    <div className="modal-footer">
+      <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
+      <button className="btn btn-primary" onClick={()=>txt.trim()&&onSave(txt)}>Save Note</button>
+    </div>
+  </div></div>;
+}
+
+/* ══════════════════════════════════════════════
    ■ MODULE: CLIENTS
 ══════════════════════════════════════════════ */
 function ClientsModule({showToast}){
@@ -284,11 +323,10 @@ function ClientsModule({showToast}){
   const [srch,setSrch]=useState("");
   const [fStatus,setFStatus]=useState("all");
   const [detailTab,setDetailTab]=useState("overview");
-  const [modal,setModal]=useState(null); // null | "add" | "edit" | "addDoc" | "addNote"
+  const [modal,setModal]=useState(null);
   const [confirm,setConfirm]=useState(null);
   const [form,setForm]=useState({});
   const [saving,setSaving]=useState(false);
-  const docRef=useRef();
 
   useEffect(()=>{
     const unsub=db.collection("mgmt_clients").orderBy("createdAt","desc")
@@ -393,15 +431,8 @@ function ClientsModule({showToast}){
         </div></div>
       )}
 
-      {/* ── ADD DOCUMENT MODAL ── */}
-      {modal==="addDoc"&&(
-        <DocUploadModal onSave={addDoc} onClose={()=>setModal(null)}/>
-      )}
-
-      {/* ── ADD NOTE MODAL ── */}
-      {modal==="addNote"&&(
-        <NoteModal onSave={addNote} onClose={()=>setModal(null)}/>
-      )}
+      {modal==="addDoc"&&<DocUploadModal onSave={addDoc} onClose={()=>setModal(null)}/>}
+      {modal==="addNote"&&<NoteModal onSave={addNote} onClose={()=>setModal(null)}/>}
 
       {/* ── LEFT PANE ── */}
       <div style={{flex:1,overflow:"hidden",display:"flex",flexDirection:"column"}}>
@@ -492,6 +523,7 @@ function ClientOverviewTab({c}){
   </>;
 }
 
+/* FIX 1: ClientDocsTab — corrected gap value (number, not string) and fixed malformed JSX */
 function ClientDocsTab({c,onAddDoc,onRemoveDoc}){
   const docs=c.docs||[];
   return<>
@@ -507,7 +539,7 @@ function ClientDocsTab({c,onAddDoc,onRemoveDoc}){
           <div style={{fontSize:12,fontWeight:600,color:"var(--text)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{d.name}</div>
           <div style={{fontSize:10,color:"var(--text4)"}}>{d.type} · {fmtDate(d.date)} · {d.refNo||""}</div>
         </div>
-        <div style={{display:"flex",gap:5"}}>
+        <div style={{display:"flex",gap:5}}>
           {d.url&&<a href={d.url} target="_blank" rel="noreferrer" className="btn btn-ghost btn-sm">↗</a>}
           <button className="btn btn-ghost btn-sm" style={{color:"#F87171"}} onClick={()=>onRemoveDoc(d.id)}>🗑</button>
         </div>
@@ -552,7 +584,7 @@ function ClientBillingTab({c,showToast}){
     <div className="drow"><div className="dkey">VAT Number</div><div className="dval">{c.vat||"—"}</div></div>
     <div className="drow"><div className="dkey">SLA Tier</div><div className="dval">{c.slaTier||"Standard"}</div></div>
     <div style={{marginTop:14}}>
-      <a href={`https://books.zohosecure.com/portal/mbulahenigroup/signin`} target="_blank" rel="noreferrer" className="btn btn-secondary btn-sm" style={{width:"100%",justifyContent:"center"}}>📊 Open in Zoho Books →</a>
+      <a href="https://books.zoho.com/app/mbulahenigroup" target="_blank" rel="noreferrer" className="btn btn-secondary btn-sm" style={{width:"100%",justifyContent:"center"}}>📊 Open in Zoho Books →</a>
     </div>
   </>;
 }
@@ -560,6 +592,36 @@ function ClientBillingTab({c,showToast}){
 /* ══════════════════════════════════════════════
    ■ MODULE: DOCUMENTS
 ══════════════════════════════════════════════ */
+/* FIX 2: DocForm moved OUTSIDE DocumentsModule to prevent remounting on every render */
+function DocForm({modal,form,setForm,clients,saving,onSave,onClose}){
+  return(
+    <div className="modal-overlay"><div className="modal-box md fu">
+      <div className="modal-header"><div style={{fontWeight:700,fontSize:14,color:"var(--text)"}}>{modal==="add"?"➕ New Document":"✏️ Edit Document"}</div><button className="btn btn-ghost btn-sm" onClick={onClose}>✕</button></div>
+      <div className="modal-body">
+        <div className="form-grid" style={{marginBottom:12}}>
+          <Field l="Document Name" req span><input {...fi} value={form.name||""} onChange={e=>setForm(f=>({...f,name:e.target.value}))} placeholder="Invoice #INV-2025-001"/></Field>
+          <Field l="Document Type"><select {...fi} value={form.type||"Invoice"} onChange={e=>setForm(f=>({...f,type:e.target.value}))}>{DOC_TYPES.map(t=><option key={t}>{t}</option>)}</select></Field>
+          <Field l="Reference Number"><input {...fi} value={form.refNo||""} onChange={e=>setForm(f=>({...f,refNo:e.target.value}))} placeholder="INV-2025-001"/></Field>
+          <Field l="Client"><select {...fi} value={form.clientId||""} onChange={e=>{const c=clients.find(c=>c.id===e.target.value);setForm(f=>({...f,clientId:e.target.value,clientName:c?.companyName||c?.contactName||""}));}}><option value="">— Select Client —</option>{clients.map(c=><option key={c.id} value={c.id}>{c.companyName||c.contactName}</option>)}</select></Field>
+          <Field l="Date"><input {...fi} type="date" value={form.date||""} onChange={e=>setForm(f=>({...f,date:e.target.value}))}/></Field>
+          <Field l="Due / Expiry Date"><input {...fi} type="date" value={form.dueDate||""} onChange={e=>setForm(f=>({...f,dueDate:e.target.value}))}/></Field>
+          <Field l="Amount (R)"><input {...fi} type="number" value={form.amount||""} onChange={e=>setForm(f=>({...f,amount:parseFloat(e.target.value)||0}))} placeholder="0.00"/></Field>
+          <Field l="VAT Amount (R)"><input {...fi} type="number" value={form.vatAmount||""} onChange={e=>setForm(f=>({...f,vatAmount:parseFloat(e.target.value)||0}))} placeholder="0.00"/></Field>
+          <Field l="Payment Status"><select {...fi} value={form.status||"Pending"} onChange={e=>setForm(f=>({...f,status:e.target.value}))}>{PAYMENT_STATUS.map(s=><option key={s}>{s}</option>)}</select></Field>
+          <Field l="Payment Method"><select {...fi} value={form.paymentMethod||""} onChange={e=>setForm(f=>({...f,paymentMethod:e.target.value}))}><option value="">— Select —</option>{PAYMENT_METHODS.map(s=><option key={s}>{s}</option>)}</select></Field>
+          <Field l="File URL / Link" span><input {...fi} value={form.url||""} onChange={e=>setForm(f=>({...f,url:e.target.value}))} placeholder="https://drive.google.com/…"/></Field>
+          <Field l="Ticket Reference"><input {...fi} value={form.ticketRef||""} onChange={e=>setForm(f=>({...f,ticketRef:e.target.value}))} placeholder="CIM-1001"/></Field>
+          <Field l="Description" span><textarea {...fi} value={form.description||""} onChange={e=>setForm(f=>({...f,description:e.target.value}))} placeholder="Brief description…"/></Field>
+        </div>
+      </div>
+      <div className="modal-footer">
+        <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
+        <button className="btn btn-primary" onClick={onSave} disabled={saving}>{saving?"Saving…":"Save Document"}</button>
+      </div>
+    </div></div>
+  );
+}
+
 function DocumentsModule({showToast}){
   const [docs,setDocs]=useState([]);
   const [clients,setClients]=useState([]);
@@ -613,37 +675,10 @@ function DocumentsModule({showToast}){
 
   if(loading)return<div style={{padding:40,textAlign:"center",color:"var(--text3)"}}>Loading…</div>;
 
-  const DocForm=()=>(
-    <div className="modal-overlay"><div className="modal-box md fu">
-      <div className="modal-header"><div style={{fontWeight:700,fontSize:14,color:"var(--text)"}}>{modal==="add"?"➕ New Document":"✏️ Edit Document"}</div><button className="btn btn-ghost btn-sm" onClick={()=>setModal(null)}>✕</button></div>
-      <div className="modal-body">
-        <div className="form-grid" style={{marginBottom:12}}>
-          <Field l="Document Name" req span><input {...fi} value={form.name||""} onChange={e=>setForm(f=>({...f,name:e.target.value}))} placeholder="Invoice #INV-2025-001"/></Field>
-          <Field l="Document Type"><select {...fi} value={form.type||"Invoice"} onChange={e=>setForm(f=>({...f,type:e.target.value}))}>{DOC_TYPES.map(t=><option key={t}>{t}</option>)}</select></Field>
-          <Field l="Reference Number"><input {...fi} value={form.refNo||""} onChange={e=>setForm(f=>({...f,refNo:e.target.value}))} placeholder="INV-2025-001"/></Field>
-          <Field l="Client"><select {...fi} value={form.clientId||""} onChange={e=>{const c=clients.find(c=>c.id===e.target.value);setForm(f=>({...f,clientId:e.target.value,clientName:c?.companyName||c?.contactName||""}));}}><option value="">— Select Client —</option>{clients.map(c=><option key={c.id} value={c.id}>{c.companyName||c.contactName}</option>)}</select></Field>
-          <Field l="Date"><input {...fi} type="date" value={form.date||""} onChange={e=>setForm(f=>({...f,date:e.target.value}))}/></Field>
-          <Field l="Due / Expiry Date"><input {...fi} type="date" value={form.dueDate||""} onChange={e=>setForm(f=>({...f,dueDate:e.target.value}))}/></Field>
-          <Field l="Amount (R)"><input {...fi} type="number" value={form.amount||""} onChange={e=>setForm(f=>({...f,amount:parseFloat(e.target.value)||0}))} placeholder="0.00"/></Field>
-          <Field l="VAT Amount (R)"><input {...fi} type="number" value={form.vatAmount||""} onChange={e=>setForm(f=>({...f,vatAmount:parseFloat(e.target.value)||0}))} placeholder="0.00"/></Field>
-          <Field l="Payment Status"><select {...fi} value={form.status||"Pending"} onChange={e=>setForm(f=>({...f,status:e.target.value}))}>{PAYMENT_STATUS.map(s=><option key={s}>{s}</option>)}</select></Field>
-          <Field l="Payment Method"><select {...fi} value={form.paymentMethod||""} onChange={e=>setForm(f=>({...f,paymentMethod:e.target.value}))}><option value="">— Select —</option>{PAYMENT_METHODS.map(s=><option key={s}>{s}</option>)}</select></Field>
-          <Field l="File URL / Link" span><input {...fi} value={form.url||""} onChange={e=>setForm(f=>({...f,url:e.target.value}))} placeholder="https://drive.google.com/…"/></Field>
-          <Field l="Ticket Reference"><input {...fi} value={form.ticketRef||""} onChange={e=>setForm(f=>({...f,ticketRef:e.target.value}))} placeholder="CIM-1001"/></Field>
-          <Field l="Description" span><textarea {...fi} value={form.description||""} onChange={e=>setForm(f=>({...f,description:e.target.value}))} placeholder="Brief description…"/></Field>
-        </div>
-      </div>
-      <div className="modal-footer">
-        <button className="btn btn-secondary" onClick={()=>setModal(null)}>Cancel</button>
-        <button className="btn btn-primary" onClick={saveDoc} disabled={saving}>{saving?"Saving…":"Save Document"}</button>
-      </div>
-    </div></div>
-  );
-
   return(
     <div style={{display:"flex",flex:1,minHeight:0,overflow:"hidden"}}>
       {confirm&&<ConfirmModal msg={`Delete "${confirm.name}"?`} onConfirm={()=>deleteDoc(confirm)} onCancel={()=>setConfirm(null)}/>}
-      {(modal==="add"||modal==="edit")&&<DocForm/>}
+      {(modal==="add"||modal==="edit")&&<DocForm modal={modal} form={form} setForm={setForm} clients={clients} saving={saving} onSave={saveDoc} onClose={()=>setModal(null)}/>}
       <div style={{flex:1,overflow:"hidden",display:"flex",flexDirection:"column"}}>
         <div style={{padding:"16px 20px 0"}}>
           <div className="stats-grid">
@@ -711,6 +746,42 @@ function DocumentsModule({showToast}){
 /* ══════════════════════════════════════════════
    ■ MODULE: ASSETS & WARRANTY
 ══════════════════════════════════════════════ */
+/* FIX 3: AssetForm moved OUTSIDE AssetsModule to prevent remounting on every render */
+function AssetForm({modal,form,setForm,clients,saving,onSave,onClose}){
+  return(
+    <div className="modal-overlay"><div className="modal-box lg fu">
+      <div className="modal-header"><div style={{fontWeight:700,fontSize:14,color:"var(--text)"}}>{modal==="add"?"➕ Register Asset":"✏️ Edit Asset"}</div><button className="btn btn-ghost btn-sm" onClick={onClose}>✕</button></div>
+      <div className="modal-body">
+        <div className="form-grid g3" style={{marginBottom:12}}>
+          <Field l="Asset Name / Label" req span><input {...fi} value={form.name||""} onChange={e=>setForm(f=>({...f,name:e.target.value}))} placeholder="Dell Latitude 5520 – John Smith"/></Field>
+          <Field l="Asset Type"><select {...fi} value={form.assetType||"Laptop"} onChange={e=>setForm(f=>({...f,assetType:e.target.value}))}>{ASSET_TYPES.map(t=><option key={t}>{t}</option>)}</select></Field>
+          <Field l="Manufacturer"><input {...fi} value={form.manufacturer||""} onChange={e=>setForm(f=>({...f,manufacturer:e.target.value}))} placeholder="Dell, HP, Apple…"/></Field>
+          <Field l="Model"><input {...fi} value={form.model||""} onChange={e=>setForm(f=>({...f,model:e.target.value}))} placeholder="Latitude 5520"/></Field>
+          <Field l="Serial Number"><input {...fi} value={form.serial||""} onChange={e=>setForm(f=>({...f,serial:e.target.value}))} placeholder="SN-XXXXXXX"/></Field>
+          <Field l="IMEI / Tag"><input {...fi} value={form.imei||""} onChange={e=>setForm(f=>({...f,imei:e.target.value}))} placeholder="Asset tag or IMEI"/></Field>
+          <Field l="OS / Firmware"><input {...fi} value={form.os||""} onChange={e=>setForm(f=>({...f,os:e.target.value}))} placeholder="Windows 11 Pro"/></Field>
+          <Field l="Status"><select {...fi} value={form.status||"In Service"} onChange={e=>setForm(f=>({...f,status:e.target.value}))}>{ASSET_STATUS.map(s=><option key={s}>{s}</option>)}</select></Field>
+          <Field l="Assigned Client"><select {...fi} value={form.clientId||""} onChange={e=>{const c=clients.find(c=>c.id===e.target.value);setForm(f=>({...f,clientId:e.target.value,clientName:c?.companyName||c?.contactName||""}));}}><option value="">— None / Internal —</option>{clients.map(c=><option key={c.id} value={c.id}>{c.companyName||c.contactName}</option>)}</select></Field>
+          <Field l="Assigned User"><input {...fi} value={form.assignedUser||""} onChange={e=>setForm(f=>({...f,assignedUser:e.target.value}))} placeholder="Staff member name"/></Field>
+          <Field l="Location"><input {...fi} value={form.location||""} onChange={e=>setForm(f=>({...f,location:e.target.value}))} placeholder="Office / site name"/></Field>
+          <Field l="Purchase Date"><input {...fi} type="date" value={form.purchaseDate||""} onChange={e=>setForm(f=>({...f,purchaseDate:e.target.value}))}/></Field>
+          <Field l="Purchase Price (R)"><input {...fi} type="number" value={form.purchasePrice||""} onChange={e=>setForm(f=>({...f,purchasePrice:parseFloat(e.target.value)||0}))} placeholder="0.00"/></Field>
+          <Field l="Supplier"><input {...fi} value={form.supplier||""} onChange={e=>setForm(f=>({...f,supplier:e.target.value}))} placeholder="Supplier name"/></Field>
+          <Field l="Warranty Provider"><input {...fi} value={form.warrantyProvider||""} onChange={e=>setForm(f=>({...f,warrantyProvider:e.target.value}))} placeholder="Dell ProSupport, etc."/></Field>
+          <Field l="Warranty Expiry"><input {...fi} type="date" value={form.warrantyExpiry||""} onChange={e=>setForm(f=>({...f,warrantyExpiry:e.target.value}))}/></Field>
+          <Field l="Warranty Ref No."><input {...fi} value={form.warrantyRef||""} onChange={e=>setForm(f=>({...f,warrantyRef:e.target.value}))} placeholder="Warranty/service contract no."/></Field>
+          <Field l="Repair Ticket Ref"><input {...fi} value={form.ticketRef||""} onChange={e=>setForm(f=>({...f,ticketRef:e.target.value}))} placeholder="CIM-1001"/></Field>
+          <Field l="Notes" span><textarea {...fi} value={form.notes||""} onChange={e=>setForm(f=>({...f,notes:e.target.value}))} placeholder="Specs, condition notes, accessories…"/></Field>
+        </div>
+      </div>
+      <div className="modal-footer">
+        <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
+        <button className="btn btn-primary" onClick={onSave} disabled={saving}>{saving?"Saving…":"Save Asset"}</button>
+      </div>
+    </div></div>
+  );
+}
+
 function AssetsModule({showToast}){
   const [assets,setAssets]=useState([]);
   const [clients,setClients]=useState([]);
@@ -774,43 +845,10 @@ function AssetsModule({showToast}){
 
   if(loading)return<div style={{padding:40,textAlign:"center",color:"var(--text3)"}}>Loading…</div>;
 
-  const AssetForm=()=>(
-    <div className="modal-overlay"><div className="modal-box lg fu">
-      <div className="modal-header"><div style={{fontWeight:700,fontSize:14,color:"var(--text)"}}>{modal==="add"?"➕ Register Asset":"✏️ Edit Asset"}</div><button className="btn btn-ghost btn-sm" onClick={()=>setModal(null)}>✕</button></div>
-      <div className="modal-body">
-        <div className="form-grid g3" style={{marginBottom:12}}>
-          <Field l="Asset Name / Label" req span><input {...fi} value={form.name||""} onChange={e=>setForm(f=>({...f,name:e.target.value}))} placeholder="Dell Latitude 5520 – John Smith"/></Field>
-          <Field l="Asset Type"><select {...fi} value={form.assetType||"Laptop"} onChange={e=>setForm(f=>({...f,assetType:e.target.value}))}>{ASSET_TYPES.map(t=><option key={t}>{t}</option>)}</select></Field>
-          <Field l="Manufacturer"><input {...fi} value={form.manufacturer||""} onChange={e=>setForm(f=>({...f,manufacturer:e.target.value}))} placeholder="Dell, HP, Apple…"/></Field>
-          <Field l="Model"><input {...fi} value={form.model||""} onChange={e=>setForm(f=>({...f,model:e.target.value}))} placeholder="Latitude 5520"/></Field>
-          <Field l="Serial Number"><input {...fi} value={form.serial||""} onChange={e=>setForm(f=>({...f,serial:e.target.value}))} placeholder="SN-XXXXXXX"/></Field>
-          <Field l="IMEI / Tag"><input {...fi} value={form.imei||""} onChange={e=>setForm(f=>({...f,imei:e.target.value}))} placeholder="Asset tag or IMEI"/></Field>
-          <Field l="OS / Firmware"><input {...fi} value={form.os||""} onChange={e=>setForm(f=>({...f,os:e.target.value}))} placeholder="Windows 11 Pro"/></Field>
-          <Field l="Status"><select {...fi} value={form.status||"In Service"} onChange={e=>setForm(f=>({...f,status:e.target.value}))}>{ASSET_STATUS.map(s=><option key={s}>{s}</option>)}</select></Field>
-          <Field l="Assigned Client"><select {...fi} value={form.clientId||""} onChange={e=>{const c=clients.find(c=>c.id===e.target.value);setForm(f=>({...f,clientId:e.target.value,clientName:c?.companyName||c?.contactName||""}));}}><option value="">— None / Internal —</option>{clients.map(c=><option key={c.id} value={c.id}>{c.companyName||c.contactName}</option>)}</select></Field>
-          <Field l="Assigned User"><input {...fi} value={form.assignedUser||""} onChange={e=>setForm(f=>({...f,assignedUser:e.target.value}))} placeholder="Staff member name"/></Field>
-          <Field l="Location"><input {...fi} value={form.location||""} onChange={e=>setForm(f=>({...f,location:e.target.value}))} placeholder="Office / site name"/></Field>
-          <Field l="Purchase Date"><input {...fi} type="date" value={form.purchaseDate||""} onChange={e=>setForm(f=>({...f,purchaseDate:e.target.value}))}/></Field>
-          <Field l="Purchase Price (R)"><input {...fi} type="number" value={form.purchasePrice||""} onChange={e=>setForm(f=>({...f,purchasePrice:parseFloat(e.target.value)||0}))} placeholder="0.00"/></Field>
-          <Field l="Supplier"><input {...fi} value={form.supplier||""} onChange={e=>setForm(f=>({...f,supplier:e.target.value}))} placeholder="Supplier name"/></Field>
-          <Field l="Warranty Provider"><input {...fi} value={form.warrantyProvider||""} onChange={e=>setForm(f=>({...f,warrantyProvider:e.target.value}))} placeholder="Dell ProSupport, etc."/></Field>
-          <Field l="Warranty Expiry"><input {...fi} type="date" value={form.warrantyExpiry||""} onChange={e=>setForm(f=>({...f,warrantyExpiry:e.target.value}))}/></Field>
-          <Field l="Warranty Ref No."><input {...fi} value={form.warrantyRef||""} onChange={e=>setForm(f=>({...f,warrantyRef:e.target.value}))} placeholder="Warranty/service contract no."/></Field>
-          <Field l="Repair Ticket Ref"><input {...fi} value={form.ticketRef||""} onChange={e=>setForm(f=>({...f,ticketRef:e.target.value}))} placeholder="CIM-1001"/></Field>
-          <Field l="Notes" span><textarea {...fi} value={form.notes||""} onChange={e=>setForm(f=>({...f,notes:e.target.value}))} placeholder="Specs, condition notes, accessories…"/></Field>
-        </div>
-      </div>
-      <div className="modal-footer">
-        <button className="btn btn-secondary" onClick={()=>setModal(null)}>Cancel</button>
-        <button className="btn btn-primary" onClick={saveAsset} disabled={saving}>{saving?"Saving…":"Save Asset"}</button>
-      </div>
-    </div></div>
-  );
-
   return(
     <div style={{display:"flex",flex:1,minHeight:0,overflow:"hidden"}}>
       {confirm&&<ConfirmModal msg={`Delete asset "${confirm.name}"?`} onConfirm={()=>deleteAsset(confirm)} onCancel={()=>setConfirm(null)}/>}
-      {(modal==="add"||modal==="edit")&&<AssetForm/>}
+      {(modal==="add"||modal==="edit")&&<AssetForm modal={modal} form={form} setForm={setForm} clients={clients} saving={saving} onSave={saveAsset} onClose={()=>setModal(null)}/>}
       <div style={{flex:1,overflow:"hidden",display:"flex",flexDirection:"column"}}>
         <div style={{padding:"16px 20px 0"}}>
           <div className="stats-grid">
@@ -893,6 +931,64 @@ function AssetsModule({showToast}){
 /* ══════════════════════════════════════════════
    ■ MODULE: BILLING
 ══════════════════════════════════════════════ */
+/* FIX 4: InvForm moved OUTSIDE BillingModule to prevent remounting on every render */
+function InvForm({modal,form,setForm,clients,saving,onSave,onClose,addItem,removeItem,updateItem}){
+  const calcTotal=items=>(items||[]).reduce((a,it)=>a+(parseFloat(it.qty||0)*parseFloat(it.rate||0)),0);
+  const calcVAT=(sub,vat)=>vat?sub*0.15:0;
+  const sub=calcTotal(form.items||[]);
+  const vat=calcVAT(sub,form.includeVAT);
+  const total=sub+vat;
+  return(
+    <div className="modal-overlay"><div className="modal-box lg fu">
+      <div className="modal-header"><div style={{fontWeight:700,fontSize:14,color:"var(--text)"}}>{modal==="add"?"🧾 New Invoice":"✏️ Edit Invoice"}</div><button className="btn btn-ghost btn-sm" onClick={onClose}>✕</button></div>
+      <div className="modal-body">
+        <div className="form-grid g3" style={{marginBottom:16}}>
+          <Field l="Invoice No." req><input {...fi} value={form.invoiceNo||""} onChange={e=>setForm(f=>({...f,invoiceNo:e.target.value}))} placeholder="INV-2025-001"/></Field>
+          <Field l="Client" req><select {...fi} value={form.clientId||""} onChange={e=>{const c=clients.find(c=>c.id===e.target.value);setForm(f=>({...f,clientId:e.target.value,clientName:c?.companyName||c?.contactName||""}));}}><option value="">— Select —</option>{clients.map(c=><option key={c.id} value={c.id}>{c.companyName||c.contactName}</option>)}</select></Field>
+          <Field l="Invoice Date"><input {...fi} type="date" value={form.date||""} onChange={e=>setForm(f=>({...f,date:e.target.value}))}/></Field>
+          <Field l="Due Date"><input {...fi} type="date" value={form.dueDate||""} onChange={e=>setForm(f=>({...f,dueDate:e.target.value}))}/></Field>
+          <Field l="Status"><select {...fi} value={form.status||"Pending"} onChange={e=>setForm(f=>({...f,status:e.target.value}))}>{PAYMENT_STATUS.map(s=><option key={s}>{s}</option>)}</select></Field>
+          <Field l="Ticket Ref"><input {...fi} value={form.ticketRef||""} onChange={e=>setForm(f=>({...f,ticketRef:e.target.value}))} placeholder="CIM-1001"/></Field>
+          <Field l="Notes" span><textarea {...fi} value={form.notes||""} onChange={e=>setForm(f=>({...f,notes:e.target.value}))} placeholder="Payment instructions, terms…" style={{minHeight:60}}/></Field>
+        </div>
+        <div style={{marginBottom:12}}>
+          <SecLabel c="Line Items"/>
+          <table className="tbl" style={{marginBottom:8}}>
+            <thead><tr><th>Description</th><th>Qty</th><th>Rate (R)</th><th>Total</th><th></th></tr></thead>
+            <tbody>
+              {(form.items||[]).map((it,idx)=>(
+                <tr key={idx}>
+                  <td><input className="field-input" style={{padding:"6px 8px",fontSize:12}} value={it.description} onChange={e=>updateItem(idx,"description",e.target.value)} placeholder="Service description"/></td>
+                  <td><input className="field-input" style={{padding:"6px 8px",fontSize:12,width:60}} type="number" value={it.qty} onChange={e=>updateItem(idx,"qty",e.target.value)}/></td>
+                  <td><input className="field-input" style={{padding:"6px 8px",fontSize:12,width:90}} type="number" value={it.rate} onChange={e=>updateItem(idx,"rate",e.target.value)}/></td>
+                  <td><span className="mono">{fmtMoney(it.qty*it.rate)}</span></td>
+                  <td><button className="btn btn-ghost btn-sm" onClick={()=>removeItem(idx)} style={{color:"#F87171"}}>✕</button></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <button className="btn btn-secondary btn-sm" onClick={addItem}>+ Add Line</button>
+        </div>
+        <div style={{background:"var(--bg3)",border:"1px solid var(--border)",borderRadius:8,padding:"12px 16px",maxWidth:280,marginLeft:"auto"}}>
+          <div style={{display:"flex",justifyContent:"space-between",marginBottom:5,fontSize:13}}><span style={{color:"var(--text3)"}}>Subtotal</span><span className="mono">{fmtMoney(sub)}</span></div>
+          <div style={{display:"flex",justifyContent:"space-between",marginBottom:8,fontSize:13,alignItems:"center"}}>
+            <label style={{display:"flex",alignItems:"center",gap:6,cursor:"pointer",color:"var(--text3)"}}>
+              <input type="checkbox" checked={form.includeVAT||false} onChange={e=>setForm(f=>({...f,includeVAT:e.target.checked}))} style={{display:"block"}}/>
+              VAT (15%)
+            </label>
+            <span className="mono">{fmtMoney(vat)}</span>
+          </div>
+          <div style={{display:"flex",justifyContent:"space-between",fontWeight:700,fontSize:15,borderTop:"1px solid var(--border)",paddingTop:8}}><span style={{color:"var(--text)"}}>Total</span><span className="mono" style={{color:AC}}>{fmtMoney(total)}</span></div>
+        </div>
+      </div>
+      <div className="modal-footer">
+        <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
+        <button className="btn btn-primary" onClick={onSave} disabled={saving}>{saving?"Saving…":"Save Invoice"}</button>
+      </div>
+    </div></div>
+  );
+}
+
 function BillingModule({showToast}){
   const [invoices,setInvoices]=useState([]);
   const [clients,setClients]=useState([]);
@@ -961,61 +1057,10 @@ function BillingModule({showToast}){
 
   if(loading)return<div style={{padding:40,textAlign:"center",color:"var(--text3)"}}>Loading…</div>;
 
-  const InvForm=()=>{
-    const sub=calcTotal(form.items);const vat=calcVAT(sub,form.includeVAT);const total=sub+vat;
-    return<div className="modal-overlay"><div className="modal-box lg fu">
-      <div className="modal-header"><div style={{fontWeight:700,fontSize:14,color:"var(--text)"}}>{modal==="add"?"🧾 New Invoice":"✏️ Edit Invoice"}</div><button className="btn btn-ghost btn-sm" onClick={()=>setModal(null)}>✕</button></div>
-      <div className="modal-body">
-        <div className="form-grid g3" style={{marginBottom:16}}>
-          <Field l="Invoice No." req><input {...fi} value={form.invoiceNo||""} onChange={e=>setForm(f=>({...f,invoiceNo:e.target.value}))} placeholder="INV-2025-001"/></Field>
-          <Field l="Client" req><select {...fi} value={form.clientId||""} onChange={e=>{const c=clients.find(c=>c.id===e.target.value);setForm(f=>({...f,clientId:e.target.value,clientName:c?.companyName||c?.contactName||""}));}}><option value="">— Select —</option>{clients.map(c=><option key={c.id} value={c.id}>{c.companyName||c.contactName}</option>)}</select></Field>
-          <Field l="Invoice Date"><input {...fi} type="date" value={form.date||""} onChange={e=>setForm(f=>({...f,date:e.target.value}))}/></Field>
-          <Field l="Due Date"><input {...fi} type="date" value={form.dueDate||""} onChange={e=>setForm(f=>({...f,dueDate:e.target.value}))}/></Field>
-          <Field l="Status"><select {...fi} value={form.status||"Pending"} onChange={e=>setForm(f=>({...f,status:e.target.value}))}>{PAYMENT_STATUS.map(s=><option key={s}>{s}</option>)}</select></Field>
-          <Field l="Ticket Ref"><input {...fi} value={form.ticketRef||""} onChange={e=>setForm(f=>({...f,ticketRef:e.target.value}))} placeholder="CIM-1001"/></Field>
-          <Field l="Notes" span><textarea {...fi} value={form.notes||""} onChange={e=>setForm(f=>({...f,notes:e.target.value}))} placeholder="Payment instructions, terms…" style={{minHeight:60}}/></Field>
-        </div>
-        <div style={{marginBottom:12}}>
-          <SecLabel c="Line Items"/>
-          <table className="tbl" style={{marginBottom:8}}>
-            <thead><tr><th>Description</th><th>Qty</th><th>Rate (R)</th><th>Total</th><th></th></tr></thead>
-            <tbody>
-              {(form.items||[]).map((it,idx)=>(
-                <tr key={idx}>
-                  <td><input className="field-input" style={{padding:"6px 8px",fontSize:12}} value={it.description} onChange={e=>updateItem(idx,"description",e.target.value)} placeholder="Service description"/></td>
-                  <td><input className="field-input" style={{padding:"6px 8px",fontSize:12,width:60}} type="number" value={it.qty} onChange={e=>updateItem(idx,"qty",e.target.value)}/></td>
-                  <td><input className="field-input" style={{padding:"6px 8px",fontSize:12,width:90}} type="number" value={it.rate} onChange={e=>updateItem(idx,"rate",e.target.value)}/></td>
-                  <td><span className="mono">{fmtMoney(it.qty*it.rate)}</span></td>
-                  <td><button className="btn btn-ghost btn-sm" onClick={()=>removeItem(idx)} style={{color:"#F87171"}}>✕</button></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <button className="btn btn-secondary btn-sm" onClick={addItem}>+ Add Line</button>
-        </div>
-        <div style={{background:"var(--bg3)",border:"1px solid var(--border)",borderRadius:8,padding:"12px 16px",maxWidth:280,marginLeft:"auto"}}>
-          <div style={{display:"flex",justifyContent:"space-between",marginBottom:5,fontSize:13}}><span style={{color:"var(--text3)"}}>Subtotal</span><span className="mono">{fmtMoney(sub)}</span></div>
-          <div style={{display:"flex",justifyContent:"space-between",marginBottom:8,fontSize:13,alignItems:"center"}}>
-            <label style={{display:"flex",alignItems:"center",gap:6,cursor:"pointer",color:"var(--text3)"}}>
-              <input type="checkbox" checked={form.includeVAT||false} onChange={e=>setForm(f=>({...f,includeVAT:e.target.checked}))} style={{display:"block"}}/>
-              VAT (15%)
-            </label>
-            <span className="mono">{fmtMoney(vat)}</span>
-          </div>
-          <div style={{display:"flex",justifyContent:"space-between",fontWeight:700,fontSize:15,borderTop:"1px solid var(--border)",paddingTop:8}}><span style={{color:"var(--text)"}}>Total</span><span className="mono" style={{color:AC}}>{fmtMoney(total)}</span></div>
-        </div>
-      </div>
-      <div className="modal-footer">
-        <button className="btn btn-secondary" onClick={()=>setModal(null)}>Cancel</button>
-        <button className="btn btn-primary" onClick={saveInv} disabled={saving}>{saving?"Saving…":"Save Invoice"}</button>
-      </div>
-    </div></div>;
-  };
-
   return(
     <div style={{display:"flex",flex:1,minHeight:0,overflow:"hidden"}}>
       {confirm&&<ConfirmModal msg={`Delete invoice "${confirm.invoiceNo}"?`} onConfirm={()=>deleteInv(confirm)} onCancel={()=>setConfirm(null)}/>}
-      {(modal==="add"||modal==="edit")&&<InvForm/>}
+      {(modal==="add"||modal==="edit")&&<InvForm modal={modal} form={form} setForm={setForm} clients={clients} saving={saving} onSave={saveInv} onClose={()=>setModal(null)} addItem={addItem} removeItem={removeItem} updateItem={updateItem}/>}
       <div style={{flex:1,overflow:"hidden",display:"flex",flexDirection:"column"}}>
         <div style={{padding:"16px 20px 0"}}>
           <div className="stats-grid">
@@ -1102,6 +1147,55 @@ function BillingModule({showToast}){
 /* ══════════════════════════════════════════════
    ■ MODULE: STAFF
 ══════════════════════════════════════════════ */
+/* FIX 5: EmpForm moved OUTSIDE StaffModule */
+function EmpForm({modal,form,setForm,saving,onSave,onClose}){
+  return(
+    <div className="modal-overlay"><div className="modal-box lg fu">
+      <div className="modal-header"><div style={{fontWeight:700,fontSize:14,color:"var(--text)"}}>{modal==="add"?"👤 New Staff Member":"✏️ Edit Staff Member"}</div><button className="btn btn-ghost btn-sm" onClick={onClose}>✕</button></div>
+      <div className="modal-body">
+        <div style={{fontSize:11,fontWeight:700,color:AC,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:10}}>Personal Information</div>
+        <div className="form-grid g3" style={{marginBottom:18}}>
+          <Field l="Employee ID"><input {...fi} value={form.empId||""} onChange={e=>setForm(f=>({...f,empId:e.target.value}))} placeholder="EMP-001"/></Field>
+          <Field l="Full Name" req span><input {...fi} value={form.fullName||""} onChange={e=>setForm(f=>({...f,fullName:e.target.value}))} placeholder="First Last"/></Field>
+          <Field l="ID / Passport Number"><input {...fi} value={form.idNumber||""} onChange={e=>setForm(f=>({...f,idNumber:e.target.value}))} placeholder="SA ID or passport"/></Field>
+          <Field l="Date of Birth"><input {...fi} type="date" value={form.dob||""} onChange={e=>setForm(f=>({...f,dob:e.target.value}))}/></Field>
+          <Field l="Gender"><select {...fi} value={form.gender||""} onChange={e=>setForm(f=>({...f,gender:e.target.value}))}><option value="">—</option><option>Male</option><option>Female</option><option>Non-binary</option><option>Prefer not to say</option></select></Field>
+          <Field l="Phone / WhatsApp"><input {...fi} value={form.phone||""} onChange={e=>setForm(f=>({...f,phone:e.target.value}))} placeholder="+27 72 000 0000"/></Field>
+          <Field l="Personal Email"><input {...fi} type="email" value={form.personalEmail||""} onChange={e=>setForm(f=>({...f,personalEmail:e.target.value}))} placeholder="personal@gmail.com"/></Field>
+          <Field l="Work Email"><input {...fi} type="email" value={form.email||""} onChange={e=>setForm(f=>({...f,email:e.target.value}))} placeholder="name@cyberitmaster.co.za"/></Field>
+          <Field l="Residential Address" span><input {...fi} value={form.address||""} onChange={e=>setForm(f=>({...f,address:e.target.value}))} placeholder="Full address"/></Field>
+          <Field l="Emergency Contact"><input {...fi} value={form.emergencyContact||""} onChange={e=>setForm(f=>({...f,emergencyContact:e.target.value}))} placeholder="Name (Relationship)"/></Field>
+          <Field l="Emergency Phone"><input {...fi} value={form.emergencyPhone||""} onChange={e=>setForm(f=>({...f,emergencyPhone:e.target.value}))} placeholder="+27 00 000 0000"/></Field>
+        </div>
+        <div style={{fontSize:11,fontWeight:700,color:AC,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:10}}>Employment Details</div>
+        <div className="form-grid g3" style={{marginBottom:18}}>
+          <Field l="Job Role"><select {...fi} value={form.role||"Engineer"} onChange={e=>setForm(f=>({...f,role:e.target.value}))}>{EMP_ROLES.map(r=><option key={r}>{r}</option>)}</select></Field>
+          <Field l="Department"><select {...fi} value={form.department||"Technical"} onChange={e=>setForm(f=>({...f,department:e.target.value}))}>{DEPT.map(d=><option key={d}>{d}</option>)}</select></Field>
+          <Field l="Status"><select {...fi} value={form.empStatus||"Active"} onChange={e=>setForm(f=>({...f,empStatus:e.target.value}))}>{EMP_STATUS.map(s=><option key={s}>{s}</option>)}</select></Field>
+          <Field l="Contract Type"><select {...fi} value={form.contractType||"Permanent"} onChange={e=>setForm(f=>({...f,contractType:e.target.value}))}>{CONTRACT_TYPES.map(c=><option key={c}>{c}</option>)}</select></Field>
+          <Field l="Start Date"><input {...fi} type="date" value={form.startDate||""} onChange={e=>setForm(f=>({...f,startDate:e.target.value}))}/></Field>
+          <Field l="End Date (if fixed)"><input {...fi} type="date" value={form.endDate||""} onChange={e=>setForm(f=>({...f,endDate:e.target.value}))}/></Field>
+          <Field l="Gross Salary (R)"><input {...fi} type="number" value={form.salary||""} onChange={e=>setForm(f=>({...f,salary:parseFloat(e.target.value)||0}))} placeholder="0.00"/></Field>
+          <Field l="Pay Frequency"><select {...fi} value={form.payFreq||"Monthly"} onChange={e=>setForm(f=>({...f,payFreq:e.target.value}))}><option>Monthly</option><option>Bi-weekly</option><option>Weekly</option></select></Field>
+          <Field l="Banking — Bank"><input {...fi} value={form.bank||""} onChange={e=>setForm(f=>({...f,bank:e.target.value}))} placeholder="e.g. FNB, ABSA, Nedbank"/></Field>
+          <Field l="Account Number"><input {...fi} value={form.bankAccount||""} onChange={e=>setForm(f=>({...f,bankAccount:e.target.value}))} placeholder="Account number"/></Field>
+          <Field l="Branch Code"><input {...fi} value={form.branchCode||""} onChange={e=>setForm(f=>({...f,branchCode:e.target.value}))} placeholder="e.g. 250655"/></Field>
+          <Field l="Account Type"><select {...fi} value={form.bankAccountType||"Current"} onChange={e=>setForm(f=>({...f,bankAccountType:e.target.value}))}><option>Current</option><option>Savings</option><option>Cheque</option></select></Field>
+          <Field l="Tax / PAYE Number"><input {...fi} value={form.taxNumber||""} onChange={e=>setForm(f=>({...f,taxNumber:e.target.value}))} placeholder="SARS tax number"/></Field>
+          <Field l="UIF Number"><input {...fi} value={form.uifNumber||""} onChange={e=>setForm(f=>({...f,uifNumber:e.target.value}))} placeholder="UIF reference"/></Field>
+          <Field l="Annual Leave Balance"><input {...fi} type="number" value={form.annualLeave||15} onChange={e=>setForm(f=>({...f,annualLeave:parseInt(e.target.value)||0}))} placeholder="15"/></Field>
+          <Field l="Sick Leave Balance"><input {...fi} type="number" value={form.sickLeave||10} onChange={e=>setForm(f=>({...f,sickLeave:parseInt(e.target.value)||0}))} placeholder="10"/></Field>
+          <Field l="Notes" span><textarea {...fi} value={form.notes||""} onChange={e=>setForm(f=>({...f,notes:e.target.value}))} placeholder="Performance notes, certifications, skills…"/></Field>
+        </div>
+      </div>
+      <div className="modal-footer">
+        <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
+        <button className="btn btn-primary" onClick={onSave} disabled={saving}>{saving?"Saving…":"Save Staff Member"}</button>
+      </div>
+    </div></div>
+  );
+}
+
 function StaffModule({showToast}){
   const [staff,setStaff]=useState([]);
   const [loading,setLoading]=useState(true);
@@ -1193,58 +1287,10 @@ function StaffModule({showToast}){
 
   if(loading)return<div style={{padding:40,textAlign:"center",color:"var(--text3)"}}>Loading…</div>;
 
-  const EmpForm=()=>(
-    <div className="modal-overlay"><div className="modal-box lg fu">
-      <div className="modal-header"><div style={{fontWeight:700,fontSize:14,color:"var(--text)"}}>{modal==="add"?"👤 New Staff Member":"✏️ Edit Staff Member"}</div><button className="btn btn-ghost btn-sm" onClick={()=>setModal(null)}>✕</button></div>
-      <div className="modal-body">
-        {/* Personal Info */}
-        <div style={{fontSize:11,fontWeight:700,color:AC,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:10}}>Personal Information</div>
-        <div className="form-grid g3" style={{marginBottom:18}}>
-          <Field l="Employee ID"><input {...fi} value={form.empId||""} onChange={e=>setForm(f=>({...f,empId:e.target.value}))} placeholder="EMP-001"/></Field>
-          <Field l="Full Name" req span><input {...fi} value={form.fullName||""} onChange={e=>setForm(f=>({...f,fullName:e.target.value}))} placeholder="First Last"/></Field>
-          <Field l="ID / Passport Number"><input {...fi} value={form.idNumber||""} onChange={e=>setForm(f=>({...f,idNumber:e.target.value}))} placeholder="SA ID or passport"/></Field>
-          <Field l="Date of Birth"><input {...fi} type="date" value={form.dob||""} onChange={e=>setForm(f=>({...f,dob:e.target.value}))}/></Field>
-          <Field l="Gender"><select {...fi} value={form.gender||""} onChange={e=>setForm(f=>({...f,gender:e.target.value}))}><option value="">—</option><option>Male</option><option>Female</option><option>Non-binary</option><option>Prefer not to say</option></select></Field>
-          <Field l="Phone / WhatsApp"><input {...fi} value={form.phone||""} onChange={e=>setForm(f=>({...f,phone:e.target.value}))} placeholder="+27 72 000 0000"/></Field>
-          <Field l="Personal Email"><input {...fi} type="email" value={form.personalEmail||""} onChange={e=>setForm(f=>({...f,personalEmail:e.target.value}))} placeholder="personal@gmail.com"/></Field>
-          <Field l="Work Email"><input {...fi} type="email" value={form.email||""} onChange={e=>setForm(f=>({...f,email:e.target.value}))} placeholder="name@cyberitmaster.co.za"/></Field>
-          <Field l="Residential Address" span><input {...fi} value={form.address||""} onChange={e=>setForm(f=>({...f,address:e.target.value}))} placeholder="Full address"/></Field>
-          <Field l="Emergency Contact"><input {...fi} value={form.emergencyContact||""} onChange={e=>setForm(f=>({...f,emergencyContact:e.target.value}))} placeholder="Name (Relationship)"/></Field>
-          <Field l="Emergency Phone"><input {...fi} value={form.emergencyPhone||""} onChange={e=>setForm(f=>({...f,emergencyPhone:e.target.value}))} placeholder="+27 00 000 0000"/></Field>
-        </div>
-        {/* Employment */}
-        <div style={{fontSize:11,fontWeight:700,color:AC,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:10}}>Employment Details</div>
-        <div className="form-grid g3" style={{marginBottom:18}}>
-          <Field l="Job Role"><select {...fi} value={form.role||"Engineer"} onChange={e=>setForm(f=>({...f,role:e.target.value}))}>{EMP_ROLES.map(r=><option key={r}>{r}</option>)}</select></Field>
-          <Field l="Department"><select {...fi} value={form.department||"Technical"} onChange={e=>setForm(f=>({...f,department:e.target.value}))}>{DEPT.map(d=><option key={d}>{d}</option>)}</select></Field>
-          <Field l="Status"><select {...fi} value={form.empStatus||"Active"} onChange={e=>setForm(f=>({...f,empStatus:e.target.value}))}>{EMP_STATUS.map(s=><option key={s}>{s}</option>)}</select></Field>
-          <Field l="Contract Type"><select {...fi} value={form.contractType||"Permanent"} onChange={e=>setForm(f=>({...f,contractType:e.target.value}))}>{CONTRACT_TYPES.map(c=><option key={c}>{c}</option>)}</select></Field>
-          <Field l="Start Date"><input {...fi} type="date" value={form.startDate||""} onChange={e=>setForm(f=>({...f,startDate:e.target.value}))}/></Field>
-          <Field l="End Date (if fixed)"><input {...fi} type="date" value={form.endDate||""} onChange={e=>setForm(f=>({...f,endDate:e.target.value}))}/></Field>
-          <Field l="Gross Salary (R)"><input {...fi} type="number" value={form.salary||""} onChange={e=>setForm(f=>({...f,salary:parseFloat(e.target.value)||0}))} placeholder="0.00"/></Field>
-          <Field l="Pay Frequency"><select {...fi} value={form.payFreq||"Monthly"} onChange={e=>setForm(f=>({...f,payFreq:e.target.value}))}><option>Monthly</option><option>Bi-weekly</option><option>Weekly</option></select></Field>
-          <Field l="Banking — Bank"><input {...fi} value={form.bank||""} onChange={e=>setForm(f=>({...f,bank:e.target.value}))} placeholder="e.g. FNB, ABSA, Nedbank"/></Field>
-          <Field l="Account Number"><input {...fi} value={form.bankAccount||""} onChange={e=>setForm(f=>({...f,bankAccount:e.target.value}))} placeholder="Account number"/></Field>
-          <Field l="Branch Code"><input {...fi} value={form.branchCode||""} onChange={e=>setForm(f=>({...f,branchCode:e.target.value}))} placeholder="e.g. 250655"/></Field>
-          <Field l="Account Type"><select {...fi} value={form.bankAccountType||"Current"} onChange={e=>setForm(f=>({...f,bankAccountType:e.target.value}))}><option>Current</option><option>Savings</option><option>Cheque</option></select></Field>
-          <Field l="Tax / PAYE Number"><input {...fi} value={form.taxNumber||""} onChange={e=>setForm(f=>({...f,taxNumber:e.target.value}))} placeholder="SARS tax number"/></Field>
-          <Field l="UIF Number"><input {...fi} value={form.uifNumber||""} onChange={e=>setForm(f=>({...f,uifNumber:e.target.value}))} placeholder="UIF reference"/></Field>
-          <Field l="Annual Leave Balance"><input {...fi} type="number" value={form.annualLeave||15} onChange={e=>setForm(f=>({...f,annualLeave:parseInt(e.target.value)||0}))} placeholder="15"/></Field>
-          <Field l="Sick Leave Balance"><input {...fi} type="number" value={form.sickLeave||10} onChange={e=>setForm(f=>({...f,sickLeave:parseInt(e.target.value)||0}))} placeholder="10"/></Field>
-          <Field l="Notes" span><textarea {...fi} value={form.notes||""} onChange={e=>setForm(f=>({...f,notes:e.target.value}))} placeholder="Performance notes, certifications, skills…"/></Field>
-        </div>
-      </div>
-      <div className="modal-footer">
-        <button className="btn btn-secondary" onClick={()=>setModal(null)}>Cancel</button>
-        <button className="btn btn-primary" onClick={saveEmp} disabled={saving}>{saving?"Saving…":"Save Staff Member"}</button>
-      </div>
-    </div></div>
-  );
-
   return(
     <div style={{display:"flex",flex:1,minHeight:0,overflow:"hidden"}}>
       {confirm&&<ConfirmModal msg={`Delete staff member "${confirm.fullName}"? This cannot be undone.`} onConfirm={()=>deleteEmp(confirm)} onCancel={()=>setConfirm(null)}/>}
-      {(modal==="add"||modal==="edit")&&<EmpForm/>}
+      {(modal==="add"||modal==="edit")&&<EmpForm modal={modal} form={form} setForm={setForm} saving={saving} onSave={saveEmp} onClose={()=>setModal(null)}/>}
       {modal==="addDoc"&&<DocUploadModal onSave={addDoc} onClose={()=>setModal(null)}/>}
       {leaveModal&&(
         <div className="modal-overlay"><div className="modal-box sm fu">
@@ -1266,7 +1312,6 @@ function StaffModule({showToast}){
         </div></div>
       )}
 
-      {/* LEFT PANE */}
       <div style={{flex:1,overflow:"hidden",display:"flex",flexDirection:"column"}}>
         <div style={{padding:"16px 20px 0"}}>
           <div className="stats-grid">
@@ -1306,7 +1351,6 @@ function StaffModule({showToast}){
         </div>
       </div>
 
-      {/* DETAIL PANEL */}
       {selEmp&&(
         <div className="detail-panel">
           <div className="detail-header">
@@ -1400,45 +1444,6 @@ function StaffModule({showToast}){
 }
 
 /* ══════════════════════════════════════════════
-   ■ SHARED MODALS
-══════════════════════════════════════════════ */
-function DocUploadModal({onSave,onClose}){
-  const [form,setForm]=useState({type:"Contract",date:new Date().toISOString().slice(0,10)});
-  const save=()=>{if(!form.name?.trim()){alert("Document name required");return;}onSave(form);};
-  return<div className="modal-overlay"><div className="modal-box sm fu">
-    <div className="modal-header"><div style={{fontWeight:700,fontSize:14,color:"var(--text)"}}>📎 Add Document</div><button className="btn btn-ghost btn-sm" onClick={onClose}>✕</button></div>
-    <div className="modal-body">
-      <div className="form-grid g1">
-        <Field l="Document Name" req><input {...fi} value={form.name||""} onChange={e=>setForm(f=>({...f,name:e.target.value}))} placeholder="Employment Contract 2025"/></Field>
-        <Field l="Document Type"><select {...fi} value={form.type||"Contract"} onChange={e=>setForm(f=>({...f,type:e.target.value}))}>{[...DOC_TYPES,"Employment Contract","Payslip","Performance Review","Warning Letter","ID Copy","Qualification"].map(t=><option key={t}>{t}</option>)}</select></Field>
-        <Field l="Date"><input {...fi} type="date" value={form.date||""} onChange={e=>setForm(f=>({...f,date:e.target.value}))}/></Field>
-        <Field l="Reference No."><input {...fi} value={form.refNo||""} onChange={e=>setForm(f=>({...f,refNo:e.target.value}))} placeholder="Optional ref number"/></Field>
-        <Field l="File URL / Google Drive Link"><input {...fi} value={form.url||""} onChange={e=>setForm(f=>({...f,url:e.target.value}))} placeholder="https://drive.google.com/…"/></Field>
-        <Field l="Notes"><textarea {...fi} value={form.notes||""} onChange={e=>setForm(f=>({...f,notes:e.target.value}))} placeholder="Optional notes about this document…" style={{minHeight:60}}/></Field>
-      </div>
-    </div>
-    <div className="modal-footer">
-      <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
-      <button className="btn btn-primary" onClick={save}>Save Document</button>
-    </div>
-  </div></div>;
-}
-
-function NoteModal({onSave,onClose}){
-  const [txt,setTxt]=useState("");
-  return<div className="modal-overlay"><div className="modal-box sm fu">
-    <div className="modal-header"><div style={{fontWeight:700,fontSize:14,color:"var(--text)"}}>📝 Add Note</div><button className="btn btn-ghost btn-sm" onClick={onClose}>✕</button></div>
-    <div className="modal-body">
-      <textarea {...fi} value={txt} onChange={e=>setTxt(e.target.value)} placeholder="Write your note…" style={{minHeight:100,marginBottom:6}} autoFocus/>
-    </div>
-    <div className="modal-footer">
-      <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
-      <button className="btn btn-primary" onClick={()=>txt.trim()&&onSave(txt)}>Save Note</button>
-    </div>
-  </div></div>;
-}
-
-/* ══════════════════════════════════════════════
    ■ DASHBOARD / OVERVIEW
 ══════════════════════════════════════════════ */
 function Dashboard({tickets,clients,staff,assets,invoices}){
@@ -1453,7 +1458,6 @@ function Dashboard({tickets,clients,staff,assets,invoices}){
       <div style={{fontSize:20,fontWeight:800,color:"var(--text)",marginBottom:4}}>Good day 👋</div>
       <div style={{fontSize:13,color:"var(--text3)"}}>{CFG.bizName} — Management Overview</div>
     </div>
-    {/* KPI ROW */}
     <div className="stats-grid" style={{gridTemplateColumns:"repeat(5,1fr)"}}>
       {[["👥","Clients",clients.length,AC],["👷","Staff",staff.filter(e=>e.empStatus==="Active").length,"#8B5CF6"],["🖥️","Assets",assets.length,"#0EA5E9"],["💵","Revenue",fmtMoney(totalRevenue),"#10B981"],["⏳","Outstanding",fmtMoney(outstanding),outstanding>0?"#EF4444":"#10B981"]].map(([icon,lbl,val,cl])=>(
         <div key={lbl} className="stat-card">
@@ -1464,7 +1468,6 @@ function Dashboard({tickets,clients,staff,assets,invoices}){
       ))}
     </div>
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:16}}>
-      {/* WARRANTY EXPIRING */}
       <div className="card">
         <div className="card-header"><div className="card-title">⚠️ Warranty Expiring Soon</div></div>
         <div className="card-body">
@@ -1477,7 +1480,6 @@ function Dashboard({tickets,clients,staff,assets,invoices}){
           );})}
         </div>
       </div>
-      {/* OVERDUE INVOICES */}
       <div className="card">
         <div className="card-header"><div className="card-title">🔴 Overdue Invoices</div></div>
         <div className="card-body">
@@ -1490,7 +1492,6 @@ function Dashboard({tickets,clients,staff,assets,invoices}){
           ))}
         </div>
       </div>
-      {/* PENDING LEAVE */}
       <div className="card">
         <div className="card-header"><div className="card-title">🏖️ Pending Leave Requests</div></div>
         <div className="card-body">
@@ -1543,7 +1544,6 @@ function Root(){
 
   return(
     <div className="main-layout">
-      {/* SIDEBAR */}
       <div className="sidebar">
         <div className="sidebar-logo">
           <div className="brand">
@@ -1566,8 +1566,8 @@ function Root(){
           ))}
           <div className="nav-group">
             <div className="nav-group-label">Links</div>
-            <a href="admin__1_.html" className="nav-item"><span className="ni">🎫</span>Ticket Portal ↗</a>
-            <a href="https://books.zohosecure.com/portal/mbulahenigroup/signin" target="_blank" rel="noreferrer" className="nav-item"><span className="ni">📊</span>Zoho Books ↗</a>
+            <a href="admin.html" className="nav-item"><span className="ni">🎫</span>Ticket Portal ↗</a>
+            <a href="https://books.zoho.com/app/mbulahenigroup" target="_blank" rel="noreferrer" className="nav-item"><span className="ni">📊</span>Zoho Books ↗</a>
           </div>
         </div>
         <div className="sidebar-footer">
@@ -1579,7 +1579,6 @@ function Root(){
         </div>
       </div>
 
-      {/* CONTENT */}
       <div className="content-area">
         <div className="topbar">
           <div className="topbar-left">
