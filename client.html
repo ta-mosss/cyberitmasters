@@ -383,6 +383,19 @@ body{
   .steps{gap:0;}
   .step-label{font-size:9px;max-width:55px;}
 }
+
+body.light-mode{background:#ffffff !important;color:#111827 !important;}
+body.light-mode .portal-header,
+body.light-mode .login-card,
+body.light-mode .info-card,
+body.light-mode .timeline,
+body.light-mode .device-card,
+body.light-mode .progress-track{background:#ffffff !important;color:#111827 !important;}
+.dark-toggle{
+padding:8px 12px;border-radius:8px;border:1px solid #ccc;cursor:pointer;background:#fff;
+}
+.logo-img{height:38px;width:auto;border-radius:6px;}
+
 </style>
 </head>
 <body>
@@ -409,7 +422,7 @@ const CFG={
   bizName:"Cyber I.T Masters",
   tagline:"Professional I.T Solutions",
   wa:"27726650565",
-  email:"info@mbulahenigroup.co.za",
+  email:"support@mbulahenigroup.co.za",
   signoffBase:"https://cyberit.mbulahenigroup.co.za/clientsignoff.html",
   googleReview:"https://g.page/r/CUSUmJkZZNmSEBM/review",
 };
@@ -569,7 +582,7 @@ function LoginScreen({onLogin}){
         <div className="help-text">
           <strong>Can't find your ticket?</strong><br/>
           Contact us on WhatsApp or email<br/>
-          <strong>info@mbulahenigroup.co.za</strong>
+          <strong>support@mbulahenigroup.co.za</strong>
         </div>
       </div>
     </div>
@@ -895,7 +908,7 @@ function Root(){
       <header className="portal-header">
         <div className="portal-header-inner">
           <div className="brand">
-            <div className="brand-icon">⚡</div>
+            <img className="logo-img" src="logo.png" alt="Cyber I.T Masters Logo" />
             <div>
               <div className="brand-text-name">{CFG.bizName}</div>
               <div className="brand-text-sub">Client Ticket Portal</div>
@@ -907,7 +920,7 @@ function Root(){
             )}
             <div className="live-indicator">
               <div className="live-dot"/>
-              <span className="live-text">LIVE</span>
+              <span className="live-text">LIVE</span><button className="dark-toggle" onClick={()=>document.body.classList.toggle("light-mode")}>🌙/☀️</button>
             </div>
           </div>
         </div>
@@ -929,4 +942,3 @@ ReactDOM.render(<Root/>,document.getElementById("root"));
 </script>
 </body>
 </html>
-HTMLEOF
