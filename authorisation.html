@@ -31,7 +31,15 @@
   .field-input:focus{outline:none;border-color:#00C896;box-shadow:0 0 0 3px rgba(0,200,150,0.1);}
   .field-input::placeholder{color:#475569;}
   .signature-area{margin-bottom:20px;}
-  .signature-area canvas{width:100%;border:1px solid #0F1C2E;border-radius:10px;background:#fff;touch-action:none;display:block;}
+  .signature-area canvas{
+    width:100%;
+    border:1px solid #0F1C2E;
+    border-radius:10px;
+    background:#fff;
+    touch-action:none;
+    display:block;
+    height:150px; /* fixed height, consistent */
+  }
   .sig-actions{display:flex;gap:8px;margin-top:8px;}
   .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:none;border-radius:8px;font-weight:600;font-family:inherit;cursor:pointer;transition:all 0.2s;padding:10px 20px;font-size:14px;}
   .btn-secondary{background:transparent;border:1px solid #0F1C2E;color:#94A3B8;}
@@ -83,15 +91,12 @@ function App() {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   
-  // Form fields
   const [clientName, setClientName] = useState("");
   const [clientPosition, setClientPosition] = useState("");
-  const [signatureData, setSignatureData] = useState(null);
   
   const canvasRef = useRef(null);
   const ctxRef = useRef(null);
-  const drawingRef = useRef(false);
-  const clearBtnRef = useRef(null);
+  const isDrawing = useRef(false);
 
   // 1. Fetch ticket
   useEffect(() => {
@@ -124,65 +129,78 @@ function App() {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    
+    // Set canvas internal resolution to match its displayed size (CSS)
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * 1.5; // for retina
+    canvas.height = 150 * 1.5;
+    
     const ctx = canvas.getContext("2d");
+    ctx.scale(1.5, 1.5); // scale to match CSS size
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = "round";
+    ctx.strokeStyle = "#00C896";
     ctxRef.current = ctx;
-    
-    const resize = () => {
-      const rect = canvas.getBoundingClientRect();
-      canvas.width = rect.width * 1.5; // retina-friendly
-      canvas.height = 150 * 1.5;
-      ctx.scale(1.5, 1.5);
-    };
-    resize();
-    window.addEventListener('resize', resize);
-    
+
+    // Drawing functions
     const getPos = (e) => {
       const rect = canvas.getBoundingClientRect();
-      const src = e.touches ? e.touches[0] : e;
-      return { x: src.clientX - rect.left, y: src.clientY - rect.top };
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return {
+        x: (clientX - rect.left) * (canvas.width / rect.width),
+        y: (clientY - rect.top) * (canvas.height / rect.height)
+      };
     };
-    
+
     const start = (e) => {
       e.preventDefault();
-      drawingRef.current = true;
-      const { x, y } = getPos(e);
+      isDrawing.current = true;
+      const pos = getPos(e);
       ctx.beginPath();
-      ctx.moveTo(x, y);
+      ctx.moveTo(pos.x, pos.y);
     };
-    const move = (e) => {
+
+    const draw = (e) => {
       e.preventDefault();
-      if (!drawingRef.current) return;
-      const { x, y } = getPos(e);
-      ctx.lineWidth = 2.5;
-      ctx.lineCap = "round";
-      ctx.strokeStyle = "#00C896";
-      ctx.lineTo(x, y);
+      if (!isDrawing.current) return;
+      const pos = getPos(e);
+      ctx.lineTo(pos.x, pos.y);
       ctx.stroke();
     };
-    const stop = () => { drawingRef.current = false; };
-    
+
+    const stop = (e) => {
+      e.preventDefault();
+      isDrawing.current = false;
+    };
+
+    // Mouse events
     canvas.addEventListener('mousedown', start);
-    canvas.addEventListener('mousemove', move);
+    canvas.addEventListener('mousemove', draw);
     canvas.addEventListener('mouseup', stop);
+    canvas.addEventListener('mouseleave', stop);
+    // Touch events
     canvas.addEventListener('touchstart', start, { passive: false });
-    canvas.addEventListener('touchmove', move, { passive: false });
+    canvas.addEventListener('touchmove', draw, { passive: false });
     canvas.addEventListener('touchend', stop);
-    
+    canvas.addEventListener('touchcancel', stop);
+
     // Clear button
-    const clearBtn = clearBtnRef.current;
+    const clearBtn = document.getElementById('clearSignature');
     const clearCanvas = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
     };
     if (clearBtn) clearBtn.addEventListener('click', clearCanvas);
-    
+
     return () => {
-      window.removeEventListener('resize', resize);
       canvas.removeEventListener('mousedown', start);
-      canvas.removeEventListener('mousemove', move);
+      canvas.removeEventListener('mousemove', draw);
       canvas.removeEventListener('mouseup', stop);
+      canvas.removeEventListener('mouseleave', stop);
       canvas.removeEventListener('touchstart', start);
-      canvas.removeEventListener('touchmove', move);
+      canvas.removeEventListener('touchmove', draw);
       canvas.removeEventListener('touchend', stop);
+      canvas.removeEventListener('touchcancel', stop);
       if (clearBtn) clearBtn.removeEventListener('click', clearCanvas);
     };
   }, []);
@@ -192,9 +210,9 @@ function App() {
     if (!canvas) return true;
     const ctx = canvas.getContext('2d');
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const pixels = imageData.data;
-    for (let i=0; i<pixels.length; i+=4) {
-      if (pixels[i] < 255 || pixels[i+1] < 255 || pixels[i+2] < 255) return false;
+    const data = imageData.data;
+    for (let i = 0; i < data.length; i += 4) {
+      if (data[i] < 255 || data[i+1] < 255 || data[i+2] < 255) return false;
     }
     return true;
   };
@@ -219,7 +237,7 @@ function App() {
         authorisationPosition: clientPosition,
         authorisationSignature: imgData,
         authorisationSignedAt: new Date().toISOString(),
-        status: "awaiting-diagnosis", // Optional: update status
+        status: "awaiting-diagnosis",
         updatedAt: new Date().toISOString()
       });
       setSuccess(true);
@@ -230,6 +248,7 @@ function App() {
     setSubmitting(false);
   };
 
+  // Render states
   if (loading) {
     return (
       <div className="card" style={{textAlign:'center',padding:48}}>
@@ -264,7 +283,6 @@ function App() {
     );
   }
 
-  // Check if already authorized
   if (ticket && ticket.authorized === true) {
     return (
       <div className="card">
@@ -281,7 +299,7 @@ function App() {
     );
   }
 
-  // Main Form
+  // Main form
   return (
     <div className="card">
       <div className="header">
@@ -330,9 +348,10 @@ function App() {
 
       <div className="signature-area">
         <label className="label">Client Digital Signature *</label>
-        <canvas ref={canvasRef} height="150" style={{height:'150px'}} />
+        <canvas ref={canvasRef} height="150" style={{height:'150px', width:'100%'}} />
         <div className="sig-actions">
-          <button ref={clearBtnRef} className="btn btn-secondary btn-sm" style={{padding:'6px 12px',fontSize:12}}>🗑 Clear Signature</button>
+          <button id="clearSignature" className="btn btn-secondary btn-sm" style={{padding:'6px 12px',fontSize:12}}>🗑 Clear Signature</button>
+          <span style={{fontSize:11,color:'#64748B',marginLeft:'auto'}}>Draw with mouse or finger</span>
         </div>
       </div>
 
