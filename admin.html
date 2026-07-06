@@ -885,7 +885,7 @@ function FollowUpModal({tickets,onClose}){
 }
 
 /* ════════════════════════════════════════════════════
-   LIVE CHAT COMPONENT  ← NEW
+   LIVE CHAT COMPONENT
 ════════════════════════════════════════════════════ */
 function TicketChat({ticket, activeEngineer, onWaForward}){
   const [msgs,setMsgs]=useState([]);
@@ -896,7 +896,6 @@ function TicketChat({ticket, activeEngineer, onWaForward}){
   const typingTimer=useRef();
   const initDone=useRef(false);
 
-  // Announce presence
   useEffect(()=>{
     if(!activeEngineer||activeEngineer==="Unassigned") return;
     const pr=presenceRef(activeEngineer);
@@ -906,7 +905,6 @@ function TicketChat({ticket, activeEngineer, onWaForward}){
     return()=>{ pr.set({online:false,lastSeen:Date.now(),ticket:""}); };
   },[activeEngineer,ticket.ref]);
 
-  // Subscribe to messages
   useEffect(()=>{
     const ref=chatRef(ticket.ref);
     const handler=snap=>{
@@ -919,7 +917,6 @@ function TicketChat({ticket, activeEngineer, onWaForward}){
     return()=>ref.off("value",handler);
   },[ticket.ref]);
 
-  // Subscribe to typing
   useEffect(()=>{
     const ref=typingRef(ticket.ref);
     const handler=snap=>setTyping(snap.val()||{});
@@ -927,7 +924,6 @@ function TicketChat({ticket, activeEngineer, onWaForward}){
     return()=>ref.off("value",handler);
   },[ticket.ref]);
 
-  // Auto-post system message on first open
   useEffect(()=>{
     if(!initDone.current&&activeEngineer&&activeEngineer!=="Unassigned"){
       initDone.current=true;
@@ -973,7 +969,6 @@ function TicketChat({ticket, activeEngineer, onWaForward}){
 
   return(
     <div className="chat-panel">
-      {/* Header bar */}
       <div className="chat-engineer-bar">
         <div className="chat-avatar" style={{background:`${colorFor(activeEngineer)}20`,borderColor:`${colorFor(activeEngineer)}50`,color:colorFor(activeEngineer)}}>
           {activeEngineer[0].toUpperCase()}
@@ -987,7 +982,6 @@ function TicketChat({ticket, activeEngineer, onWaForward}){
         </div>
       </div>
 
-      {/* Messages */}
       <div className="chat-messages">
         {msgs.length===0&&(
           <div className="chat-sys-msg" style={{marginTop:16,maxWidth:260}}>
@@ -1025,12 +1019,10 @@ function TicketChat({ticket, activeEngineer, onWaForward}){
         <div ref={endRef}/>
       </div>
 
-      {/* Typing indicator */}
       <div className="typing-bar">
         {typingNames.length>0&&`✍️ ${typingNames.join(", ")} ${typingNames.length===1?"is":"are"} typing…`}
       </div>
 
-      {/* Input bar */}
       <div className="chat-input-bar">
         <textarea
           className="chat-textarea"
@@ -1417,18 +1409,17 @@ function SuccessScreen({ticket,onBack}){
 ════════════════════════════════════════════════════ */
 /* ── SIGNOFF MODAL ── */
 function SignoffModal({ticket,clientName,setClientName,clientPosition,setClientPosition,onSave,onClose}){
-  const [satisfaction,setSatisfaction]=React.useState(""); // "yes"|"no"|"partial"
+  const [satisfaction,setSatisfaction]=React.useState("");
   const [serviceRating,setServiceRating]=React.useState(0);
   const [responseTime,setResponseTime]=React.useState("");
   const [wouldRecommend,setWouldRecommend]=React.useState("");
   const [clientFeedback,setClientFeedback]=React.useState("");
-  const [signoffStep,setSignoffStep]=React.useState(1); // 1=survey, 2=signature
+  const [signoffStep,setSignoffStep]=React.useState(1);
 
   const RATINGS=[1,2,3,4,5];
   const ratingLabels={1:"Very Poor",2:"Poor",3:"Average",4:"Good",5:"Excellent"};
   const AC="#00C896";
 
-  // Wire up signature pad when step=2
   React.useEffect(()=>{
     if(signoffStep!==2) return;
     const canvas=document.getElementById("signature-pad");
@@ -1459,8 +1450,6 @@ function SignoffModal({ticket,clientName,setClientName,clientPosition,setClientP
     };
   },[signoffStep]);
 
-  const satisfactionOk=satisfaction==="yes"||satisfaction==="partial";
-
   const SurveyChip=({val,label,active,color,onClick})=>(
     <button onClick={onClick} style={{padding:"8px 16px",borderRadius:8,border:`2px solid ${active?color:"var(--border)"}`,background:active?color+"18":"var(--bg)",color:active?color:"var(--text3)",fontWeight:600,fontSize:12,cursor:"pointer",fontFamily:"inherit",transition:"all 0.15s"}}>
       {label}
@@ -1483,15 +1472,11 @@ function SignoffModal({ticket,clientName,setClientName,clientPosition,setClientP
           <button className="btn btn-ghost btn-sm" onClick={onClose}>✕</button>
         </div>
         <div className="modal-body">
-
-          {/* ── STEP 1: SATISFACTION SURVEY ── */}
           {signoffStep===1&&(
             <div>
               <div style={{background:"rgba(0,200,150,0.06)",border:"1px solid rgba(0,200,150,0.2)",borderRadius:10,padding:"12px 16px",marginBottom:18,fontSize:13,color:"var(--text2)"}}>
                 📋 Please answer a few quick questions before the client signs off. This helps us maintain service quality.
               </div>
-
-              {/* Q1 — Overall satisfaction */}
               <div style={{marginBottom:18}}>
                 <div style={{fontSize:12,fontWeight:700,color:"var(--text)",marginBottom:8}}>1. Is the client satisfied with the service and outcome? <span style={{color:"#F87171"}}>*</span></div>
                 <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
@@ -1501,12 +1486,10 @@ function SignoffModal({ticket,clientName,setClientName,clientPosition,setClientP
                 </div>
                 {satisfaction==="no"&&(
                   <div style={{marginTop:10,padding:"10px 14px",background:"rgba(239,68,68,0.08)",border:"1px solid rgba(239,68,68,0.25)",borderRadius:8,fontSize:12,color:"#F87171"}}>
-                    ⚠️ Client is not satisfied. Please resolve any outstanding issues before proceeding to sign-off. You may still record the sign-off after discussion.
+                    ⚠️ Client is not satisfied. Please resolve any outstanding issues before proceeding to sign-off.
                   </div>
                 )}
               </div>
-
-              {/* Q2 — Service Rating */}
               <div style={{marginBottom:18}}>
                 <div style={{fontSize:12,fontWeight:700,color:"var(--text)",marginBottom:8}}>2. How would the client rate our overall service quality?</div>
                 <div style={{display:"flex",gap:8,alignItems:"center"}}>
@@ -1518,8 +1501,6 @@ function SignoffModal({ticket,clientName,setClientName,clientPosition,setClientP
                   {serviceRating>0&&<span style={{fontSize:12,color:"#F59E0B",fontWeight:700,marginLeft:4}}>{ratingLabels[serviceRating]}</span>}
                 </div>
               </div>
-
-              {/* Q3 — Response time */}
               <div style={{marginBottom:18}}>
                 <div style={{fontSize:12,fontWeight:700,color:"var(--text)",marginBottom:8}}>3. Was the response and turnaround time acceptable?</div>
                 <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
@@ -1528,37 +1509,29 @@ function SignoffModal({ticket,clientName,setClientName,clientPosition,setClientP
                   ))}
                 </div>
               </div>
-
-              {/* Q4 — Would recommend */}
               <div style={{marginBottom:18}}>
-                <div style={{fontSize:12,fontWeight:700,color:"var(--text)",marginBottom:8}}>4. Would the client recommend Cyber I.T Masters to others?</div>
+                <div style={{fontSize:12,fontWeight:700,color:"var(--text)",marginBottom:8}}>4. Would the client recommend us to others?</div>
                 <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
                   <SurveyChip label="👍 Definitely Yes" active={wouldRecommend==="yes"} color="#10B981" onClick={()=>setWouldRecommend("yes")}/>
                   <SurveyChip label="🤔 Maybe" active={wouldRecommend==="maybe"} color="#F59E0B" onClick={()=>setWouldRecommend("maybe")}/>
                   <SurveyChip label="👎 Probably Not" active={wouldRecommend==="no"} color="#EF4444" onClick={()=>setWouldRecommend("no")}/>
                 </div>
               </div>
-
-              {/* Q5 — Additional feedback */}
               <div style={{marginBottom:20}}>
-                <div style={{fontSize:12,fontWeight:700,color:"var(--text)",marginBottom:6}}>5. Any additional comments or feedback from the client? (optional)</div>
-                <textarea className="field-input" style={{minHeight:72,marginTop:2}} value={clientFeedback} onChange={e=>setClientFeedback(e.target.value)} placeholder="e.g. Engineer was very helpful and professional..."/>
+                <div style={{fontSize:12,fontWeight:700,color:"var(--text)",marginBottom:6}}>5. Any additional feedback? (optional)</div>
+                <textarea className="field-input" style={{minHeight:72,marginTop:2}} value={clientFeedback} onChange={e=>setClientFeedback(e.target.value)} placeholder="e.g. Engineer was very helpful..."/>
               </div>
-
-              {/* Google Review nudge */}
               {(satisfaction==="yes"||(satisfaction==="partial"&&serviceRating>=3))&&(
                 <div style={{background:"rgba(251,191,36,0.07)",border:"1px solid rgba(251,191,36,0.25)",borderRadius:10,padding:"12px 16px",marginBottom:18,display:"flex",alignItems:"center",gap:14}}>
                   <span style={{fontSize:28}}>⭐</span>
                   <div>
                     <div style={{fontSize:13,fontWeight:700,color:"var(--text)",marginBottom:2}}>Remind client to leave a Google Review</div>
-                    <div style={{fontSize:11,color:"var(--text3)",marginBottom:6}}>It only takes 30 seconds and helps our business grow. Show the client this link:</div>
                     <a href={CFG.googleReview} target="_blank" rel="noreferrer" style={{display:"inline-flex",alignItems:"center",gap:6,background:"#F59E0B",color:"#050810",padding:"6px 14px",borderRadius:7,fontSize:12,fontWeight:700,textDecoration:"none"}}>
                       ⭐ Open Google Review →
                     </a>
                   </div>
                 </div>
               )}
-
               <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}>
                 <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
                 <button className="btn btn-primary" disabled={!satisfaction} onClick={()=>{if(satisfaction)setSignoffStep(2);}}>
@@ -1567,8 +1540,6 @@ function SignoffModal({ticket,clientName,setClientName,clientPosition,setClientP
               </div>
             </div>
           )}
-
-          {/* ── STEP 2: NAME + SIGNATURE ── */}
           {signoffStep===2&&(
             <div>
               {satisfaction==="partial"&&(
@@ -1618,7 +1589,7 @@ function SignoffModal({ticket,clientName,setClientName,clientPosition,setClientP
   );
 }
 
-function Admin({tickets,loading,authed,onAuth,onUpdate,onAddNote,onBack,onNewTicket,theme,toggleTheme}){
+function Admin({tickets,loading,authed,onAuth,onUpdate,onAddNote,onBack,onNewTicket,theme,toggleTheme,showToast}){
   const [pw,setPw]=useState(""); const [pwErr,setPwErr]=useState("");
   const [sel,setSel]=useState(null);
   const [fSt,setFSt]=useState("all"); const [fTy,setFTy]=useState("all"); const [fEng,setFEng]=useState("all");
@@ -1626,17 +1597,13 @@ function Admin({tickets,loading,authed,onAuth,onUpdate,onAddNote,onBack,onNewTic
   const [note,setNote]=useState(""); const [eqRef,setEqRef]=useState("");
   const [saving,setSaving]=useState(false);
   const [activeTab,setActiveTab]=useState("tickets");
-  const [detailTab,setDetailTab]=useState("overview"); // ← NEW: overview | chat | notes | actions
+  const [detailTab,setDetailTab]=useState("overview");
 
-  /* ── NEW: engineer identity & presence ── */
   const [activeEngineer,setActiveEngineer]=useState("Unassigned");
   const [onlineEngineers,setOnlineEngineers]=useState({});
-  const [chatCounts,setChatCounts]=useState({}); // ticketRef → message count
+  const [chatCounts,setChatCounts]=useState({});
+  const [lastRead,setLastRead]=useState({});
 
-  /* ── NEW: track chat unread per ticket ── */
-  const [lastRead,setLastRead]=useState({}); // ticketRef → timestamp when chat tab last opened
-
-  // Modals
   const [statusModal,setStatusModal]=useState(null);
   const [partsModal,setPartsModal]=useState(null);
   const [historyModal,setHistoryModal]=useState(null);
@@ -1646,7 +1613,6 @@ function Admin({tickets,loading,authed,onAuth,onUpdate,onAddNote,onBack,onNewTic
   const [clientName,setClientName]=useState("");
   const [clientPosition,setClientPosition]=useState("");
 
-  /* ── NEW: Subscribe to presence from RTDB ── */
   useEffect(()=>{
     if(!authed) return;
     const ref=rtdb.ref("presence");
@@ -1655,7 +1621,6 @@ function Admin({tickets,loading,authed,onAuth,onUpdate,onAddNote,onBack,onNewTic
     return()=>ref.off("value",handler);
   },[authed]);
 
-  /* ── NEW: Subscribe to chat message counts (lightweight) ── */
   useEffect(()=>{
     if(!authed||!tickets.length) return;
     const unsubs=[];
@@ -1671,7 +1636,6 @@ function Admin({tickets,loading,authed,onAuth,onUpdate,onAddNote,onBack,onNewTic
     return()=>unsubs.forEach(u=>u());
   },[authed,tickets.length]);
 
-  /* ── SIGNATURE PAD EFFECT ── */
   useEffect(()=>{
     if(!signoffModal) return;
     const canvas=document.getElementById("signature-pad");
@@ -1692,7 +1656,6 @@ function Admin({tickets,loading,authed,onAuth,onUpdate,onAddNote,onBack,onNewTic
     canvas.addEventListener("touchstart",start,{passive:false});
     canvas.addEventListener("touchmove",move,{passive:false});
     canvas.addEventListener("touchend",stop);
-    // Clear button
     const clearBtn=document.getElementById("clearSignature");
     const clearFn=()=>{ctx.clearRect(0,0,canvas.width,canvas.height);};
     if(clearBtn) clearBtn.addEventListener("click",clearFn);
@@ -1707,7 +1670,6 @@ function Admin({tickets,loading,authed,onAuth,onUpdate,onAddNote,onBack,onNewTic
     };
   },[signoffModal]);
 
-  /* ── SAVE CLIENT SIGN-OFF ── */
   const saveClientSignoff=async(ticket)=>{
     if(!clientName.trim()){alert("Please enter the client name.");return;}
     const canvas=document.getElementById("signature-pad");
@@ -1754,16 +1716,14 @@ function Admin({tickets,loading,authed,onAuth,onUpdate,onAddNote,onBack,onNewTic
   const counts=Object.keys(ST).reduce((a,k)=>{a[k]=tickets.filter(t=>t.status===k).length;return a;},{});
   const overdueCount=tickets.filter(t=>{const info=getSLAInfo(t);return info&&info.status==="breach";}).length;
 
-  /* ── NEW: count online engineers ── */
   const onlineList=Object.entries(onlineEngineers)
     .filter(([,v])=>v&&v.online)
     .map(([k,v])=>({name:k.replace(/_/g," "),...v}));
 
-  /* ── NEW: unread chat count for selected ticket ── */
   const chatUnread=(ref)=>{
     const total=chatCounts[ref]||0;
     const read=lastRead[ref]||0;
-    return total>0&&read===0?total:0; // simple: show count until user opens chat tab
+    return total>0&&read===0?total:0;
   };
 
   const totalChatActivity=Object.values(chatCounts).reduce((a,c)=>a+c,0);
@@ -1786,7 +1746,6 @@ function Admin({tickets,loading,authed,onAuth,onUpdate,onAddNote,onBack,onNewTic
     if(statement.trim()){
       await onAddNote(ticket.ref,`[Status → ${ST[newStatus]?.l}] ${statement}`,"engineer-note","");
     }
-    // NEW: post system message to chat
     try{await sendSysMsg(ticket.ref,`Status updated to "${ST[newStatus]?.l}" by ${activeEngineer}${statement?` · ${statement.slice(0,80)}`:""}`)}catch(e){}
     setStatusModal(null);
   };
@@ -1795,14 +1754,11 @@ function Admin({tickets,loading,authed,onAuth,onUpdate,onAddNote,onBack,onNewTic
   const doQuote=async()=>{setSaving(true);await onUpdate(sel,{quotationRef:eqRef});setSaving(false);};
   const doAssign=async(eng)=>{
     await onUpdate(tk.ref,{assignedEngineer:eng});
-    // NEW: if the active engineer changes, update their presence
     if(eng!=="Unassigned") setActiveEngineer(eng);
-    // NEW: log to chat
     try{await sendSysMsg(tk.ref,`Assigned to ${eng}`)}catch(e){}
   };
   const doSaveParts=async(parts)=>{setSaving(true);await onUpdate(partsModal.ref,{parts});setPartsModal(null);setSaving(false);};
 
-  /* ── NEW: WA forward handler for chat messages ── */
   const handleWaForward=(ticket,msgText)=>{
     const url=waUrl(ticket.phone,
       `📋 *${ticket.ref}* — Update from ${CFG.bizName}\n\n${msgText}\n\n_Reply to this message with your reference number to respond._`
@@ -1810,7 +1766,6 @@ function Admin({tickets,loading,authed,onAuth,onUpdate,onAddNote,onBack,onNewTic
     window.open(url,"_blank");
   };
 
-  /* ── NEW: open chat tab and mark as read ── */
   const openChatTab=()=>{
     setDetailTab("chat");
     if(sel) setLastRead(prev=>({...prev,[sel]:Date.now()}));
@@ -1818,7 +1773,6 @@ function Admin({tickets,loading,authed,onAuth,onUpdate,onAddNote,onBack,onNewTic
 
   return(
     <div className="main-layout">
-      {/* Modals */}
       {statusModal&&<StatusUpdateModal ticket={statusModal.ticket} newStatus={statusModal.newStatus} onConfirm={confirmStatusUpdate} onCancel={()=>setStatusModal(null)}/>}
       {partsModal&&<PartsModal ticket={partsModal} onSave={doSaveParts} onClose={()=>setPartsModal(null)}/>}
       {historyModal&&<ClientHistoryModal ticket={historyModal} allTickets={tickets} onClose={()=>setHistoryModal(null)}/>}
@@ -1826,7 +1780,6 @@ function Admin({tickets,loading,authed,onAuth,onUpdate,onAddNote,onBack,onNewTic
       {followUpModal&&<FollowUpModal tickets={tickets} onClose={()=>setFollowUpModal(false)}/>}
       {signoffModal&&<SignoffModal ticket={signoffModal} clientName={clientName} setClientName={setClientName} clientPosition={clientPosition} setClientPosition={setClientPosition} onSave={saveClientSignoff} onClose={()=>setSignoffModal(null)}/>}
 
-      {/* ── SIDEBAR ── */}
       <div className="sidebar">
         <div className="sidebar-logo">
           <div className="brand">
@@ -1840,8 +1793,6 @@ function Admin({tickets,loading,authed,onAuth,onUpdate,onAddNote,onBack,onNewTic
             <button className={`nav-item${activeTab==="tickets"?" active":""}`} onClick={()=>setActiveTab("tickets")}><span className="ni">🎫</span>All Tickets{tickets.length>0&&<span className="badge">{tickets.length}</span>}</button>
             <button className={`nav-item${activeTab==="new"?" active":""}`} onClick={()=>setActiveTab("new")}><span className="ni">✏️</span>Log New Ticket</button>
           </div>
-
-          {/* ── NEW: Live Chat nav section ── */}
           <div className="nav-section">
             <div className="nav-label">Live Chat</div>
             <div className="nav-item" style={{cursor:"default"}}>
@@ -1849,7 +1800,6 @@ function Admin({tickets,loading,authed,onAuth,onUpdate,onAddNote,onBack,onNewTic
               <span style={{flex:1}}>Team Chat</span>
               {totalChatActivity>0&&<span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:AC}}>{totalChatActivity}</span>}
             </div>
-            {/* Online engineers */}
             <div style={{padding:"4px 8px 6px"}}>
               <div style={{fontSize:9,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:5,paddingLeft:4}}>Online Now</div>
               {onlineList.length===0&&(
@@ -1863,7 +1813,6 @@ function Admin({tickets,loading,authed,onAuth,onUpdate,onAddNote,onBack,onNewTic
                 </div>
               ))}
             </div>
-            {/* My engineer identity */}
             <div style={{padding:"4px 10px 2px"}}>
               <div style={{fontSize:9,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>Your Identity</div>
               <select className="field-input" style={{fontSize:11,padding:"5px 8px"}} value={activeEngineer} onChange={e=>setActiveEngineer(e.target.value)}>
@@ -1871,7 +1820,6 @@ function Admin({tickets,loading,authed,onAuth,onUpdate,onAddNote,onBack,onNewTic
               </select>
             </div>
           </div>
-
           <div className="nav-section">
             <div className="nav-label">Status Filter</div>
             <button className={`nav-item${fSt==="all"?" active":""}`} onClick={()=>setFSt("all")}><span className="ni">📋</span>All<span style={{marginLeft:"auto",fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:"var(--text3)"}}>{tickets.length}</span></button>
@@ -1906,7 +1854,6 @@ function Admin({tickets,loading,authed,onAuth,onUpdate,onAddNote,onBack,onNewTic
         </div>
       </div>
 
-      {/* ── CONTENT AREA ── */}
       <div className="content-area">
         <div className="topbar">
           <div className="topbar-left">
@@ -1915,7 +1862,6 @@ function Admin({tickets,loading,authed,onAuth,onUpdate,onAddNote,onBack,onNewTic
           </div>
           <div className="topbar-right">
             {overdueCount>0&&<span style={{background:"rgba(239,68,68,0.1)",border:"1px solid rgba(239,68,68,0.3)",color:"#F87171",fontSize:11,fontWeight:700,padding:"4px 10px",borderRadius:6,animation:"blink 1.5s infinite"}}>⚠️ {overdueCount} SLA Breach{overdueCount>1?"es":""}</span>}
-            {/* NEW: online engineer indicator */}
             {onlineList.length>0&&(
               <div style={{display:"flex",alignItems:"center",gap:5,background:"rgba(0,200,150,0.08)",border:"1px solid rgba(0,200,150,0.2)",borderRadius:20,padding:"4px 10px"}}>
                 <div className="presence-online-dot" style={{width:6,height:6}}/>
@@ -1935,7 +1881,6 @@ function Admin({tickets,loading,authed,onAuth,onUpdate,onAddNote,onBack,onNewTic
 
         {activeTab==="tickets"&&(
           <div style={{flex:1,display:"flex",minHeight:0,overflow:"hidden"}} className="admin-body">
-            {/* ── TABLE PANE ── */}
             <div style={{flex:1,overflow:"hidden",display:"flex",flexDirection:"column"}}>
               <div style={{padding:"16px 20px 0"}}>
                 <div className="stats-row">
@@ -1998,7 +1943,6 @@ function Admin({tickets,loading,authed,onAuth,onUpdate,onAddNote,onBack,onNewTic
                               <td><span style={{fontSize:11,fontWeight:600,color:t.priority==="Urgent"?"#EF4444":t.priority==="High"?"#F59E0B":"var(--text3)"}}>{t.priority}</span></td>
                               <td><StatusBadge s={t.status}/></td>
                               <td><span style={{fontSize:11,color:t.assignedEngineer&&t.assignedEngineer!=="Unassigned"?AC:"var(--text3)"}}>{t.assignedEngineer||"Unassigned"}</span></td>
-                              {/* NEW: chat activity column */}
                               <td>
                                 {msgCount>0?(
                                   <span style={{display:"inline-flex",alignItems:"center",gap:4,fontSize:10,fontWeight:700,color:unread>0?"#EF4444":AC,fontFamily:"'IBM Plex Mono',monospace"}}>
@@ -2018,11 +1962,9 @@ function Admin({tickets,loading,authed,onAuth,onUpdate,onAddNote,onBack,onNewTic
               </div>
             </div>
 
-            {/* ── DETAIL PANEL ── */}
             <div className={`detail-panel${tk?"":" hidden"}`}>
               {tk&&(
                 <>
-                  {/* Panel header */}
                   <div className="detail-header">
                     <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:10}}>
                       <div>
@@ -2038,100 +1980,92 @@ function Admin({tickets,loading,authed,onAuth,onUpdate,onAddNote,onBack,onNewTic
                     </div>
                   </div>
 
-                  {/* ── NEW: Tab bar ── */}
-                  {detailTab === "actions" && (
-  <>
-    {/* WhatsApp Smart Sync */}
-    <div style={{ marginBottom: 16 }}>
-      <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text4)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>
-        💬 WhatsApp Smart Sync
-      </div>
-      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
-        <a href={waUrl(tk.phone, buildCustomerMsg(tk))} target="_blank" rel="noreferrer" className="btn btn-wa btn-sm">💬 Ticket Confirm</a>
-        <a href={waUrl(CFG.wa, buildBusinessMsg(tk))} target="_blank" rel="noreferrer" className="btn btn-sm" style={{ background: "rgba(14,165,233,0.1)", border: "1px solid rgba(14,165,233,0.2)", color: AC2 }}>📲 Notify Business</a>
-        {tk.email && <a href={`mailto:${tk.email}?subject=Re: Ticket ${tk.ref}`} className="btn btn-email btn-sm">✉️ Email Client</a>}
-      </div>
-      <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text4)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6, marginTop: 12 }}>Quick Status WA Messages</div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-        {NOTIFY_STATUSES.map(s => (
-          <a key={s} href={waUrl(tk.phone, buildStatusUpdateMsg(tk, s, "See update below."))} target="_blank" rel="noreferrer"
-            style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", borderRadius: 8, border: `1px solid ${ST[s]?.c || "var(--border)"}20`, background: `${ST[s]?.c || "var(--bg)"}10`, fontSize: 11, fontWeight: 600, color: ST[s]?.c || "var(--text2)", textDecoration: "none" }}>
-            <span style={{ fontSize: 14 }}>{{ resolved: "✅", closed: "🔒", awaiting: "📦", "in-progress": "🔧" }[s] || "📋"}</span>
-            Send "{ST[s]?.l}" WA Update
-          </a>
-        ))}
-      </div>
-    </div>
+                  <div className="detail-tabs">
+                    <button className={`detail-tab${detailTab==="overview"?" active":""}`} onClick={()=>setDetailTab("overview")}>
+                      📋 Overview
+                    </button>
+                    <button className={`detail-tab${detailTab==="chat"?" active":""}`} onClick={openChatTab}>
+                      💬 Chat
+                      {(chatCounts[tk.ref]||0)>0&&<span className="detail-tab-new">{chatCounts[tk.ref]}</span>}
+                    </button>
+                    <button className={`detail-tab${detailTab==="notes"?" active":""}`} onClick={()=>setDetailTab("notes")}>
+                      📝 Notes
+                      {(tk.notes||[]).length>0&&<span style={{fontSize:9,color:"var(--text4)",marginLeft:3}}>({(tk.notes||[]).length})</span>}
+                    </button>
+                    <button className={`detail-tab${detailTab==="actions"?" active":""}`} onClick={()=>setDetailTab("actions")}>
+                      ⚡ Actions
+                    </button>
+                  </div>
 
-    <div className="divider" />
-
-    {/* NEW AUTHORISATION LINK BUTTON */}
-    <div style={{ marginBottom: 16 }}>
-      <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text4)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>
-        ✍️ Client Authorisation
-      </div>
-      {tk.authorized ? (
-        <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(16,185,129,0.1)", border: "1px solid #10B981", borderRadius: 20, padding: "6px 14px", fontWeight: 700, fontSize: 12, color: "#10B981" }}>
-          ✅ Authorised by {tk.authorisationName || "Client"}
-        </div>
-      ) : (
-        <button
-          className="btn btn-secondary btn-sm"
-          onClick={() => {
-            const link = `https://cyberit.mbulahenigroup.co.za/authorisation.html?ticketId=${tk.ref}`;
-            navigator.clipboard.writeText(link).then(() => {
-              alert(`✅ Authorisation link copied to clipboard!\n\n${link}\n\nSend this to the client via WhatsApp or Email.`);
-            }).catch(() => {
-              prompt("Copy this link manually:", link);
-            });
-          }}
-          style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
-        >
-          📋 Get Authorisation Link
-        </button>
-      )}
-      <div style={{ fontSize: 11, color: "var(--text3)", marginTop: 6 }}>
-        {tk.authorized
-          ? "Client has already signed the authorisation form."
-          : "Copy this link and send it to the client. They will sign the T&Cs digitally."}
-      </div>
-    </div>
-
-    <div className="divider" />
-
-    {/* Documents & History */}
-    <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text4)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>Documents & History</div>
-    <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
-      <button className="btn btn-pdf btn-sm" onClick={() => generateJobCard(tk)}>🖨️ Job Card PDF</button>
-      <button className="btn btn-secondary btn-sm" onClick={() => setHistoryModal(tk)}>👤 Client History</button>
-      <button className="btn btn-secondary btn-sm" onClick={() => setPartsModal(tk)}>🔩 Manage Parts</button>
-      <button className="btn btn-ghost btn-sm" style={{ fontSize: 11 }} onClick={() => setFixesModal(true)}>💡 Known Fixes</button>
-      <button className="btn btn-primary btn-sm" onClick={() => { setClientName(tk.clientName || tk.name || ""); setClientPosition(""); setSignoffModal(tk); }}>✍ Client Sign-Off</button>
-    </div>
-    {tk.clientSignoff?.signed && (
-      <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#10B981", color: "#fff", padding: "5px 12px", borderRadius: 20, fontWeight: 700, fontSize: 12, marginBottom: 8 }}>
-        ✓ Client Signed — {tk.clientSignoff.clientName}
-        {tk.clientSignoff.signatureImage && <img src={tk.clientSignoff.signatureImage} alt="sig" style={{ height: 24, borderRadius: 4, background: "#fff", marginLeft: 4 }} />}
-      </div>
-    )}
-
-    <div className="divider" />
-
-    {/* Chat to WA bridge */}
-    <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text4)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>
-      🔗 Chat → WhatsApp Bridge
-    </div>
-    <div style={{ background: "var(--bg3)", border: "1px solid var(--border)", borderRadius: 8, padding: "10px 12px", marginBottom: 8, fontSize: 12, color: "var(--text3)", lineHeight: 1.6 }}>
-      Open the <strong style={{ color: AC }}>💬 Chat</strong> tab and tap the <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 10, background: "rgba(37,211,102,0.12)", color: "#25D366", padding: "1px 5px", borderRadius: 4 }}>💬 WA</span> button next to any message to instantly forward it to the client on WhatsApp.
-    </div>
-    <button className="btn btn-primary btn-sm" onClick={openChatTab} style={{ width: "100%" }}>
-      Open Team Chat →
-    </button>
-  </>
-)}
+                  {detailTab==="overview"&&(
+                    <div className="detail-body">
+                      <div style={{marginBottom:16}}>
+                        <div style={{fontSize:10,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Update Status</div>
+                        <div style={{fontSize:11,color:"var(--text3)",marginBottom:6}}>
+                          <span style={{color:AC,fontWeight:600}}>★ Marked statuses notify the client via WhatsApp</span>
+                        </div>
+                        <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+                          {Object.entries(ST).map(([k,v])=>(
+                            <button key={k} onClick={()=>doStatusClick(tk,k)}
+                              style={{border:`1px solid ${v.c}`,borderRadius:6,padding:"4px 9px",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit",background:tk.status===k?v.c:"transparent",color:tk.status===k?"#050810":v.c,transition:"all 0.15s",position:"relative"}}>
+                              {NOTIFY_STATUSES.includes(k)&&<span style={{position:"absolute",top:-4,right:-4,width:8,height:8,borderRadius:"50%",background:"#00C896",border:"1px solid var(--card)"}}/>}
+                              {v.l}
+                            </button>
+                          ))}
+                        </div>
+                        <div style={{fontSize:10,color:"var(--text4)",marginTop:6}}>● Green dot = client notification sent</div>
+                      </div>
                       <div className="divider"/>
-
-                      {/* Quotation */}
+                      <div style={{marginBottom:16}}>
+                        <div style={{fontSize:10,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6}}>Assigned Engineer</div>
+                        <select className="field-input" style={{fontSize:12}} value={tk.assignedEngineer||"Unassigned"} onChange={e=>doAssign(e.target.value)}>
+                          {ENGINEERS.map(eng=><option key={eng}>{eng}</option>)}
+                        </select>
+                      </div>
+                      <div className="divider"/>
+                      <div style={{fontSize:10,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Ticket Details</div>
+                      {[
+                        ["Service",SVCS.find(s=>s.id===tk.serviceType)?.label],
+                        ["Logged by",tk.loggedBy==="engineer"?`Engineer: ${tk.engineerName||""}`: "Customer (self)"],
+                        tk.company&&["Company",tk.company],
+                        ["Priority",tk.priority],
+                        tk.deviceType&&["Device",`${tk.manufacturer||""} ${tk.modelNumber||""} (${tk.deviceType})`],
+                        tk.serialNumber&&["Serial",tk.serialNumber],
+                        tk.operatingSystem&&["OS",tk.operatingSystem],
+                        tk.warrantyStatus&&["Warranty",tk.warrantyStatus],
+                        tk.address&&["Address",tk.address],
+                        tk.preferredDate&&["Preferred",`${tk.preferredDate} ${tk.preferredTime}`],
+                        ["Submitted",new Date(tk.createdAt).toLocaleString("en-ZA")],
+                        tk.quotationRef&&["Quotation",tk.quotationRef],
+                      ].filter(Boolean).map(([l,v],i)=>(
+                        <div key={i} className="detail-row"><div className="detail-key">{l}</div><div className="detail-val">{v}</div></div>
+                      ))}
+                      <div className="divider"/>
+                      <div style={{fontSize:10,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Issue</div>
+                      <div style={{background:"var(--bg)",borderRadius:8,padding:"10px 12px",border:"1px solid var(--border)",marginBottom:8}}>
+                        <p style={{fontSize:13,fontWeight:600,color:"var(--text)",marginBottom:tk.issueDetail||tk.problemDescription?6:0}}>{tk.issueTitle||tk.problemDescription||"—"}</p>
+                        {tk.issueDetail&&<p style={{fontSize:12,color:"var(--text3)",lineHeight:1.6}}>{tk.issueDetail}</p>}
+                        {tk.accessories&&<p style={{fontSize:11,color:"var(--text3)",marginTop:5}}>🎒 {tk.accessories}</p>}
+                        {tk.physicalDamage&&<p style={{fontSize:11,color:"var(--text3)",marginTop:3}}>💥 {tk.physicalDamage}</p>}
+                        {tk.devicePassword&&<p style={{fontSize:11,color:"var(--text3)",marginTop:3}}>🔑 {tk.devicePassword}</p>}
+                        {tk.conditionOnArrival&&<p style={{fontSize:11,color:"var(--text3)",marginTop:3}}>🔍 {tk.conditionOnArrival}</p>}
+                        {tk.urgency&&<p style={{fontSize:11,color:"var(--text3)",marginTop:3}}>⚡ {tk.urgency}</p>}
+                        {tk.engineerNote&&<p style={{fontSize:11,color:AC2,marginTop:5,borderTop:"1px solid var(--border)",paddingTop:5}}>📝 Engineer: {tk.engineerNote}</p>}
+                      </div>
+                      <div className="divider"/>
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+                        <div style={{fontSize:10,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Parts / Inventory</div>
+                        <button className="btn btn-secondary btn-sm" onClick={()=>setPartsModal(tk)}>🔩 Manage</button>
+                      </div>
+                      {(tk.parts||[]).length===0&&<div style={{fontSize:12,color:"var(--text4)",marginBottom:8}}>No parts added.</div>}
+                      {(tk.parts||[]).map((p,i)=>(
+                        <div key={i} className="part-row">
+                          <div className="part-name">{p.name}</div>
+                          <div className="part-qty">×{p.qty}</div>
+                          <span className="part-status" style={{background:p.status==="arrived"?"rgba(16,185,129,0.1)":"rgba(245,158,11,0.1)",color:p.status==="arrived"?"#10B981":"#F59E0B"}}>{p.status}</span>
+                        </div>
+                      ))}
+                      <div className="divider"/>
                       <div style={{fontSize:10,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Link Quotation</div>
                       <div style={{display:"flex",gap:6,marginBottom:4}}>
                         <input className="field-input" style={{flex:1,fontSize:12}} value={eqRef} onChange={e=>setEqRef(e.target.value)} placeholder="QUO-2025-001"/>
@@ -2141,18 +2075,12 @@ function Admin({tickets,loading,authed,onAuth,onUpdate,onAddNote,onBack,onNewTic
                     </div>
                   )}
 
-                  {/* ── TAB: LIVE CHAT (NEW) ── */}
                   {detailTab==="chat"&&(
                     <div style={{flex:1,display:"flex",flexDirection:"column",minHeight:0,height:"calc(100vh - 200px)"}}>
-                      <TicketChat
-                        ticket={tk}
-                        activeEngineer={activeEngineer}
-                        onWaForward={handleWaForward}
-                      />
+                      <TicketChat ticket={tk} activeEngineer={activeEngineer} onWaForward={handleWaForward}/>
                     </div>
                   )}
 
-                  {/* ── TAB: NOTES ── */}
                   {detailTab==="notes"&&(
                     <div className="detail-body">
                       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
@@ -2174,140 +2102,108 @@ function Admin({tickets,loading,authed,onAuth,onUpdate,onAddNote,onBack,onNewTic
                     </div>
                   )}
 
-                  {/* ── TAB: QUICK ACTIONS (NEW) ── */}
-      {detailTab === "actions" && (
-  <>
-    {/* WhatsApp Smart Sync */}
-    <div style={{ marginBottom: 16 }}>
-      <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text4)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>
-        💬 WhatsApp Smart Sync
+                  {detailTab==="actions" && (
+                    <div className="detail-body">
+                      <div style={{marginBottom:16}}>
+                        <div style={{fontSize:10,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:10}}>
+                          💬 WhatsApp Smart Sync
+                        </div>
+                        <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:8}}>
+                          <a href={waUrl(tk.phone, buildCustomerMsg(tk))} target="_blank" rel="noreferrer" className="btn btn-wa btn-sm">💬 Ticket Confirm</a>
+                          <a href={waUrl(CFG.wa, buildBusinessMsg(tk))} target="_blank" rel="noreferrer" className="btn btn-sm" style={{background:"rgba(14,165,233,0.1)",border:"1px solid rgba(14,165,233,0.2)",color:AC2}}>📲 Notify Business</a>
+                          {tk.email && <a href={`mailto:${tk.email}?subject=Re: Ticket ${tk.ref}`} className="btn btn-email btn-sm">✉️ Email Client</a>}
+                        </div>
+                        <div style={{fontSize:10,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6,marginTop:12}}>Quick Status WA Messages</div>
+                        <div style={{display:"flex",flexDirection:"column",gap:5}}>
+                          {NOTIFY_STATUSES.map(s=>(
+                            <a key={s} href={waUrl(tk.phone, buildStatusUpdateMsg(tk, s, "See update below."))} target="_blank" rel="noreferrer"
+                              style={{display:"flex",alignItems:"center",gap:8,padding:"8px 10px",borderRadius:8,border:`1px solid ${ST[s]?.c || "var(--border)"}20`,background:`${ST[s]?.c || "var(--bg)"}10`,fontSize:11,fontWeight:600,color:ST[s]?.c || "var(--text2)",textDecoration:"none"}}>
+                              <span style={{fontSize:14}}>{{ resolved:"✅", closed:"🔒", awaiting:"📦", "in-progress":"🔧" }[s] || "📋"}</span>
+                              Send "{ST[s]?.l}" WA Update
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="divider" />
+
+                      <div style={{marginBottom:16}}>
+                        <div style={{fontSize:10,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:10}}>
+                          ✍️ Client Authorisation
+                        </div>
+                        {tk.authorized ? (
+                          <div style={{display:"inline-flex",alignItems:"center",gap:6,background:"rgba(16,185,129,0.1)",border:"1px solid #10B981",borderRadius:20,padding:"6px 14px",fontWeight:700,fontSize:12,color:"#10B981"}}>
+                            ✅ Authorised by {tk.authorisationName || "Client"}
+                          </div>
+                        ) : (
+                          <button
+                            className="btn btn-secondary btn-sm"
+                            onClick={() => {
+                              const link = `https://cyberit.mbulahenigroup.co.za/authorisation.html?ticketId=${tk.ref}`;
+                              navigator.clipboard.writeText(link).then(() => {
+                                alert(`✅ Authorisation link copied to clipboard!\n\n${link}\n\nSend this to the client via WhatsApp or Email.`);
+                              }).catch(() => {
+                                prompt("Copy this link manually:", link);
+                              });
+                            }}
+                            style={{display:"inline-flex",alignItems:"center",gap:6}}
+                          >
+                            📋 Get Authorisation Link
+                          </button>
+                        )}
+                        <div style={{fontSize:11,color:"var(--text3)",marginTop:6}}>
+                          {tk.authorized
+                            ? "Client has already signed the authorisation form."
+                            : "Copy this link and send it to the client. They will sign the T&Cs digitally."}
+                        </div>
+                      </div>
+
+                      <div className="divider" />
+
+                      <div style={{fontSize:10,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:10}}>Documents & History</div>
+                      <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:8}}>
+                        <button className="btn btn-pdf btn-sm" onClick={()=>generateJobCard(tk)}>🖨️ Job Card PDF</button>
+                        <button className="btn btn-secondary btn-sm" onClick={()=>setHistoryModal(tk)}>👤 Client History</button>
+                        <button className="btn btn-secondary btn-sm" onClick={()=>setPartsModal(tk)}>🔩 Manage Parts</button>
+                        <button className="btn btn-ghost btn-sm" style={{fontSize:11}} onClick={()=>setFixesModal(true)}>💡 Known Fixes</button>
+                        <button className="btn btn-primary btn-sm" onClick={()=>{setClientName(tk.clientName||tk.name||"");setClientPosition("");setSignoffModal(tk);}}>✍ Client Sign-Off</button>
+                      </div>
+                      {tk.clientSignoff?.signed&&(
+                        <div style={{display:"inline-flex",alignItems:"center",gap:6,background:"#10B981",color:"#fff",padding:"5px 12px",borderRadius:20,fontWeight:700,fontSize:12,marginBottom:8}}>
+                          ✓ Client Signed — {tk.clientSignoff.clientName}
+                          {tk.clientSignoff.signatureImage&&<img src={tk.clientSignoff.signatureImage} alt="sig" style={{height:24,borderRadius:4,background:"#fff",marginLeft:4}}/>}
+                        </div>
+                      )}
+
+                      <div className="divider" />
+
+                      <div style={{fontSize:10,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:10}}>
+                        🔗 Chat → WhatsApp Bridge
+                      </div>
+                      <div style={{background:"var(--bg3)",border:"1px solid var(--border)",borderRadius:8,padding:"10px 12px",marginBottom:8,fontSize:12,color:"var(--text3)",lineHeight:1.6}}>
+                        Open the <strong style={{color:AC}}>💬 Chat</strong> tab and tap the <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,background:"rgba(37,211,102,0.12)",color:"#25D366",padding:"1px 5px",borderRadius:4}}>💬 WA</span> button next to any message to instantly forward it to the client on WhatsApp.
+                      </div>
+                      <button className="btn btn-primary btn-sm" onClick={openChatTab} style={{width:"100%"}}>
+                        Open Team Chat →
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
+              {!tk&&(
+                <div style={{display:"flex",alignItems:"center",justifyContent:"center",height:"100%",color:"var(--text4)",fontSize:14,flexDirection:"column",gap:8}}>
+                  <span style={{fontSize:32}}>📋</span>
+                  <span>Select a ticket to view details</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
-      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
-        <a href={waUrl(tk.phone, buildCustomerMsg(tk))} target="_blank" rel="noreferrer" className="btn btn-wa btn-sm">💬 Ticket Confirm</a>
-        <a href={waUrl(CFG.wa, buildBusinessMsg(tk))} target="_blank" rel="noreferrer" className="btn btn-sm" style={{ background: "rgba(14,165,233,0.1)", border: "1px solid rgba(14,165,233,0.2)", color: AC2 }}>📲 Notify Business</a>
-        {tk.email && <a href={`mailto:${tk.email}?subject=Re: Ticket ${tk.ref}`} className="btn btn-email btn-sm">✉️ Email Client</a>}
-      </div>
-      <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text4)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6, marginTop: 12 }}>Quick Status WA Messages</div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-        {NOTIFY_STATUSES.map(s => (
-          <a key={s} href={waUrl(tk.phone, buildStatusUpdateMsg(tk, s, "See update below."))} target="_blank" rel="noreferrer"
-            style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", borderRadius: 8, border: `1px solid ${ST[s]?.c || "var(--border)"}20`, background: `${ST[s]?.c || "var(--bg)"}10`, fontSize: 11, fontWeight: 600, color: ST[s]?.c || "var(--text2)", textDecoration: "none" }}>
-            <span style={{ fontSize: 14 }}>{{ resolved: "✅", closed: "🔒", awaiting: "📦", "in-progress": "🔧" }[s] || "📋"}</span>
-            Send "{ST[s]?.l}" WA Update
-          </a>
-        ))}
-      </div>
     </div>
+  );
+}
 
-    <div className="divider" />
-
-    {/* NEW AUTHORISATION LINK BUTTON */}
-    <div style={{ marginBottom: 16 }}>
-      <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text4)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>
-        ✍️ Client Authorisation
-      </div>
-      {tk.authorized ? (
-        <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(16,185,129,0.1)", border: "1px solid #10B981", borderRadius: 20, padding: "6px 14px", fontWeight: 700, fontSize: 12, color: "#10B981" }}>
-          ✅ Authorised by {tk.authorisationName || "Client"}
-        </div>
-      ) : (
-        <button
-          className="btn btn-secondary btn-sm"
-          onClick={() => {
-            const link = `https://cyberit.mbulahenigroup.co.za/authorisation.html?ticketId=${tk.ref}`;
-            navigator.clipboard.writeText(link).then(() => {
-              alert(`✅ Authorisation link copied to clipboard!\n\n${link}\n\nSend this to the client via WhatsApp or Email.`);
-            }).catch(() => {
-              prompt("Copy this link manually:", link);
-            });
-          }}
-          style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
-        >
-          📋 Get Authorisation Link
-        </button>
-      )}
-      <div style={{ fontSize: 11, color: "var(--text3)", marginTop: 6 }}>
-        {tk.authorized
-          ? "Client has already signed the authorisation form."
-          : "Copy this link and send it to the client. They will sign the T&Cs digitally."}
-      </div>
-    </div>
-
-    <div className="divider" />
-
-    {/* Documents & History */}
-    <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text4)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>Documents & History</div>
-    <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
-      <button className="btn btn-pdf btn-sm" onClick={() => generateJobCard(tk)}>🖨️ Job Card PDF</button>
-      <button className="btn btn-secondary btn-sm" onClick={() => setHistoryModal(tk)}>👤 Client History</button>
-      <button className="btn btn-secondary btn-sm" onClick={() => setPartsModal(tk)}>🔩 Manage Parts</button>
-      <button className="btn btn-ghost btn-sm" style={{ fontSize: 11 }} onClick={() => setFixesModal(true)}>💡 Known Fixes</button>
-      <button className="btn btn-primary btn-sm" onClick={() => { setClientName(tk.clientName || tk.name || ""); setClientPosition(""); setSignoffModal(tk); }}>✍ Client Sign-Off</button>
-    </div>
-    {tk.clientSignoff?.signed && (
-      <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#10B981", color: "#fff", padding: "5px 12px", borderRadius: 20, fontWeight: 700, fontSize: 12, marginBottom: 8 }}>
-        ✓ Client Signed — {tk.clientSignoff.clientName}
-        {tk.clientSignoff.signatureImage && <img src={tk.clientSignoff.signatureImage} alt="sig" style={{ height: 24, borderRadius: 4, background: "#fff", marginLeft: 4 }} />}
-      </div>
-    )}
-
-    <div className="divider" />
-
-    {/* Chat to WA bridge */}
-    <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text4)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>
-      🔗 Chat → WhatsApp Bridge
-    </div>
-    <div style={{ background: "var(--bg3)", border: "1px solid var(--border)", borderRadius: 8, padding: "10px 12px", marginBottom: 8, fontSize: 12, color: "var(--text3)", lineHeight: 1.6 }}>
-      Open the <strong style={{ color: AC }}>💬 Chat</strong> tab and tap the <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 10, background: "rgba(37,211,102,0.12)", color: "#25D366", padding: "1px 5px", borderRadius: 4 }}>💬 WA</span> button next to any message to instantly forward it to the client on WhatsApp.
-    </div>
-    <button className="btn btn-primary btn-sm" onClick={openChatTab} style={{ width: "100%" }}>
-      Open Team Chat →
-    </button>
-  </>
-)}
-      <div style={{fontSize:11,color:"var(--text3)",marginTop:6}}>
-        {tk.authorized
-          ? "Client has already signed the authorisation form."
-          : "Copy this link and send it to the client. They will sign the T&Cs digitally."}
-      </div>
-    </div>
-
-    <div className="divider" />
-
-    {/* Documents & History */}
-    <div style={{fontSize:10,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:10}}>Documents & History</div>
-    <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:8}}>
-      <button className="btn btn-pdf btn-sm" onClick={()=>generateJobCard(tk)}>🖨️ Job Card PDF</button>
-      <button className="btn btn-secondary btn-sm" onClick={()=>setHistoryModal(tk)}>👤 Client History</button>
-      <button className="btn btn-secondary btn-sm" onClick={()=>setPartsModal(tk)}>🔩 Manage Parts</button>
-      <button className="btn btn-ghost btn-sm" style={{fontSize:11}} onClick={()=>setFixesModal(true)}>💡 Known Fixes</button>
-      <button className="btn btn-primary btn-sm" onClick={()=>{setClientName(tk.clientName||tk.name||"");setClientPosition("");setSignoffModal(tk);}}>✍ Client Sign-Off</button>
-    </div>
-    {tk.clientSignoff?.signed&&(
-      <div style={{display:"inline-flex",alignItems:"center",gap:6,background:"#10B981",color:"#fff",padding:"5px 12px",borderRadius:20,fontWeight:700,fontSize:12,marginBottom:8}}>
-        ✓ Client Signed — {tk.clientSignoff.clientName}
-        {tk.clientSignoff.signatureImage&&<img src={tk.clientSignoff.signatureImage} alt="sig" style={{height:24,borderRadius:4,background:"#fff",marginLeft:4}}/>}
-      </div>
-    )}
-
-    <div className="divider" />
-
-    {/* Chat to WA bridge */}
-    <div style={{fontSize:10,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:10}}>
-      🔗 Chat → WhatsApp Bridge
-    </div>
-    <div style={{background:"var(--bg3)",border:"1px solid var(--border)",borderRadius:8,padding:"10px 12px",marginBottom:8,fontSize:12,color:"var(--text3)",lineHeight:1.6}}>
-      Open the <strong style={{color:AC}}>💬 Chat</strong> tab and tap the <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,background:"rgba(37,211,102,0.12)",color:"#25D366",padding:"1px 5px",borderRadius:4}}>💬 WA</span> button next to any message to instantly forward it to the client on WhatsApp.
-    </div>
-    <button className="btn btn-primary btn-sm" onClick={openChatTab} style={{width:"100%"}}>
-      Open Team Chat →
-    </button>
-  </div>
-)}
-
-/* ════════════════════════════════════════════════════
-   ROOT
-════════════════════════════════════════════════════ */
 function Root(){
   const [view,setView]=useState("portal");
   const [tickets,setTickets]=useState([]);
@@ -2342,7 +2238,6 @@ function Root(){
       const ref=makeTktRef(num);
       const ticket={...form,ref,ticketNumber:num,status:"open",createdAt:ts(),updatedAt:ts(),notes:[],quotationRef:"",parts:[],assignedEngineer:form.assignedEngineer||"Unassigned",clientSignoff:{signed:false,clientName:"",clientPosition:"",signedAt:null,signatureImage:""}};
       await db.collection("tickets").doc(ref).set(ticket);
-      // NEW: post opening system message to RTDB chat
       try{await sendSysMsg(ref,`Ticket ${ref} created — ${SVCS.find(s=>s.id===form.serviceType)?.label||form.serviceType}`);}catch(e){}
       setLastTicket(ticket);
       if(view==="admin")showToast(`Ticket ${ref} created ✓`);
@@ -2368,7 +2263,7 @@ function Root(){
         </div>
       )}
       {view==="success"&&lastTicket&&<SuccessScreen ticket={lastTicket} onBack={()=>setView("portal")}/>}
-      {view==="admin"&&<Admin tickets={tickets} loading={dbLoading} authed={adminAuthed} onAuth={()=>setAdminAuthed(true)} onUpdate={updateTicket} onAddNote={addNote} onBack={()=>setView("portal")} onNewTicket={addTicket} theme={theme} toggleTheme={toggleTheme}/>}
+      {view==="admin"&&<Admin tickets={tickets} loading={dbLoading} authed={adminAuthed} onAuth={()=>setAdminAuthed(true)} onUpdate={updateTicket} onAddNote={addNote} onBack={()=>setView("portal")} onNewTicket={addTicket} theme={theme} toggleTheme={toggleTheme} showToast={showToast}/>}
       <Toast msg={toast.msg} type={toast.type}/>
     </>
   );
