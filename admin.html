@@ -2185,24 +2185,24 @@ function Admin({tickets,loading,authed,onAuth,onUpdate,onAddNote,onBack,onNewTic
                   )}
 
                   {/* ── TAB: QUICK ACTIONS (NEW) ── */}
-      {detailTab==="actions" && (
-  <div className="detail-body">
+      {detailTab === "actions" && (
+  <>
     {/* WhatsApp Smart Sync */}
-    <div style={{marginBottom:16}}>
-      <div style={{fontSize:10,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:10}}>
+    <div style={{ marginBottom: 16 }}>
+      <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text4)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>
         💬 WhatsApp Smart Sync
       </div>
-      <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:8}}>
-        <a href={waUrl(tk.phone,buildCustomerMsg(tk))} target="_blank" rel="noreferrer" className="btn btn-wa btn-sm">💬 Ticket Confirm</a>
-        <a href={waUrl(CFG.wa,buildBusinessMsg(tk))} target="_blank" rel="noreferrer" className="btn btn-sm" style={{background:"rgba(14,165,233,0.1)",border:"1px solid rgba(14,165,233,0.2)",color:AC2}}>📲 Notify Business</a>
-        {tk.email&&<a href={`mailto:${tk.email}?subject=Re: Ticket ${tk.ref}`} className="btn btn-email btn-sm">✉️ Email Client</a>}
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
+        <a href={waUrl(tk.phone, buildCustomerMsg(tk))} target="_blank" rel="noreferrer" className="btn btn-wa btn-sm">💬 Ticket Confirm</a>
+        <a href={waUrl(CFG.wa, buildBusinessMsg(tk))} target="_blank" rel="noreferrer" className="btn btn-sm" style={{ background: "rgba(14,165,233,0.1)", border: "1px solid rgba(14,165,233,0.2)", color: AC2 }}>📲 Notify Business</a>
+        {tk.email && <a href={`mailto:${tk.email}?subject=Re: Ticket ${tk.ref}`} className="btn btn-email btn-sm">✉️ Email Client</a>}
       </div>
-      <div style={{fontSize:10,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6,marginTop:12}}>Quick Status WA Messages</div>
-      <div style={{display:"flex",flexDirection:"column",gap:5}}>
-        {NOTIFY_STATUSES.map(s=>(
-          <a key={s} href={waUrl(tk.phone,buildStatusUpdateMsg(tk,s,"See update below."))} target="_blank" rel="noreferrer"
-            style={{display:"flex",alignItems:"center",gap:8,padding:"8px 10px",borderRadius:8,border:`1px solid ${ST[s]?.c||"var(--border)"}20`,background:`${ST[s]?.c||"var(--bg)"}10`,fontSize:11,fontWeight:600,color:ST[s]?.c||"var(--text2)",textDecoration:"none"}}>
-            <span style={{fontSize:14}}>{{resolved:"✅",closed:"🔒",awaiting:"📦","in-progress":"🔧"}[s]||"📋"}</span>
+      <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text4)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6, marginTop: 12 }}>Quick Status WA Messages</div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+        {NOTIFY_STATUSES.map(s => (
+          <a key={s} href={waUrl(tk.phone, buildStatusUpdateMsg(tk, s, "See update below."))} target="_blank" rel="noreferrer"
+            style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", borderRadius: 8, border: `1px solid ${ST[s]?.c || "var(--border)"}20`, background: `${ST[s]?.c || "var(--bg)"}10`, fontSize: 11, fontWeight: 600, color: ST[s]?.c || "var(--text2)", textDecoration: "none" }}>
+            <span style={{ fontSize: 14 }}>{{ resolved: "✅", closed: "🔒", awaiting: "📦", "in-progress": "🔧" }[s] || "📋"}</span>
             Send "{ST[s]?.l}" WA Update
           </a>
         ))}
@@ -2211,13 +2211,13 @@ function Admin({tickets,loading,authed,onAuth,onUpdate,onAddNote,onBack,onNewTic
 
     <div className="divider" />
 
-    {/* ─── NEW AUTHORISATION LINK BUTTON ─── */}
-    <div style={{marginBottom:16}}>
-      <div style={{fontSize:10,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:10}}>
+    {/* NEW AUTHORISATION LINK BUTTON */}
+    <div style={{ marginBottom: 16 }}>
+      <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text4)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>
         ✍️ Client Authorisation
       </div>
       {tk.authorized ? (
-        <div style={{display:"inline-flex",alignItems:"center",gap:6,background:"rgba(16,185,129,0.1)",border:"1px solid #10B981",borderRadius:20,padding:"6px 14px",fontWeight:700,fontSize:12,color:"#10B981"}}>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(16,185,129,0.1)", border: "1px solid #10B981", borderRadius: 20, padding: "6px 14px", fontWeight: 700, fontSize: 12, color: "#10B981" }}>
           ✅ Authorised by {tk.authorisationName || "Client"}
         </div>
       ) : (
@@ -2228,15 +2228,53 @@ function Admin({tickets,loading,authed,onAuth,onUpdate,onAddNote,onBack,onNewTic
             navigator.clipboard.writeText(link).then(() => {
               alert(`✅ Authorisation link copied to clipboard!\n\n${link}\n\nSend this to the client via WhatsApp or Email.`);
             }).catch(() => {
-              // Fallback for older browsers
               prompt("Copy this link manually:", link);
             });
           }}
-          style={{display:"inline-flex",alignItems:"center",gap:6}}
+          style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
         >
           📋 Get Authorisation Link
         </button>
       )}
+      <div style={{ fontSize: 11, color: "var(--text3)", marginTop: 6 }}>
+        {tk.authorized
+          ? "Client has already signed the authorisation form."
+          : "Copy this link and send it to the client. They will sign the T&Cs digitally."}
+      </div>
+    </div>
+
+    <div className="divider" />
+
+    {/* Documents & History */}
+    <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text4)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>Documents & History</div>
+    <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
+      <button className="btn btn-pdf btn-sm" onClick={() => generateJobCard(tk)}>🖨️ Job Card PDF</button>
+      <button className="btn btn-secondary btn-sm" onClick={() => setHistoryModal(tk)}>👤 Client History</button>
+      <button className="btn btn-secondary btn-sm" onClick={() => setPartsModal(tk)}>🔩 Manage Parts</button>
+      <button className="btn btn-ghost btn-sm" style={{ fontSize: 11 }} onClick={() => setFixesModal(true)}>💡 Known Fixes</button>
+      <button className="btn btn-primary btn-sm" onClick={() => { setClientName(tk.clientName || tk.name || ""); setClientPosition(""); setSignoffModal(tk); }}>✍ Client Sign-Off</button>
+    </div>
+    {tk.clientSignoff?.signed && (
+      <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#10B981", color: "#fff", padding: "5px 12px", borderRadius: 20, fontWeight: 700, fontSize: 12, marginBottom: 8 }}>
+        ✓ Client Signed — {tk.clientSignoff.clientName}
+        {tk.clientSignoff.signatureImage && <img src={tk.clientSignoff.signatureImage} alt="sig" style={{ height: 24, borderRadius: 4, background: "#fff", marginLeft: 4 }} />}
+      </div>
+    )}
+
+    <div className="divider" />
+
+    {/* Chat to WA bridge */}
+    <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text4)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>
+      🔗 Chat → WhatsApp Bridge
+    </div>
+    <div style={{ background: "var(--bg3)", border: "1px solid var(--border)", borderRadius: 8, padding: "10px 12px", marginBottom: 8, fontSize: 12, color: "var(--text3)", lineHeight: 1.6 }}>
+      Open the <strong style={{ color: AC }}>💬 Chat</strong> tab and tap the <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 10, background: "rgba(37,211,102,0.12)", color: "#25D366", padding: "1px 5px", borderRadius: 4 }}>💬 WA</span> button next to any message to instantly forward it to the client on WhatsApp.
+    </div>
+    <button className="btn btn-primary btn-sm" onClick={openChatTab} style={{ width: "100%" }}>
+      Open Team Chat →
+    </button>
+  </>
+)}
       <div style={{fontSize:11,color:"var(--text3)",marginTop:6}}>
         {tk.authorized
           ? "Client has already signed the authorisation form."
