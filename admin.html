@@ -2039,106 +2039,96 @@ function Admin({tickets,loading,authed,onAuth,onUpdate,onAddNote,onBack,onNewTic
                   </div>
 
                   {/* ── NEW: Tab bar ── */}
-                  <div className="detail-tabs">
-                    <button className={`detail-tab${detailTab==="overview"?" active":""}`} onClick={()=>setDetailTab("overview")}>
-                      📋 Overview
-                    </button>
-                    <button className={`detail-tab${detailTab==="chat"?" active":""}`} onClick={openChatTab}>
-                      💬 Chat
-                      {(chatCounts[tk.ref]||0)>0&&<span className="detail-tab-new">{chatCounts[tk.ref]}</span>}
-                    </button>
-                    <button className={`detail-tab${detailTab==="notes"?" active":""}`} onClick={()=>setDetailTab("notes")}>
-                      📝 Notes
-                      {(tk.notes||[]).length>0&&<span style={{fontSize:9,color:"var(--text4)",marginLeft:3}}>({(tk.notes||[]).length})</span>}
-                    </button>
-                    <button className={`detail-tab${detailTab==="actions"?" active":""}`} onClick={()=>setDetailTab("actions")}>
-                      ⚡ Actions
-                    </button>
-                  </div>
+                  {detailTab === "actions" && (
+  <>
+    {/* WhatsApp Smart Sync */}
+    <div style={{ marginBottom: 16 }}>
+      <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text4)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>
+        💬 WhatsApp Smart Sync
+      </div>
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
+        <a href={waUrl(tk.phone, buildCustomerMsg(tk))} target="_blank" rel="noreferrer" className="btn btn-wa btn-sm">💬 Ticket Confirm</a>
+        <a href={waUrl(CFG.wa, buildBusinessMsg(tk))} target="_blank" rel="noreferrer" className="btn btn-sm" style={{ background: "rgba(14,165,233,0.1)", border: "1px solid rgba(14,165,233,0.2)", color: AC2 }}>📲 Notify Business</a>
+        {tk.email && <a href={`mailto:${tk.email}?subject=Re: Ticket ${tk.ref}`} className="btn btn-email btn-sm">✉️ Email Client</a>}
+      </div>
+      <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text4)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6, marginTop: 12 }}>Quick Status WA Messages</div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+        {NOTIFY_STATUSES.map(s => (
+          <a key={s} href={waUrl(tk.phone, buildStatusUpdateMsg(tk, s, "See update below."))} target="_blank" rel="noreferrer"
+            style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", borderRadius: 8, border: `1px solid ${ST[s]?.c || "var(--border)"}20`, background: `${ST[s]?.c || "var(--bg)"}10`, fontSize: 11, fontWeight: 600, color: ST[s]?.c || "var(--text2)", textDecoration: "none" }}>
+            <span style={{ fontSize: 14 }}>{{ resolved: "✅", closed: "🔒", awaiting: "📦", "in-progress": "🔧" }[s] || "📋"}</span>
+            Send "{ST[s]?.l}" WA Update
+          </a>
+        ))}
+      </div>
+    </div>
 
-                  {/* ── TAB: OVERVIEW ── */}
-                  {detailTab==="overview"&&(
-                    <div className="detail-body">
-                      {/* Status Update */}
-                      <div style={{marginBottom:16}}>
-                        <div style={{fontSize:10,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Update Status</div>
-                        <div style={{fontSize:11,color:"var(--text3)",marginBottom:6}}>
-                          <span style={{color:AC,fontWeight:600}}>★ Marked statuses notify the client via WhatsApp</span>
-                        </div>
-                        <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-                          {Object.entries(ST).map(([k,v])=>(
-                            <button key={k} onClick={()=>doStatusClick(tk,k)}
-                              style={{border:`1px solid ${v.c}`,borderRadius:6,padding:"4px 9px",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit",background:tk.status===k?v.c:"transparent",color:tk.status===k?"#050810":v.c,transition:"all 0.15s",position:"relative"}}>
-                              {NOTIFY_STATUSES.includes(k)&&<span style={{position:"absolute",top:-4,right:-4,width:8,height:8,borderRadius:"50%",background:"#00C896",border:"1px solid var(--card)"}}/>}
-                              {v.l}
-                            </button>
-                          ))}
-                        </div>
-                        <div style={{fontSize:10,color:"var(--text4)",marginTop:6}}>● Green dot = client notification sent</div>
-                      </div>
+    <div className="divider" />
 
-                      <div className="divider"/>
+    {/* NEW AUTHORISATION LINK BUTTON */}
+    <div style={{ marginBottom: 16 }}>
+      <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text4)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>
+        ✍️ Client Authorisation
+      </div>
+      {tk.authorized ? (
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(16,185,129,0.1)", border: "1px solid #10B981", borderRadius: 20, padding: "6px 14px", fontWeight: 700, fontSize: 12, color: "#10B981" }}>
+          ✅ Authorised by {tk.authorisationName || "Client"}
+        </div>
+      ) : (
+        <button
+          className="btn btn-secondary btn-sm"
+          onClick={() => {
+            const link = `https://cyberit.mbulahenigroup.co.za/authorisation.html?ticketId=${tk.ref}`;
+            navigator.clipboard.writeText(link).then(() => {
+              alert(`✅ Authorisation link copied to clipboard!\n\n${link}\n\nSend this to the client via WhatsApp or Email.`);
+            }).catch(() => {
+              prompt("Copy this link manually:", link);
+            });
+          }}
+          style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
+        >
+          📋 Get Authorisation Link
+        </button>
+      )}
+      <div style={{ fontSize: 11, color: "var(--text3)", marginTop: 6 }}>
+        {tk.authorized
+          ? "Client has already signed the authorisation form."
+          : "Copy this link and send it to the client. They will sign the T&Cs digitally."}
+      </div>
+    </div>
 
-                      {/* Engineer Assignment */}
-                      <div style={{marginBottom:16}}>
-                        <div style={{fontSize:10,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6}}>Assigned Engineer</div>
-                        <select className="field-input" style={{fontSize:12}} value={tk.assignedEngineer||"Unassigned"} onChange={e=>doAssign(e.target.value)}>
-                          {ENGINEERS.map(eng=><option key={eng}>{eng}</option>)}
-                        </select>
-                      </div>
+    <div className="divider" />
 
-                      <div className="divider"/>
+    {/* Documents & History */}
+    <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text4)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>Documents & History</div>
+    <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
+      <button className="btn btn-pdf btn-sm" onClick={() => generateJobCard(tk)}>🖨️ Job Card PDF</button>
+      <button className="btn btn-secondary btn-sm" onClick={() => setHistoryModal(tk)}>👤 Client History</button>
+      <button className="btn btn-secondary btn-sm" onClick={() => setPartsModal(tk)}>🔩 Manage Parts</button>
+      <button className="btn btn-ghost btn-sm" style={{ fontSize: 11 }} onClick={() => setFixesModal(true)}>💡 Known Fixes</button>
+      <button className="btn btn-primary btn-sm" onClick={() => { setClientName(tk.clientName || tk.name || ""); setClientPosition(""); setSignoffModal(tk); }}>✍ Client Sign-Off</button>
+    </div>
+    {tk.clientSignoff?.signed && (
+      <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#10B981", color: "#fff", padding: "5px 12px", borderRadius: 20, fontWeight: 700, fontSize: 12, marginBottom: 8 }}>
+        ✓ Client Signed — {tk.clientSignoff.clientName}
+        {tk.clientSignoff.signatureImage && <img src={tk.clientSignoff.signatureImage} alt="sig" style={{ height: 24, borderRadius: 4, background: "#fff", marginLeft: 4 }} />}
+      </div>
+    )}
 
-                      {/* Ticket Details */}
-                      <div style={{fontSize:10,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Ticket Details</div>
-                      {[
-                        ["Service",SVCS.find(s=>s.id===tk.serviceType)?.label],
-                        ["Logged by",tk.loggedBy==="engineer"?`Engineer: ${tk.engineerName||""}`: "Customer (self)"],
-                        tk.company&&["Company",tk.company],
-                        ["Priority",tk.priority],
-                        tk.deviceType&&["Device",`${tk.manufacturer||""} ${tk.modelNumber||""} (${tk.deviceType})`],
-                        tk.serialNumber&&["Serial",tk.serialNumber],
-                        tk.operatingSystem&&["OS",tk.operatingSystem],
-                        tk.warrantyStatus&&["Warranty",tk.warrantyStatus],
-                        tk.address&&["Address",tk.address],
-                        tk.preferredDate&&["Preferred",`${tk.preferredDate} ${tk.preferredTime}`],
-                        ["Submitted",new Date(tk.createdAt).toLocaleString("en-ZA")],
-                        tk.quotationRef&&["Quotation",tk.quotationRef],
-                      ].filter(Boolean).map(([l,v],i)=>(
-                        <div key={i} className="detail-row"><div className="detail-key">{l}</div><div className="detail-val">{v}</div></div>
-                      ))}
+    <div className="divider" />
 
-                      <div className="divider"/>
-
-                      {/* Issue */}
-                      <div style={{fontSize:10,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Issue</div>
-                      <div style={{background:"var(--bg)",borderRadius:8,padding:"10px 12px",border:"1px solid var(--border)",marginBottom:8}}>
-                        <p style={{fontSize:13,fontWeight:600,color:"var(--text)",marginBottom:tk.issueDetail||tk.problemDescription?6:0}}>{tk.issueTitle||tk.problemDescription||"—"}</p>
-                        {tk.issueDetail&&<p style={{fontSize:12,color:"var(--text3)",lineHeight:1.6}}>{tk.issueDetail}</p>}
-                        {tk.accessories&&<p style={{fontSize:11,color:"var(--text3)",marginTop:5}}>🎒 {tk.accessories}</p>}
-                        {tk.physicalDamage&&<p style={{fontSize:11,color:"var(--text3)",marginTop:3}}>💥 {tk.physicalDamage}</p>}
-                        {tk.devicePassword&&<p style={{fontSize:11,color:"var(--text3)",marginTop:3}}>🔑 {tk.devicePassword}</p>}
-                        {tk.conditionOnArrival&&<p style={{fontSize:11,color:"var(--text3)",marginTop:3}}>🔍 {tk.conditionOnArrival}</p>}
-                        {tk.urgency&&<p style={{fontSize:11,color:"var(--text3)",marginTop:3}}>⚡ {tk.urgency}</p>}
-                        {tk.engineerNote&&<p style={{fontSize:11,color:AC2,marginTop:5,borderTop:"1px solid var(--border)",paddingTop:5}}>📝 Engineer: {tk.engineerNote}</p>}
-                      </div>
-
-                      <div className="divider"/>
-
-                      {/* Parts */}
-                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-                        <div style={{fontSize:10,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Parts / Inventory</div>
-                        <button className="btn btn-secondary btn-sm" onClick={()=>setPartsModal(tk)}>🔩 Manage</button>
-                      </div>
-                      {(tk.parts||[]).length===0&&<div style={{fontSize:12,color:"var(--text4)",marginBottom:8}}>No parts added.</div>}
-                      {(tk.parts||[]).map((p,i)=>(
-                        <div key={i} className="part-row">
-                          <div className="part-name">{p.name}</div>
-                          <div className="part-qty">×{p.qty}</div>
-                          <span className="part-status" style={{background:p.status==="arrived"?"rgba(16,185,129,0.1)":"rgba(245,158,11,0.1)",color:p.status==="arrived"?"#10B981":"#F59E0B"}}>{p.status}</span>
-                        </div>
-                      ))}
-
+    {/* Chat to WA bridge */}
+    <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text4)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>
+      🔗 Chat → WhatsApp Bridge
+    </div>
+    <div style={{ background: "var(--bg3)", border: "1px solid var(--border)", borderRadius: 8, padding: "10px 12px", marginBottom: 8, fontSize: 12, color: "var(--text3)", lineHeight: 1.6 }}>
+      Open the <strong style={{ color: AC }}>💬 Chat</strong> tab and tap the <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 10, background: "rgba(37,211,102,0.12)", color: "#25D366", padding: "1px 5px", borderRadius: 4 }}>💬 WA</span> button next to any message to instantly forward it to the client on WhatsApp.
+    </div>
+    <button className="btn btn-primary btn-sm" onClick={openChatTab} style={{ width: "100%" }}>
+      Open Team Chat →
+    </button>
+  </>
+)}
                       <div className="divider"/>
 
                       {/* Quotation */}
