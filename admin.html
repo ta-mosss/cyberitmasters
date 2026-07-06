@@ -547,7 +547,51 @@ ${t.address?`📍 *Address:* ${t.address}`:""}
 _Manage at your admin portal_`
   );
 }
+function buildAuthorisationWhatsAppMsg(ticket) {
+  const link = `https://cyberit.mbulahenigroup.co.za/authorisation.html?ticketId=${ticket.ref}`;
+  const bankDetails = CFG.bankDetails || {};
+  return (
+`Hi ${ticket.clientName || ticket.name || "Client"} 👋
 
+Thank you for choosing ${CFG.bizName}.
+
+Your device has been booked in under ticket: *${ticket.ref}*
+
+Before we begin diagnostics, please complete these two quick steps:
+
+---
+
+✍️ *Step 1 – Authorisation*
+Please read and sign our diagnostic Terms & Conditions here:
+🔗 ${link}
+
+---
+
+💰 *Step 2 – Payment*
+A non-refundable diagnostic fee of *R350 (incl. VAT)* is required to commence work.
+
+Please make an EFT payment to:
+
+🏦 *Bank:* ${bankDetails.bankName || "FNB"}
+📌 *Account Holder:* ${bankDetails.accountHolder || "Cyber I.T Masters"}
+🔢 *Account Number:* ${bankDetails.accountNumber || "6283 4567 8901"}
+🏷️ *Branch Code:* ${bankDetails.branchCode || "250655"}
+📝 *Reference:* ${ticket.ref}
+
+---
+
+Once we receive your signed authorisation and proof of payment, our engineers will begin diagnosing your device immediately.
+
+We'll provide a repair quote within 2–3 business days.
+
+If you have any questions, just reply to this message.
+
+Kind regards,
+The ${CFG.bizName} Team
+⚡ https://cyberit.mbulahenigroup.co.za
+📞 ${CFG.wa || "072 665 0565"}`
+  );
+}
 /* ── JOB CARD PDF GENERATOR ── */
 function generateJobCard(ticket){
   const svc=SVCS.find(s=>s.id===ticket.serviceType)?.label||ticket.serviceType||"—";
