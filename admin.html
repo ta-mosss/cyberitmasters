@@ -336,6 +336,13 @@ const CFG={
   adMac:"https://download.anydesk.com/anydesk.dmg",
   adAndroid:"https://play.google.com/store/apps/details?id=com.anydesk.anydeskandroid",
   googleReview:"https://g.page/r/CUSUmJkZZNmSEBM/review",
+  bankDetails: {
+    bankName: "Capitec",
+    accountHolder: "Mbulaheni Group",
+    accountNumber: "2535685813",
+    branchCode: "470010",
+    accountType: "Entrepreneur Account",
+    swift: "CABLZAJJ"
 };
 const AC="#00C896",AC2="#0EA5E9";
 
@@ -549,7 +556,7 @@ _Manage at your admin portal_`
 }
 function buildAuthorisationWhatsAppMsg(ticket) {
   const link = `https://cyberit.mbulahenigroup.co.za/authorisation.html?ticketId=${ticket.ref}`;
-  const bankDetails = CFG.bankDetails || {};
+  const b = CFG.bankDetails || {};
   return (
 `Hi ${ticket.clientName || ticket.name || "Client"} 👋
 
@@ -572,10 +579,12 @@ A non-refundable diagnostic fee of *R350 (incl. VAT)* is required to commence wo
 
 Please make an EFT payment to:
 
-🏦 *Bank:* ${bankDetails.bankName || "FNB"}
-📌 *Account Holder:* ${bankDetails.accountHolder || "Cyber I.T Masters"}
-🔢 *Account Number:* ${bankDetails.accountNumber || "6283 4567 8901"}
-🏷️ *Branch Code:* ${bankDetails.branchCode || "250655"}
+🏦 *Bank:* ${b.bankName || "Capitec"}
+📌 *Account Holder:* ${b.accountHolder || "Mbulaheni Group"}
+📂 *Account Type:* ${b.accountType || "Entrepreneur Account"}
+🔢 *Account Number:* ${b.accountNumber || "2535685813"}
+🏷️ *Branch Code:* ${b.branchCode || "470010"}
+🌐 *SWIFT/BIC:* ${b.swift || "CABLZAJJ"}
 📝 *Reference:* ${ticket.ref}
 
 ---
