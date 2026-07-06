@@ -75,13 +75,147 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 </script>
 <script type="text/babel">
-const { useState, useEffect, useRef } = React;
+const { useState, useEffect, useRef, forwardRef, useImperativeHandle } = React;
 
 const CFG = {
   bizName: "Cyber I.T Masters",
   tagline: "Professional I.T Solutions",
 };
 
+// ── SIGNATURE PAD COMPONENT ──
+const SignaturePad = forwardRef((props, ref) => {
+  const canvasRef = useRef(null);
+  const ctxRef = useRef(null);
+  const isDrawing = useRef(false);
+
+  useImperativeHandle(ref, () => ({
+    getImageData: () => {
+      const canvas = canvasRef.current;
+      if (!canvas) return null;
+      return canvas.toDataURL("image/png");
+    },
+    isEmpty: () => {
+      const canvas = canvasRef.current;
+      if (!canvas) return true;
+      const ctx = canvas.getContext("2d");
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
+      for (let i = 0; i < data.length; i += 4) {
+        if (data[i] < 255 || data[i+1] < 255 || data[i+2] < 255) return false;
+      }
+      return true;
+    },
+    clear: () => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+  }));
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) {
+      console.error("SignaturePad: Canvas element not found!");
+      return;
+    }
+    console.log("SignaturePad: Canvas found, setting up...");
+
+    // Set fixed size
+    canvas.width = 600;
+    canvas.height = 150;
+    const ctx = canvas.getContext("2d");
+    ctx.lineWidth = 3;
+    ctx.lineCap = "round";
+    ctx.strokeStyle = "#00C896";
+    ctxRef.current = ctx;
+
+    const getPos = (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      return {
+        x: (clientX - rect.left) * scaleX,
+        y: (clientY - rect.top) * scaleY
+      };
+    };
+
+    const startDraw = (e) => {
+      e.preventDefault();
+      isDrawing.current = true;
+      const pos = getPos(e);
+      ctx.beginPath();
+      ctx.moveTo(pos.x, pos.y);
+    };
+
+    const draw = (e) => {
+      e.preventDefault();
+      if (!isDrawing.current) return;
+      const pos = getPos(e);
+      ctx.lineTo(pos.x, pos.y);
+      ctx.stroke();
+    };
+
+    const stopDraw = (e) => {
+      e.preventDefault();
+      isDrawing.current = false;
+    };
+
+    // Mouse
+    canvas.addEventListener('mousedown', startDraw);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDraw);
+    canvas.addEventListener('mouseleave', stopDraw);
+    // Touch
+    canvas.addEventListener('touchstart', startDraw, { passive: false });
+    canvas.addEventListener('touchmove', draw, { passive: false });
+    canvas.addEventListener('touchend', stopDraw);
+    canvas.addEventListener('touchcancel', stopDraw);
+
+    // Draw a test dot to prove it works
+    ctx.fillStyle = "#00C896";
+    ctx.fillRect(5, 5, 5, 5);
+    console.log("SignaturePad: Ready (test dot drawn)");
+
+    return () => {
+      canvas.removeEventListener('mousedown', startDraw);
+      canvas.removeEventListener('mousemove', draw);
+      canvas.removeEventListener('mouseup', stopDraw);
+      canvas.removeEventListener('mouseleave', stopDraw);
+      canvas.removeEventListener('touchstart', startDraw);
+      canvas.removeEventListener('touchmove', draw);
+      canvas.removeEventListener('touchend', stopDraw);
+      canvas.removeEventListener('touchcancel', stopDraw);
+    };
+  }, []);
+
+  return (
+    <div className="signature-area">
+      <label className="label">Client Digital Signature *</label>
+      <canvas ref={canvasRef} />
+      <div className="sig-actions">
+        <button
+          className="btn btn-secondary btn-sm"
+          style={{padding:'6px 12px',fontSize:12}}
+          onClick={() => {
+            const canvas = canvasRef.current;
+            if (canvas) {
+              const ctx = canvas.getContext("2d");
+              ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+          }}
+        >
+          🗑 Clear Signature
+        </button>
+        <span style={{fontSize:11,color:'#64748B',marginLeft:'auto'}}>Draw with mouse or finger</span>
+      </div>
+    </div>
+  );
+});
+
+// ── MAIN APP ──
 function App() {
   const params = new URLSearchParams(window.location.search);
   const ticketRef = params.get('ticketId') || "";
@@ -95,9 +229,7 @@ function App() {
   const [clientName, setClientName] = useState("");
   const [clientPosition, setClientPosition] = useState("");
   
-  const canvasRef = useRef(null);
-  const ctxRef = useRef(null);
-  const isDrawing = useRef(false);
+  const padRef = useRef(null);
 
   // Fetch ticket
   useEffect(() => {
@@ -126,128 +258,18 @@ function App() {
     return () => unsub();
   }, [ticketRef]);
 
-  // Signature pad setup – simple, direct, with console logs
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) {
-      console.error("Canvas element not found!");
-      return;
-    }
-    console.log("Canvas found, setting up signature pad...");
-
-    // Set fixed size (in pixels) – no scaling tricks
-    canvas.width = 600;
-    canvas.height = 150;
-    const ctx = canvas.getContext("2d");
-    ctx.lineWidth = 3;
-    ctx.lineCap = "round";
-    ctx.strokeStyle = "#00C896";
-    ctxRef.current = ctx;
-
-    // --- Drawing functions ---
-    const getPos = (e) => {
-      const rect = canvas.getBoundingClientRect();
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-      const scaleX = canvas.width / rect.width;
-      const scaleY = canvas.height / rect.height;
-      return {
-        x: (clientX - rect.left) * scaleX,
-        y: (clientY - rect.top) * scaleY
-      };
-    };
-
-    const startDraw = (e) => {
-      e.preventDefault();
-      console.log("mousedown / touchstart");
-      isDrawing.current = true;
-      const pos = getPos(e);
-      ctx.beginPath();
-      ctx.moveTo(pos.x, pos.y);
-    };
-
-    const draw = (e) => {
-      e.preventDefault();
-      if (!isDrawing.current) return;
-      const pos = getPos(e);
-      ctx.lineTo(pos.x, pos.y);
-      ctx.stroke();
-    };
-
-    const stopDraw = (e) => {
-      e.preventDefault();
-      if (isDrawing.current) {
-        console.log("mouseup / touchend");
-        isDrawing.current = false;
-      }
-    };
-
-    // Mouse events
-    canvas.addEventListener('mousedown', startDraw);
-    canvas.addEventListener('mousemove', draw);
-    canvas.addEventListener('mouseup', stopDraw);
-    canvas.addEventListener('mouseleave', stopDraw);
-    // Touch events
-    canvas.addEventListener('touchstart', startDraw, { passive: false });
-    canvas.addEventListener('touchmove', draw, { passive: false });
-    canvas.addEventListener('touchend', stopDraw);
-    canvas.addEventListener('touchcancel', stopDraw);
-
-    // Clear button
-    const clearBtn = document.getElementById('clearSignature');
-    const clearCanvas = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      console.log("Canvas cleared");
-    };
-    if (clearBtn) {
-      clearBtn.addEventListener('click', clearCanvas);
-    } else {
-      console.warn("Clear button not found");
-    }
-
-    // Test: draw a small dot to prove it works
-    ctx.fillStyle = "#00C896";
-    ctx.fillRect(10, 10, 5, 5);
-    console.log("Signature pad ready (test dot drawn at top-left)");
-
-    return () => {
-      canvas.removeEventListener('mousedown', startDraw);
-      canvas.removeEventListener('mousemove', draw);
-      canvas.removeEventListener('mouseup', stopDraw);
-      canvas.removeEventListener('mouseleave', stopDraw);
-      canvas.removeEventListener('touchstart', startDraw);
-      canvas.removeEventListener('touchmove', draw);
-      canvas.removeEventListener('touchend', stopDraw);
-      canvas.removeEventListener('touchcancel', stopDraw);
-      if (clearBtn) clearBtn.removeEventListener('click', clearCanvas);
-    };
-  }, []); // runs once after mount
-
-  const isSignatureEmpty = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return true;
-    const ctx = canvas.getContext('2d');
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const data = imageData.data;
-    for (let i = 0; i < data.length; i += 4) {
-      if (data[i] < 255 || data[i+1] < 255 || data[i+2] < 255) return false;
-    }
-    return true;
-  };
-
   const handleSubmit = async () => {
     if (!clientName.trim()) {
       alert("Please enter the client's full name.");
       return;
     }
-    if (isSignatureEmpty()) {
+    if (!padRef.current || padRef.current.isEmpty()) {
       alert("Please draw a signature in the box above.");
       return;
     }
     setSubmitting(true);
     try {
-      const canvas = canvasRef.current;
-      const imgData = canvas.toDataURL("image/png");
+      const imgData = padRef.current.getImageData();
       await db.collection("tickets").doc(ticketRef).update({
         authorized: true,
         authorisationName: clientName,
@@ -265,7 +287,7 @@ function App() {
     setSubmitting(false);
   };
 
-  // ── Rendering ──
+  // ── Rendering states ──
   if (loading) {
     return (
       <div className="card" style={{textAlign:'center',padding:48}}>
@@ -316,7 +338,7 @@ function App() {
     );
   }
 
-  // Main form
+  // ── Main Form ──
   return (
     <div className="card">
       <div className="header">
@@ -363,14 +385,7 @@ function App() {
         </div>
       </div>
 
-      <div className="signature-area">
-        <label className="label">Client Digital Signature *</label>
-        <canvas ref={canvasRef} />
-        <div className="sig-actions">
-          <button id="clearSignature" className="btn btn-secondary btn-sm" style={{padding:'6px 12px',fontSize:12}}>🗑 Clear Signature</button>
-          <span style={{fontSize:11,color:'#64748B',marginLeft:'auto'}}>Draw with mouse or finger</span>
-        </div>
-      </div>
+      <SignaturePad ref={padRef} />
 
       <button className="btn btn-primary" style={{width:'100%'}} onClick={handleSubmit} disabled={submitting}>
         {submitting ? "Submitting..." : "✅ Submit Authorisation"}
