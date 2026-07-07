@@ -2313,7 +2313,25 @@ function Root(){
     try{
       const num=await nextTicketNumber();
       const ref=makeTktRef(num);
-      const ticket={...form,ref,ticketNumber:num,status:"open",createdAt:ts(),updatedAt:ts(),notes:[],quotationRef:"",parts:[],assignedEngineer:form.assignedEngineer||"Unassigned",clientSignoff:{signed:false,clientName:"",clientPosition:"",signedAt:null,signatureImage:""}};
+     const ticket={
+  ...form,
+  ref,
+  ticketNumber:num,
+  status:"open",
+  createdAt:ts(),
+  updatedAt:ts(),
+  notes:[],
+  quotationRef:"",
+  parts:[],
+  assignedEngineer:form.assignedEngineer||"Unassigned",
+  clientSignoff:{signed:false,clientName:"",clientPosition:"",signedAt:null,signatureImage:""},
+  // ─── FORCE these to be empty/false on creation ───
+  authorized: false,
+  authorisationName: "",
+  authorisationPosition: "",
+  authorisationSignature: "",
+  authorisationSignedAt: null
+};
       await db.collection("tickets").doc(ref).set(ticket);
       try{await sendSysMsg(ref,`Ticket ${ref} created — ${SVCS.find(s=>s.id===form.serviceType)?.label||form.serviceType}`);}catch(e){}
       setLastTicket(ticket);
