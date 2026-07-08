@@ -806,13 +806,6 @@ function generateJobCard(ticket){
   const w=window.open("","_blank","width=900,height=700");
   w.document.write(html);
   w.document.close();
-  <h2>Authorisation</h2>
-<div style="background:#f8f9fa;border:1px solid #ddd;border-radius:6px;padding:12px;margin-bottom:12px;text-align:center;">
-  ${ticket.authorisationSignature ? `<img src="${ticket.authorisationSignature}" style="height:60px;border:1px solid #ddd;border-radius:4px;"/>` : "<span style='color:#999;'>Not signed</span>"}
-  <div style="font-size:11px;color:#666;margin-top:4px;">
-    Signed by ${ticket.authorisationName || "—"} on ${ticket.authorisationSignedAt ? new Date(ticket.authorisationSignedAt).toLocaleString("en-ZA") : "N/A"}
-  </div>
-</div>
 }
 
 /* ── TINY ATOMS ── */
@@ -2271,7 +2264,7 @@ function Admin({tickets,loading,authed,onAuth,onUpdate,onAddNote,onBack,onNewTic
                     </div>
                   )}
 
-                {detailTab === "actions" && (
+  {detailTab === "actions" && (
   <div className="detail-body">
     {/* WhatsApp Smart Sync */}
     <div style={{marginBottom:16}}>
@@ -2297,36 +2290,29 @@ function Admin({tickets,loading,authed,onAuth,onUpdate,onAddNote,onBack,onNewTic
 
     <div className="divider" />
 
-    {/* ✍️ Client Authorisation – UPDATED with WhatsApp button */}
-    
+    {/* ✍️ Client Authorisation – SINGLE BLOCK */}
     <div style={{marginBottom:16}}>
       <div style={{fontSize:10,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:10}}>
         ✍️ Client Authorisation
       </div>
-{tk.authorized ? (
-  <>
-    <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
-      <div style={{display:"inline-flex",alignItems:"center",gap:6,background:"rgba(16,185,129,0.1)",border:"1px solid #10B981",borderRadius:20,padding:"6px 14px",fontWeight:700,fontSize:12,color:"#10B981"}}>
-        ✅ Authorised by {tk.authorisationName || "Client"}
-      </div>
-      <button
-        className="btn btn-pdf btn-sm"
-        onClick={() => generateAuthorisationPDF(tk)}
-        style={{display:"inline-flex",alignItems:"center",gap:6}}
-      >
-        📄 Download Authorisation PDF
-      </button>
-    </div>
-    <div style={{fontSize:11,color:"var(--text3)",marginTop:4}}>
-      Signed on {tk.authorisationSignedAt ? new Date(tk.authorisationSignedAt).toLocaleString("en-ZA") : "N/A"}
-    </div>
-  </>
-) : (
-  // ... buttons to send authorisation
-)}
+
       {tk.authorized ? (
-        <div style={{display:"inline-flex",alignItems:"center",gap:6,background:"rgba(16,185,129,0.1)",border:"1px solid #10B981",borderRadius:20,padding:"6px 14px",fontWeight:700,fontSize:12,color:"#10B981"}}>
-          ✅ Authorised by {tk.authorisationName || "Client"}
+        <div>
+          <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+            <div style={{display:"inline-flex",alignItems:"center",gap:6,background:"rgba(16,185,129,0.1)",border:"1px solid #10B981",borderRadius:20,padding:"6px 14px",fontWeight:700,fontSize:12,color:"#10B981"}}>
+              ✅ Authorised by {tk.authorisationName || "Client"}
+            </div>
+            <button
+              className="btn btn-pdf btn-sm"
+              onClick={() => generateAuthorisationPDF(tk)}
+              style={{display:"inline-flex",alignItems:"center",gap:6}}
+            >
+              📄 Download Authorisation PDF
+            </button>
+          </div>
+          <div style={{fontSize:11,color:"var(--text3)",marginTop:4}}>
+            Signed on {tk.authorisationSignedAt ? new Date(tk.authorisationSignedAt).toLocaleString("en-ZA") : "N/A"}
+          </div>
         </div>
       ) : (
         <div style={{display:"flex",flexDirection:"column",gap:6}}>
@@ -2367,6 +2353,39 @@ function Admin({tickets,loading,authed,onAuth,onUpdate,onAddNote,onBack,onNewTic
           : "Send the client the authorisation link and payment details via WhatsApp."}
       </div>
     </div>
+
+    <div className="divider" />
+
+    {/* Documents & History */}
+    <div style={{fontSize:10,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:10}}>Documents & History</div>
+    <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:8}}>
+      <button className="btn btn-pdf btn-sm" onClick={()=>generateJobCard(tk)}>🖨️ Job Card PDF</button>
+      <button className="btn btn-secondary btn-sm" onClick={()=>setHistoryModal(tk)}>👤 Client History</button>
+      <button className="btn btn-secondary btn-sm" onClick={()=>setPartsModal(tk)}>🔩 Manage Parts</button>
+      <button className="btn btn-ghost btn-sm" style={{fontSize:11}} onClick={()=>setFixesModal(true)}>💡 Known Fixes</button>
+      <button className="btn btn-primary btn-sm" onClick={()=>{setClientName(tk.clientName||tk.name||"");setClientPosition("");setSignoffModal(tk);}}>✍ Client Sign-Off</button>
+    </div>
+    {tk.clientSignoff?.signed && (
+      <div style={{display:"inline-flex",alignItems:"center",gap:6,background:"#10B981",color:"#fff",padding:"5px 12px",borderRadius:20,fontWeight:700,fontSize:12,marginBottom:8}}>
+        ✓ Client Signed — {tk.clientSignoff.clientName}
+        {tk.clientSignoff.signatureImage && <img src={tk.clientSignoff.signatureImage} alt="sig" style={{height:24,borderRadius:4,background:"#fff",marginLeft:4}} />}
+      </div>
+    )}
+
+    <div className="divider" />
+
+    {/* Chat to WA bridge */}
+    <div style={{fontSize:10,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:10}}>
+      🔗 Chat → WhatsApp Bridge
+    </div>
+    <div style={{background:"var(--bg3)",border:"1px solid var(--border)",borderRadius:8,padding:"10px 12px",marginBottom:8,fontSize:12,color:"var(--text3)",lineHeight:1.6}}>
+      Open the <strong style={{color:AC}}>💬 Chat</strong> tab and tap the <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,background:"rgba(37,211,102,0.12)",color:"#25D366",padding:"1px 5px",borderRadius:4}}>💬 WA</span> button next to any message to instantly forward it to the client on WhatsApp.
+    </div>
+    <button className="btn btn-primary btn-sm" onClick={openChatTab} style={{width:"100%"}}>
+      Open Team Chat →
+    </button>
+  </div>
+)}
 
     <div className="divider" />
 
