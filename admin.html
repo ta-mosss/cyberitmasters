@@ -2355,68 +2355,6 @@ function Admin({tickets,loading,authed,onAuth,onUpdate,onAddNote,onBack,onNewTic
     </div>
 
     <div className="divider" />
-
-    {/* Documents & History */}
-    <div style={{fontSize:10,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:10}}>Documents & History</div>
-    <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:8}}>
-      <button className="btn btn-pdf btn-sm" onClick={()=>generateJobCard(tk)}>🖨️ Job Card PDF</button>
-      <button className="btn btn-secondary btn-sm" onClick={()=>setHistoryModal(tk)}>👤 Client History</button>
-      <button className="btn btn-secondary btn-sm" onClick={()=>setPartsModal(tk)}>🔩 Manage Parts</button>
-      <button className="btn btn-ghost btn-sm" style={{fontSize:11}} onClick={()=>setFixesModal(true)}>💡 Known Fixes</button>
-      <button className="btn btn-primary btn-sm" onClick={()=>{setClientName(tk.clientName||tk.name||"");setClientPosition("");setSignoffModal(tk);}}>✍ Client Sign-Off</button>
-    </div>
-    {tk.clientSignoff?.signed && (
-      <div style={{display:"inline-flex",alignItems:"center",gap:6,background:"#10B981",color:"#fff",padding:"5px 12px",borderRadius:20,fontWeight:700,fontSize:12,marginBottom:8}}>
-        ✓ Client Signed — {tk.clientSignoff.clientName}
-        {tk.clientSignoff.signatureImage && <img src={tk.clientSignoff.signatureImage} alt="sig" style={{height:24,borderRadius:4,background:"#fff",marginLeft:4}} />}
-      </div>
-    )}
-
-    <div className="divider" />
-
-    {/* Chat to WA bridge */}
-    <div style={{fontSize:10,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:10}}>
-      🔗 Chat → WhatsApp Bridge
-    </div>
-    <div style={{background:"var(--bg3)",border:"1px solid var(--border)",borderRadius:8,padding:"10px 12px",marginBottom:8,fontSize:12,color:"var(--text3)",lineHeight:1.6}}>
-      Open the <strong style={{color:AC}}>💬 Chat</strong> tab and tap the <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,background:"rgba(37,211,102,0.12)",color:"#25D366",padding:"1px 5px",borderRadius:4}}>💬 WA</span> button next to any message to instantly forward it to the client on WhatsApp.
-    </div>
-    <button className="btn btn-primary btn-sm" onClick={openChatTab} style={{width:"100%"}}>
-      Open Team Chat →
-    </button>
-  </div>
-)}
-
-    <div className="divider" />
-
-    {/* Documents & History */}
-    <div style={{fontSize:10,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:10}}>Documents & History</div>
-    <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:8}}>
-      <button className="btn btn-pdf btn-sm" onClick={()=>generateJobCard(tk)}>🖨️ Job Card PDF</button>
-      <button className="btn btn-secondary btn-sm" onClick={()=>setHistoryModal(tk)}>👤 Client History</button>
-      <button className="btn btn-secondary btn-sm" onClick={()=>setPartsModal(tk)}>🔩 Manage Parts</button>
-      <button className="btn btn-ghost btn-sm" style={{fontSize:11}} onClick={()=>setFixesModal(true)}>💡 Known Fixes</button>
-      <button className="btn btn-primary btn-sm" onClick={()=>{setClientName(tk.clientName||tk.name||"");setClientPosition("");setSignoffModal(tk);}}>✍ Client Sign-Off</button>
-    </div>
-    {tk.clientSignoff?.signed && (
-      <div style={{display:"inline-flex",alignItems:"center",gap:6,background:"#10B981",color:"#fff",padding:"5px 12px",borderRadius:20,fontWeight:700,fontSize:12,marginBottom:8}}>
-        ✓ Client Signed — {tk.clientSignoff.clientName}
-        {tk.clientSignoff.signatureImage && <img src={tk.clientSignoff.signatureImage} alt="sig" style={{height:24,borderRadius:4,background:"#fff",marginLeft:4}} />}
-      </div>
-    )}
-
-    <div className="divider" />
-
-    {/* Chat to WA bridge */}
-    <div style={{fontSize:10,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:10}}>
-      🔗 Chat → WhatsApp Bridge
-    </div>
-    <div style={{background:"var(--bg3)",border:"1px solid var(--border)",borderRadius:8,padding:"10px 12px",marginBottom:8,fontSize:12,color:"var(--text3)",lineHeight:1.6}}>
-      Open the <strong style={{color:AC}}>💬 Chat</strong> tab and tap the <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:10,background:"rgba(37,211,102,0.12)",color:"#25D366",padding:"1px 5px",borderRadius:4}}>💬 WA</span> button next to any message to instantly forward it to the client on WhatsApp.
-    </div>
-    <button className="btn btn-primary btn-sm" onClick={openChatTab} style={{width:"100%"}}>
-      Open Team Chat →
-    </button>
   </div>
 )}
                   )}
