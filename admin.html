@@ -354,7 +354,9 @@ const SLA_HOURS={Urgent:4,High:8,Medium:24,Low:48};
 const ST={
   open:              {l:"Open",                   c:"#3B82F6"},
   "in-progress":     {l:"In Progress",            c:"#F59E0B"},
-  awaiting:          {l:"Awaiting Parts",          c:"#8B5CF6"},
+  "awaiting-authorisation": {l:"Awaiting Authorisation", c:"#8B5CF6"},  // ← NEW
+  "awaiting-payment":{l:"Awaiting Payment",       c:"#8B5CF6"},          // ← NEW
+  "awaiting-parts":  {l:"Awaiting Parts",         c:"#8B5CF6"},          // ← existing
   resolved:          {l:"Resolved",               c:"#10B981"},
   "awaiting-signoff":{l:"Awaiting Client Sign-Off",c:"#F97316"},
   closed:            {l:"Closed",                 c:"#6B7280"},
@@ -362,11 +364,13 @@ const ST={
 };
 
 /* Statuses that trigger client notification */
-const NOTIFY_STATUSES=["resolved","closed","awaiting","in-progress","awaiting-signoff"];
+const NOTIFY_STATUSES=["resolved","closed","awaiting-authorisation","awaiting-payment","awaiting-parts","in-progress","awaiting-signoff"];
 const NOTIFY_LABELS={
   resolved:"Your ticket has been resolved",
   closed:"Your ticket has been closed",
-  awaiting:"Your ticket is awaiting parts",
+  "awaiting-authorisation":"We are waiting for your authorisation to proceed",
+  "awaiting-payment":"We are waiting for your payment",
+  "awaiting-parts":"Your ticket is awaiting parts",
   "in-progress":"Work has begun on your ticket",
   "awaiting-signoff":"Your ticket is ready for collection — sign-off required",
 };
@@ -429,20 +433,39 @@ async function sendSysMsg(ticketRef,text){
 /* ── SLA HELPERS ── */
 function getSLAInfo(ticket){
   if(!ticket||!ticket.createdAt||!ticket.priority) return null;
+  
+  // ── PAUSE SLA FOR THESE STATUSES ──
+  const PAUSED_STATUSES = ["awaiting-authorisation", "awaiting-payment", "awaiting-parts", "awaiting-signoff"];
+  
+  // If ticket is in a paused status, show "⏸️ Paused" instead of breach
+  if (PAUSED_STATUSES.includes(ticket.status)) {
+    return {status:"paused", label:"⏸️ Paused"};
+  }
+  
+  // If ticket is resolved or closed, show "Done"
+  if(ticket.status==="resolved"||ticket.status==="closed") {
+    return{status:"done", label:"Resolved"};
+  }
+  
+  // ── CALCULATE SLA ONLY FOR ACTIVE STATUSES ──
   const hours=SLA_HOURS[ticket.priority]||24;
   const created=new Date(ticket.createdAt).getTime();
   const deadline=created+(hours*3600*1000);
   const now=Date.now();
   const diff=deadline-now;
   const diffH=Math.round(diff/3600000);
-  if(ticket.status==="resolved"||ticket.status==="closed") return{status:"done",label:"Resolved"};
-  if(diff<0) return{status:"breach",label:`Breached ${Math.abs(diffH)}h ago`};
-  if(diff<3600*1000*2) return{status:"warn",label:`${diffH}h left`};
-  return{status:"ok",label:`${diffH}h left`};
+  
+  if(diff<0) return{status:"breach", label:`Breached ${Math.abs(diffH)}h ago`};
+  if(diff<3600*1000*2) return{status:"warn", label:`${diffH}h left`};
+  return{status:"ok", label:`${diffH}h left`};
 }
 function SLABadge({ticket}){
   const info=getSLAInfo(ticket);
-  if(!info||info.status==="done") return null;
+  if(!info) return null;
+  if(info.status==="done") return null;
+  if(info.status==="paused") {
+    return<span style={{color:"#8B5CF6",fontSize:11,fontWeight:700,fontFamily:"'IBM Plex Mono',monospace"}}>⏸️ Paused</span>;
+  }
   const cls=info.status==="breach"?"sla-breach":info.status==="warn"?"sla-warn":"sla-ok";
   return<span className={cls}>⏱ {info.label}</span>;
 }
@@ -478,7 +501,14 @@ _${CFG.bizName} — ${CFG.tagline}_`
 function buildStatusUpdateMsg(t,newStatus,statement){
   const statusLabel=ST[newStatus]?.l||newStatus;
   const svc=SVCS.find(s=>s.id===t.serviceType)?.label||t.serviceType||"—";
-  const emoji={resolved:"✅",closed:"🔒",awaiting:"📦","in-progress":"🔧"}[newStatus]||"📋";
+  const emoji={
+    resolved:"✅",
+    closed:"🔒",
+    "awaiting-authorisation":"📋",
+    "awaiting-payment":"💰",
+    "awaiting-parts":"📦",
+    "in-progress":"🔧"
+  }[newStatus]||"📋";
 const resolvedBlock=newStatus==="resolved"?`
 ━━━━━━━━━━━━━━━━━━━━━━
 ✅ *YOUR ISSUE HAS BEEN RESOLVED*
