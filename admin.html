@@ -806,6 +806,13 @@ function generateJobCard(ticket){
   const w=window.open("","_blank","width=900,height=700");
   w.document.write(html);
   w.document.close();
+  <h2>Authorisation</h2>
+<div style="background:#f8f9fa;border:1px solid #ddd;border-radius:6px;padding:12px;margin-bottom:12px;text-align:center;">
+  ${ticket.authorisationSignature ? `<img src="${ticket.authorisationSignature}" style="height:60px;border:1px solid #ddd;border-radius:4px;"/>` : "<span style='color:#999;'>Not signed</span>"}
+  <div style="font-size:11px;color:#666;margin-top:4px;">
+    Signed by ${ticket.authorisationName || "—"} on ${ticket.authorisationSignedAt ? new Date(ticket.authorisationSignedAt).toLocaleString("en-ZA") : "N/A"}
+  </div>
+</div>
 }
 
 /* ── TINY ATOMS ── */
@@ -2291,11 +2298,32 @@ function Admin({tickets,loading,authed,onAuth,onUpdate,onAddNote,onBack,onNewTic
     <div className="divider" />
 
     {/* ✍️ Client Authorisation – UPDATED with WhatsApp button */}
+    
     <div style={{marginBottom:16}}>
       <div style={{fontSize:10,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:10}}>
         ✍️ Client Authorisation
       </div>
-
+{tk.authorized ? (
+  <>
+    <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+      <div style={{display:"inline-flex",alignItems:"center",gap:6,background:"rgba(16,185,129,0.1)",border:"1px solid #10B981",borderRadius:20,padding:"6px 14px",fontWeight:700,fontSize:12,color:"#10B981"}}>
+        ✅ Authorised by {tk.authorisationName || "Client"}
+      </div>
+      <button
+        className="btn btn-pdf btn-sm"
+        onClick={() => generateAuthorisationPDF(tk)}
+        style={{display:"inline-flex",alignItems:"center",gap:6}}
+      >
+        📄 Download Authorisation PDF
+      </button>
+    </div>
+    <div style={{fontSize:11,color:"var(--text3)",marginTop:4}}>
+      Signed on {tk.authorisationSignedAt ? new Date(tk.authorisationSignedAt).toLocaleString("en-ZA") : "N/A"}
+    </div>
+  </>
+) : (
+  // ... buttons to send authorisation
+)}
       {tk.authorized ? (
         <div style={{display:"inline-flex",alignItems:"center",gap:6,background:"rgba(16,185,129,0.1)",border:"1px solid #10B981",borderRadius:20,padding:"6px 14px",fontWeight:700,fontSize:12,color:"#10B981"}}>
           ✅ Authorised by {tk.authorisationName || "Client"}
