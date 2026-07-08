@@ -603,6 +603,114 @@ The ${CFG.bizName} Team
   );
 }
 /* ── JOB CARD PDF GENERATOR ── */
+  function generateAuthorisationPDF(ticket) {
+  const b = CFG.bankDetails || {};
+  const html = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"/>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:Arial,sans-serif;font-size:12px;color:#111;background:#fff;padding:20px;}
+  .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;padding-bottom:16px;border-bottom:3px solid #00C896;}
+  .brand{font-size:20px;font-weight:900;color:#050810;}
+  .brand-sub{font-size:11px;color:#666;margin-top:2px;}
+  .ref-badge{background:#00C896;color:#050810;font-weight:800;font-size:18px;padding:8px 18px;border-radius:8px;font-family:monospace;}
+  h2{font-size:14px;font-weight:700;color:#333;margin:16px 0 8px;padding-bottom:4px;border-bottom:1px solid #ddd;text-transform:uppercase;letter-spacing:0.05em;}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 20px;margin-bottom:12px;}
+  .row{padding:5px 0;border-bottom:1px solid #f0f0f0;}
+  .key{font-size:10px;color:#666;font-weight:700;text-transform:uppercase;margin-bottom:1px;}
+  .val{font-size:12px;color:#111;}
+  .tc-box{background:#f8f9fa;border:1px solid #ddd;border-radius:6px;padding:12px;margin-bottom:12px;font-size:11px;line-height:1.7;color:#333;}
+  .tc-box strong{color:#000;}
+  .tc-box h3{color:#00C896;font-size:13px;margin-bottom:6px;}
+  .sig-box{border:1px solid #ddd;border-radius:6px;padding:16px;text-align:center;background:#f8f9fa;margin:12px 0;}
+  .sig-box img{max-width:100%;max-height:100px;border:1px solid #ddd;border-radius:4px;background:#fff;padding:4px;}
+  .footer{margin-top:20px;padding-top:10px;border-top:1px solid #ddd;font-size:10px;color:#999;text-align:center;}
+  .status-badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;background:#10B98120;color:#10B981;}
+  @media print{body{padding:10px;}button{display:none!important;}}
+</style>
+</head>
+<body>
+<div class="header">
+  <div><div class="brand">⚡ ${CFG.bizName}</div><div class="brand-sub">${CFG.tagline} · ${CFG.email}</div></div>
+  <div><div class="ref-badge">${ticket.ref}</div></div>
+</div>
+
+<h2>Authorisation Confirmation</h2>
+<div style="display:flex;gap:12px;margin-bottom:12px;">
+  <span class="status-badge">✅ Authorised</span>
+  <span style="font-size:11px;color:#666;">Signed: ${ticket.authorisationSignedAt ? new Date(ticket.authorisationSignedAt).toLocaleString("en-ZA") : "N/A"}</span>
+</div>
+
+<h2>Client Information</h2>
+<div class="grid">
+  <div class="row"><div class="key">Client Name</div><div class="val">${ticket.authorisationName || ticket.clientName || ticket.name || "—"}</div></div>
+  <div class="row"><div class="key">Position</div><div class="val">${ticket.authorisationPosition || "—"}</div></div>
+  <div class="row"><div class="key">Phone</div><div class="val">${ticket.phone || "—"}</div></div>
+  <div class="row"><div class="key">Email</div><div class="val">${ticket.email || "—"}</div></div>
+</div>
+
+<h2>Device Information</h2>
+<div class="grid">
+  <div class="row"><div class="key">Device Type</div><div class="val">${ticket.deviceType || "—"}</div></div>
+  <div class="row"><div class="key">Manufacturer</div><div class="val">${ticket.manufacturer || "—"}</div></div>
+  <div class="row"><div class="key">Model</div><div class="val">${ticket.modelNumber || "—"}</div></div>
+  <div class="row"><div class="key">Serial Number</div><div class="val">${ticket.serialNumber || "—"}</div></div>
+  <div class="row"><div class="key">Condition on Arrival</div><div class="val">${ticket.conditionOnArrival || "—"}</div></div>
+  <div class="row"><div class="key">Accessories</div><div class="val">${ticket.accessories || "None"}</div></div>
+</div>
+
+<h2>Issue Description</h2>
+<div style="background:#f8f9fa;border:1px solid #ddd;border-radius:6px;padding:12px;margin-bottom:12px;font-size:12px;">
+  ${ticket.issueTitle || ticket.problemDescription || "—"}
+  ${ticket.issueDetail ? `<br/><br/>${ticket.issueDetail}` : ""}
+</div>
+
+<h2>Terms & Conditions</h2>
+<div class="tc-box">
+  <h3>DIAGNOSTIC SERVICE TERMS</h3>
+  <p>
+    1. <strong>Diagnostic Fee</strong>: A fee of <strong>R350 (incl. VAT)</strong> is payable to commence diagnostic work. This fee is <strong>non-refundable</strong> as it covers our technical time, expertise, and bench usage.<br/><br/>
+    2. <strong>Fee Deductibility</strong>: If you approve the subsequent repair quote, this R350 fee will be <strong>fully deducted</strong> from your final repair invoice.<br/><br/>
+    3. <strong>No Unauthorised Repairs</strong>: No repair work will commence without your separate written approval of the official quote we will provide after diagnosis.<br/><br/>
+    4. <strong>Turnaround Time</strong>: Diagnostic results will be provided within <strong>2–3 business days</strong>. You will receive a separate quote for any recommended repairs.<br/><br/>
+    5. <strong>Data Loss Disclaimer</strong>: We are <strong>not responsible for any data loss</strong> that may occur during diagnostics. Please ensure you have a recent backup.<br/><br/>
+    6. <strong>Latent Defects</strong>: We take extreme care but are not liable for pre-existing dormant issues that may fail during diagnosis.<br/><br/>
+    7. <strong>Collection</strong>: If you decline the repair quote, you must collect your device within 7 business days. A storage fee of R50/day may apply thereafter. Uncollected items after 30 days may be disposed of to cover costs.
+  </p>
+</div>
+
+<h2>Client Signature</h2>
+<div class="sig-box">
+  ${ticket.authorisationSignature ? `<img src="${ticket.authorisationSignature}" alt="Client Signature"/>` : "<p style='color:#999;'>No signature captured</p>"}
+  <div style="margin-top:8px;font-size:11px;color:#666;">
+    <strong>${ticket.authorisationName || "Client"}</strong>
+    ${ticket.authorisationPosition ? ` · ${ticket.authorisationPosition}` : ""}
+    <br/>Signed: ${ticket.authorisationSignedAt ? new Date(ticket.authorisationSignedAt).toLocaleString("en-ZA") : "N/A"}
+  </div>
+</div>
+
+<h2>Payment Details</h2>
+<div class="grid">
+  <div class="row"><div class="key">Bank</div><div class="val">${b.bankName || "Capitec"}</div></div>
+  <div class="row"><div class="key">Account Holder</div><div class="val">${b.accountHolder || "Mbulaheni Group"}</div></div>
+  <div class="row"><div class="key">Account Number</div><div class="val">${b.accountNumber || "2535685813"}</div></div>
+  <div class="row"><div class="key">Branch Code</div><div class="val">${b.branchCode || "470010"}</div></div>
+  <div class="row"><div class="key">Reference</div><div class="val"><strong>${ticket.ref}</strong></div></div>
+</div>
+
+<div class="footer">
+  ${CFG.bizName} · ${CFG.tagline} · ${CFG.email} · Generated ${new Date().toLocaleString("en-ZA")}
+  <br/>This is a digitally signed authorisation document. For record-keeping purposes.
+</div>
+<div style="text-align:center;margin-top:16px">
+  <button onclick="window.print()" style="background:#00C896;color:#050810;border:none;border-radius:8px;padding:10px 24px;font-weight:700;font-size:14px;cursor:pointer;">🖨️ Print / Save as PDF</button>
+</div>
+</body></html>`;
+
+  const w = window.open("", "_blank", "width=900,height=700");
+  w.document.write(html);
+  w.document.close();
+}
 function generateJobCard(ticket){
   const svc=SVCS.find(s=>s.id===ticket.serviceType)?.label||ticket.serviceType||"—";
   const html=`<!DOCTYPE html>
