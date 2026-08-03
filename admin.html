@@ -425,6 +425,18 @@ async function fsNote(ref,txt,type="note",engineer=""){
 function ts(){return new Date().toISOString();}
 function makeTktRef(num){return`CIM-${String(num).padStart(4,"0")}`;}
 
+/* ── HTML ESCAPING ──
+   Ticket creation requires no login (public support form), so every ticket
+   field is attacker-controlled at creation time. The Job Card and Authorisation
+   PDF generators build raw HTML strings from these fields — anything interpolated
+   there MUST be escaped, or a malicious ticket submission (e.g. a <script> tag in
+   the issue description) executes when an admin opens/prints that ticket. */
+function escapeHtml(v){
+  return String(v==null?"":v)
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+}
+
 /* ── PHOTO STORAGE (base64 in Firestore — no Firebase Storage/Blaze plan needed) ──
    Firestore caps a document at 1MB, so each photo is compressed client-side and
    written as its own document in a `photos` subcollection under the ticket,
@@ -741,8 +753,8 @@ The ${CFG.bizName} Team
 </head>
 <body>
 <div class="header">
-  <div><div class="brand">⚡ ${CFG.bizName}</div><div class="brand-sub">${CFG.tagline} · ${CFG.email}</div></div>
-  <div><div class="ref-badge">${ticket.ref}</div></div>
+  <div><div class="brand">⚡ ${escapeHtml(CFG.bizName)}</div><div class="brand-sub">${escapeHtml(CFG.tagline)} · ${escapeHtml(CFG.email)}</div></div>
+  <div><div class="ref-badge">${escapeHtml(ticket.ref)}</div></div>
 </div>
 
 <h2>Authorisation Confirmation</h2>
@@ -753,26 +765,26 @@ The ${CFG.bizName} Team
 
 <h2>Client Information</h2>
 <div class="grid">
-  <div class="row"><div class="key">Client Name</div><div class="val">${ticket.authorisationName || ticket.clientName || ticket.name || "—"}</div></div>
-  <div class="row"><div class="key">Position</div><div class="val">${ticket.authorisationPosition || "—"}</div></div>
-  <div class="row"><div class="key">Phone</div><div class="val">${ticket.phone || "—"}</div></div>
-  <div class="row"><div class="key">Email</div><div class="val">${ticket.email || "—"}</div></div>
+  <div class="row"><div class="key">Client Name</div><div class="val">${escapeHtml(ticket.authorisationName || ticket.clientName || ticket.name || "—")}</div></div>
+  <div class="row"><div class="key">Position</div><div class="val">${escapeHtml(ticket.authorisationPosition || "—")}</div></div>
+  <div class="row"><div class="key">Phone</div><div class="val">${escapeHtml(ticket.phone || "—")}</div></div>
+  <div class="row"><div class="key">Email</div><div class="val">${escapeHtml(ticket.email || "—")}</div></div>
 </div>
 
 <h2>Device Information</h2>
 <div class="grid">
-  <div class="row"><div class="key">Device Type</div><div class="val">${ticket.deviceType || "—"}</div></div>
-  <div class="row"><div class="key">Manufacturer</div><div class="val">${ticket.manufacturer || "—"}</div></div>
-  <div class="row"><div class="key">Model</div><div class="val">${ticket.modelNumber || "—"}</div></div>
-  <div class="row"><div class="key">Serial Number</div><div class="val">${ticket.serialNumber || "—"}</div></div>
-  <div class="row"><div class="key">Condition on Arrival</div><div class="val">${ticket.conditionOnArrival || "—"}</div></div>
-  <div class="row"><div class="key">Accessories</div><div class="val">${ticket.accessories || "None"}</div></div>
+  <div class="row"><div class="key">Device Type</div><div class="val">${escapeHtml(ticket.deviceType || "—")}</div></div>
+  <div class="row"><div class="key">Manufacturer</div><div class="val">${escapeHtml(ticket.manufacturer || "—")}</div></div>
+  <div class="row"><div class="key">Model</div><div class="val">${escapeHtml(ticket.modelNumber || "—")}</div></div>
+  <div class="row"><div class="key">Serial Number</div><div class="val">${escapeHtml(ticket.serialNumber || "—")}</div></div>
+  <div class="row"><div class="key">Condition on Arrival</div><div class="val">${escapeHtml(ticket.conditionOnArrival || "—")}</div></div>
+  <div class="row"><div class="key">Accessories</div><div class="val">${escapeHtml(ticket.accessories || "None")}</div></div>
 </div>
 
 <h2>Issue Description</h2>
 <div style="background:#f8f9fa;border:1px solid #ddd;border-radius:6px;padding:12px;margin-bottom:12px;font-size:12px;">
-  ${ticket.issueTitle || ticket.problemDescription || "—"}
-  ${ticket.issueDetail ? `<br/><br/>${ticket.issueDetail}` : ""}
+  ${escapeHtml(ticket.issueTitle || ticket.problemDescription || "—")}
+  ${ticket.issueDetail ? `<br/><br/>${escapeHtml(ticket.issueDetail)}` : ""}
 </div>
 
 <h2>Terms & Conditions</h2>
@@ -793,23 +805,23 @@ The ${CFG.bizName} Team
 <div class="sig-box">
   ${ticket.authorisationSignature ? `<img src="${ticket.authorisationSignature}" alt="Client Signature"/>` : "<p style='color:#999;'>No signature captured</p>"}
   <div style="margin-top:8px;font-size:11px;color:#666;">
-    <strong>${ticket.authorisationName || "Client"}</strong>
-    ${ticket.authorisationPosition ? ` · ${ticket.authorisationPosition}` : ""}
+    <strong>${escapeHtml(ticket.authorisationName || "Client")}</strong>
+    ${ticket.authorisationPosition ? ` · ${escapeHtml(ticket.authorisationPosition)}` : ""}
     <br/>Signed: ${ticket.authorisationSignedAt ? new Date(ticket.authorisationSignedAt).toLocaleString("en-ZA") : "N/A"}
   </div>
 </div>
 
 <h2>Payment Details</h2>
 <div class="grid">
-  <div class="row"><div class="key">Bank</div><div class="val">${b.bankName || "Capitec"}</div></div>
-  <div class="row"><div class="key">Account Holder</div><div class="val">${b.accountHolder || "Mbulaheni Group"}</div></div>
-  <div class="row"><div class="key">Account Number</div><div class="val">${b.accountNumber || "2535685813"}</div></div>
-  <div class="row"><div class="key">Branch Code</div><div class="val">${b.branchCode || "470010"}</div></div>
-  <div class="row"><div class="key">Reference</div><div class="val"><strong>${ticket.ref}</strong></div></div>
+  <div class="row"><div class="key">Bank</div><div class="val">${escapeHtml(b.bankName || "Capitec")}</div></div>
+  <div class="row"><div class="key">Account Holder</div><div class="val">${escapeHtml(b.accountHolder || "Mbulaheni Group")}</div></div>
+  <div class="row"><div class="key">Account Number</div><div class="val">${escapeHtml(b.accountNumber || "2535685813")}</div></div>
+  <div class="row"><div class="key">Branch Code</div><div class="val">${escapeHtml(b.branchCode || "470010")}</div></div>
+  <div class="row"><div class="key">Reference</div><div class="val"><strong>${escapeHtml(ticket.ref)}</strong></div></div>
 </div>
 
 <div class="footer">
-  ${CFG.bizName} · ${CFG.tagline} · ${CFG.email} · Generated ${new Date().toLocaleString("en-ZA")}
+  ${escapeHtml(CFG.bizName)} · ${escapeHtml(CFG.tagline)} · ${escapeHtml(CFG.email)} · Generated ${new Date().toLocaleString("en-ZA")}
   <br/>This is a digitally signed authorisation document. For record-keeping purposes.
 </div>
 <div style="text-align:center;margin-top:16px">
@@ -818,8 +830,7 @@ The ${CFG.bizName} Team
 </body></html>`;
 
   const w = window.open("", "_blank", "width=900,height=700");
-  w.document.write(html);
-  w.document.close();
+  if(w){ w.opener = null; w.document.write(html); w.document.close(); }
 }
 function generateJobCard(ticket){
   const svc=SVCS.find(s=>s.id===ticket.serviceType)?.label||ticket.serviceType||"—";
@@ -853,47 +864,47 @@ function generateJobCard(ticket){
 </head>
 <body>
 <div class="header">
-  <div><div class="brand">⚡ ${CFG.bizName}</div><div class="brand-sub">${CFG.tagline} · ${CFG.email}</div></div>
-  <div><div class="ref-badge">${ticket.ref}</div><div style="font-size:10px;color:#666;margin-top:4px;text-align:right">JOB CARD</div></div>
+  <div><div class="brand">⚡ ${escapeHtml(CFG.bizName)}</div><div class="brand-sub">${escapeHtml(CFG.tagline)} · ${escapeHtml(CFG.email)}</div></div>
+  <div><div class="ref-badge">${escapeHtml(ticket.ref)}</div><div style="font-size:10px;color:#666;margin-top:4px;text-align:right">JOB CARD</div></div>
 </div>
 <h2>Client Information</h2>
 <div class="grid">
-  <div class="row"><div class="key">Client Name</div><div class="val">${ticket.clientName||ticket.name||"—"}</div></div>
-  <div class="row"><div class="key">Company</div><div class="val">${ticket.company||"—"}</div></div>
-  <div class="row"><div class="key">Phone</div><div class="val">${ticket.phone||"—"}</div></div>
-  <div class="row"><div class="key">Email</div><div class="val">${ticket.email||"—"}</div></div>
+  <div class="row"><div class="key">Client Name</div><div class="val">${escapeHtml(ticket.clientName||ticket.name||"—")}</div></div>
+  <div class="row"><div class="key">Company</div><div class="val">${escapeHtml(ticket.company||"—")}</div></div>
+  <div class="row"><div class="key">Phone</div><div class="val">${escapeHtml(ticket.phone||"—")}</div></div>
+  <div class="row"><div class="key">Email</div><div class="val">${escapeHtml(ticket.email||"—")}</div></div>
 </div>
 <h2>Device Information</h2>
 <div class="grid">
-  <div class="row"><div class="key">Device Type</div><div class="val">${ticket.deviceType||"—"}</div></div>
-  <div class="row"><div class="key">Manufacturer</div><div class="val">${ticket.manufacturer||"—"}</div></div>
-  <div class="row"><div class="key">Model</div><div class="val">${ticket.modelNumber||"—"}</div></div>
-  <div class="row"><div class="key">Serial Number</div><div class="val">${ticket.serialNumber||"—"}</div></div>
-  <div class="row"><div class="key">OS</div><div class="val">${ticket.operatingSystem||"—"}</div></div>
-  <div class="row"><div class="key">Warranty</div><div class="val">${ticket.warrantyStatus||"—"}</div></div>
-  <div class="row"><div class="key">Condition on Arrival</div><div class="val">${ticket.conditionOnArrival||"—"}</div></div>
-  <div class="row"><div class="key">Physical Damage</div><div class="val">${ticket.physicalDamage||"None"}</div></div>
-  <div class="row"><div class="key">Accessories</div><div class="val">${ticket.accessories||"None"}</div></div>
-  <div class="row"><div class="key">Service</div><div class="val">${svc}</div></div>
-  <div class="row"><div class="key">Priority</div><div class="val">${ticket.priority||"—"}</div></div>
-  <div class="row"><div class="key">Status</div><div class="val">${ST[ticket.status]?.l||ticket.status||"—"}</div></div>
+  <div class="row"><div class="key">Device Type</div><div class="val">${escapeHtml(ticket.deviceType||"—")}</div></div>
+  <div class="row"><div class="key">Manufacturer</div><div class="val">${escapeHtml(ticket.manufacturer||"—")}</div></div>
+  <div class="row"><div class="key">Model</div><div class="val">${escapeHtml(ticket.modelNumber||"—")}</div></div>
+  <div class="row"><div class="key">Serial Number</div><div class="val">${escapeHtml(ticket.serialNumber||"—")}</div></div>
+  <div class="row"><div class="key">OS</div><div class="val">${escapeHtml(ticket.operatingSystem||"—")}</div></div>
+  <div class="row"><div class="key">Warranty</div><div class="val">${escapeHtml(ticket.warrantyStatus||"—")}</div></div>
+  <div class="row"><div class="key">Condition on Arrival</div><div class="val">${escapeHtml(ticket.conditionOnArrival||"—")}</div></div>
+  <div class="row"><div class="key">Physical Damage</div><div class="val">${escapeHtml(ticket.physicalDamage||"None")}</div></div>
+  <div class="row"><div class="key">Accessories</div><div class="val">${escapeHtml(ticket.accessories||"None")}</div></div>
+  <div class="row"><div class="key">Service</div><div class="val">${escapeHtml(svc)}</div></div>
+  <div class="row"><div class="key">Priority</div><div class="val">${escapeHtml(ticket.priority||"—")}</div></div>
+  <div class="row"><div class="key">Status</div><div class="val">${escapeHtml(ST[ticket.status]?.l||ticket.status||"—")}</div></div>
 </div>
 <h2>Problem Description</h2>
-<div class="issue-box">${ticket.issueTitle||ticket.problemDescription||"—"}<br/>${ticket.issueDetail||""}</div>
+<div class="issue-box">${escapeHtml(ticket.issueTitle||ticket.problemDescription||"—")}<br/>${escapeHtml(ticket.issueDetail||"")}</div>
 <h2>Engineer Findings</h2>
-<div class="findings-box">${(ticket.notes||[]).filter(n=>n.type==="engineer-note"||n.type==="note").map(n=>`[${new Date(n.at).toLocaleDateString("en-ZA")}] ${n.txt}`).join("<br/>") || "[ To be completed by engineer ]"}</div>
+<div class="findings-box">${(ticket.notes||[]).filter(n=>n.type==="engineer-note"||n.type==="note").map(n=>`[${new Date(n.at).toLocaleDateString("en-ZA")}] ${escapeHtml(n.txt)}`).join("<br/>") || "[ To be completed by engineer ]"}</div>
 <h2>Parts &amp; Labour</h2>
 <table class="parts-table">
   <tr><th>Item / Part</th><th>Qty</th><th>Unit Cost (R)</th><th>Total (R)</th></tr>
-  ${(ticket.parts||[]).map(p=>`<tr><td>${p.name}</td><td>${p.qty}</td><td>${p.cost||"—"}</td><td>${p.qty&&p.cost?(p.qty*p.cost).toFixed(2):"—"}</td></tr>`).join("")||"<tr><td colspan='4' style='color:#aaa;text-align:center'>No parts listed</td></tr>"}
+  ${(ticket.parts||[]).map(p=>`<tr><td>${escapeHtml(p.name)}</td><td>${escapeHtml(p.qty)}</td><td>${escapeHtml(p.cost||"—")}</td><td>${p.qty&&p.cost?(p.qty*p.cost).toFixed(2):"—"}</td></tr>`).join("")||"<tr><td colspan='4' style='color:#aaa;text-align:center'>No parts listed</td></tr>"}
   <tr><td colspan="3" style="text-align:right;font-weight:700;padding:8px">TOTAL:</td><td style="font-weight:700">R ${(ticket.parts||[]).reduce((a,p)=>a+(p.qty&&p.cost?p.qty*p.cost:0),0).toFixed(2)}</td></tr>
 </table>
 <h2>Quotation Reference</h2>
-<div class="issue-box" style="min-height:30px">${ticket.quotationRef||"[ Link quotation reference here ]"}</div>
+<div class="issue-box" style="min-height:30px">${escapeHtml(ticket.quotationRef||"[ Link quotation reference here ]")}</div>
 <h2>Date Information</h2>
 <div class="grid">
   <div class="row"><div class="key">Date Logged</div><div class="val">${ticket.createdAt?new Date(ticket.createdAt).toLocaleString("en-ZA"):"—"}</div></div>
-  <div class="row"><div class="key">Assigned Engineer</div><div class="val">${ticket.assignedEngineer||"Unassigned"}</div></div>
+  <div class="row"><div class="key">Assigned Engineer</div><div class="val">${escapeHtml(ticket.assignedEngineer||"Unassigned")}</div></div>
   <div class="row"><div class="key">Date Resolved</div><div class="val">_________________________</div></div>
   <div class="row"><div class="key">Job Card Printed</div><div class="val">${new Date().toLocaleString("en-ZA")}</div></div>
 </div>
@@ -901,21 +912,20 @@ function generateJobCard(ticket){
   <div class="sig-box"><div class="sig-line"></div><div class="sig-lbl">Engineer Signature &amp; Date</div></div>
   <div class="sig-box">
     <h3 style="font-size:12px;font-weight:700;color:#333;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid #ddd;padding-bottom:4px;">Client Acceptance</h3>
-    <p style="font-size:11px;color:#444;margin-bottom:2px;">Name: ${ticket.clientSignoff?.clientName||""}</p>
-    <p style="font-size:11px;color:#444;margin-bottom:2px;">Position: ${ticket.clientSignoff?.clientPosition||""}</p>
+    <p style="font-size:11px;color:#444;margin-bottom:2px;">Name: ${escapeHtml(ticket.clientSignoff?.clientName||"")}</p>
+    <p style="font-size:11px;color:#444;margin-bottom:2px;">Position: ${escapeHtml(ticket.clientSignoff?.clientPosition||"")}</p>
     <p style="font-size:11px;color:#444;margin-bottom:6px;">Signed: ${ticket.clientSignoff?.signedAt?new Date(ticket.clientSignoff.signedAt).toLocaleString("en-ZA"):""}</p>
     ${ticket.clientSignoff?.signatureImage?`<img src="${ticket.clientSignoff.signatureImage}" style="height:60px;border:1px solid #ddd;border-radius:4px;"/>`:
     `<div style="border-bottom:1px solid #333;height:40px;margin-bottom:4px;"></div><div style="font-size:10px;color:#666;">Client Signature &amp; Date (Device Collection)</div>`}
   </div>
 </div>
-<div class="footer">${CFG.bizName} · ${CFG.tagline} · ${CFG.email} · Generated ${new Date().toLocaleString("en-ZA")}</div>
+<div class="footer">${escapeHtml(CFG.bizName)} · ${escapeHtml(CFG.tagline)} · ${escapeHtml(CFG.email)} · Generated ${new Date().toLocaleString("en-ZA")}</div>
 <div style="text-align:center;margin-top:16px">
   <button onclick="window.print()" style="background:#00C896;color:#050810;border:none;border-radius:8px;padding:10px 24px;font-weight:700;font-size:14px;cursor:pointer;">🖨️ Print Job Card</button>
 </div>
 </body></html>`;
   const w=window.open("","_blank","width=900,height=700");
-  w.document.write(html);
-  w.document.close();
+  if(w){ w.opener=null; w.document.write(html); w.document.close(); }
 }
 
 /* ── TINY ATOMS ── */
@@ -2535,11 +2545,16 @@ function Root(){
   const showToast=(msg,type="ok")=>{setToast({msg,type});setTimeout(()=>setToast({msg:"",type:"ok"}),3000);};
 
   useEffect(()=>{
+    // The ticket list is admin-only data. Only subscribe once we have a signed-in
+    // admin — otherwise a customer on the public portal triggers a permission-denied
+    // read against Firestore rules and gets a spurious "Firebase error" toast.
+    if(!adminUser){ setTickets([]); setDbLoading(false); return; }
+    setDbLoading(true);
     const unsub=db.collection("tickets").orderBy("createdAt","desc").limit(500)
       .onSnapshot(snap=>{setTickets(snap.docs.map(d=>({id:d.id,...d.data()})));setDbLoading(false);},
       err=>{console.error(err);setDbLoading(false);showToast("Firebase error","error");});
     return()=>unsub();
-  },[]);
+  },[adminUser]);
 
   useEffect(()=>{
     const unsub=auth.onAuthStateChanged(async(u)=>{
