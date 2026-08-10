@@ -9,6 +9,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-functions-compat.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
 <style>
   *{box-sizing:border-box;margin:0;padding:0;}
@@ -73,6 +74,7 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
+const functions = firebase.functions();
 </script>
 <script type="text/babel">
 const { useState, useEffect, useRef, forwardRef, useImperativeHandle } = React;
@@ -115,13 +117,8 @@ const SignaturePad = forwardRef((props, ref) => {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) {
-      console.error("SignaturePad: Canvas element not found!");
-      return;
-    }
-    console.log("SignaturePad: Canvas found, setting up...");
+    if (!canvas) return;
 
-    // Set fixed size
     canvas.width = 600;
     canvas.height = 150;
     const ctx = canvas.getContext("2d");
@@ -163,21 +160,17 @@ const SignaturePad = forwardRef((props, ref) => {
       isDrawing.current = false;
     };
 
-    // Mouse
     canvas.addEventListener('mousedown', startDraw);
     canvas.addEventListener('mousemove', draw);
     canvas.addEventListener('mouseup', stopDraw);
     canvas.addEventListener('mouseleave', stopDraw);
-    // Touch
     canvas.addEventListener('touchstart', startDraw, { passive: false });
     canvas.addEventListener('touchmove', draw, { passive: false });
     canvas.addEventListener('touchend', stopDraw);
     canvas.addEventListener('touchcancel', stopDraw);
 
-    // Draw a test dot to prove it works
     ctx.fillStyle = "#00C896";
     ctx.fillRect(5, 5, 5, 5);
-    console.log("SignaturePad: Ready (test dot drawn)");
 
     return () => {
       canvas.removeEventListener('mousedown', startDraw);
@@ -270,19 +263,33 @@ function App() {
     setSubmitting(true);
     try {
       const imgData = padRef.current.getImageData();
-      await db.collection("tickets").doc(ticketRef).update({
-        authorized: true,
-        authorisationName: clientName,
-        authorisationPosition: clientPosition,
-        authorisationSignature: imgData,
-        authorisationSignedAt: new Date().toISOString(),
-        status: "awaiting-diagnosis",
-        updatedAt: new Date().toISOString()
+      
+      // ✅ FIXED: Call Cloud Function instead of writing directly to Firestore
+      const authoriseTicket = functions.httpsCallable('authoriseTicket');
+      
+      const result = await authoriseTicket({
+        ticketId: ticketRef,
+        name: clientName,
+        position: clientPosition,
+        signature: imgData
       });
+      
+      console.log('✅ Authorisation saved:', result.data);
       setSuccess(true);
+      
     } catch (err) {
-      console.error(err);
-      alert("Failed to save authorisation. Please try again.");
+      console.error('❌ Authorisation failed:', err);
+      
+      // Handle Firebase error codes
+      let message = "Failed to save authorisation. Please try again.";
+      if (err.code === 'not-found') {
+        message = "Ticket not found. Please check your ticket reference.";
+      } else if (err.code === 'invalid-argument') {
+        message = "Please fill in all required fields.";
+      } else if (err.code === 'deadline-exceeded') {
+        message = "Request timed out. Please check your internet connection.";
+      }
+      alert(message);
     }
     setSubmitting(false);
   };
