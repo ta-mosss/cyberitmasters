@@ -252,47 +252,51 @@ function App() {
   }, [ticketRef]);
 
   const handleSubmit = async () => {
-    if (!clientName.trim()) {
-      alert("Please enter the client's full name.");
-      return;
-    }
-    if (!padRef.current || padRef.current.isEmpty()) {
-      alert("Please draw a signature in the box above.");
-      return;
-    }
-    setSubmitting(true);
-    try {
-      const imgData = padRef.current.getImageData();
-      
-      // ✅ SECURE: Call Netlify Function instead of writing directly to Firestore
-      const response = await fetch('/.netlify/functions/authorise', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ticketId: ticketRef,
-          name: clientName,
-          position: clientPosition,
-          signature: imgData
-        })
-      });
+  if (!clientName.trim()) {
+    alert("Please enter the client's full name.");
+    return;
+  }
+  if (!padRef.current || padRef.current.isEmpty()) {
+    alert("Please draw a signature in the box above.");
+    return;
+  }
+  setSubmitting(true);
+  try {
+    const imgData = padRef.current.getImageData();
+    
+    console.log('📤 Sending authorisation request for ticket:', ticketRef);
+    
+    const response = await fetch('/.netlify/functions/authorise', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        ticketId: ticketRef,
+        name: clientName,
+        position: clientPosition || '',
+        signature: imgData
+      })
+    });
 
-      const result = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(result.error || 'Authorisation failed');
-      }
-      
-      console.log('✅ Authorisation saved:', result);
-      setSuccess(true);
-      
-    } catch (err) {
-      console.error('❌ Authorisation failed:', err);
-      alert(err.message || "Failed to save authorisation. Please try again.");
+    // ✅ First check if response is ok before trying to parse JSON
+    if (!response.ok) {
+      const text = await response.text();
+      console.error('❌ Server error response:', text);
+      throw new Error(`Server error: ${response.status} - ${text || 'No details'}`);
     }
-    setSubmitting(false);
-  };
+
+    // ✅ Now safely parse JSON
+    const result = await response.json();
+    console.log('✅ Authorisation saved:', result);
+    setSuccess(true);
+    
+  } catch (err) {
+    console.error('❌ Authorisation failed:', err);
+    alert(`Authorisation failed: ${err.message || 'Please try again.'}`);
+  }
+  setSubmitting(false);
+};
 
   // ── Rendering states ──
   if (loading) {
