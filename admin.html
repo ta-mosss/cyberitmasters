@@ -332,11 +332,9 @@ const CFG={
   tagline:"Professional I.T Solutions",
   wa:"27726650565",
   email:"info@mbulahenigroup.co.za",
-  // NOTE: this list is a UI-level convenience only, matched against the signed-in
-  // Firebase Auth user's email. The real gate has to be your Firestore/RTDB security
-  // rules checking request.auth.token.admin == true — this file cannot enforce
-  // security on its own no matter what it checks client-side.
-  adminEmails:["admin@mbulahenigroup.co.za","ronewa@cyberit.co.za"],
+  // Admin status comes ONLY from the Firebase Auth custom claim
+  // (request.auth.token.admin === true), set server-side by
+  // setAdminClaimOnCreate / grantAdmin against the system/admins doc.
   zoho:"https://books.zohosecure.com/portal/mbulahenigroup/signin",
   adWin:"https://download.anydesk.com/AnyDesk.exe",
   adMac:"https://download.anydesk.com/anydesk.dmg",
