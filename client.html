@@ -567,7 +567,6 @@ const SLA_HOURS={Urgent:4,High:8,Medium:24,Low:48};
 const PAUSED_STATUSES=["awaiting-authorisation","awaiting-payment","awaiting-parts","awaiting-signoff"];
 const SVCS=[{id:"device",label:"Device Drop-off",icon:"💻"},{id:"remote",label:"Remote Support",icon:"🌐"},{id:"onsite",label:"On-Site Support",icon:"🔧"}];
 
-function fmtDate(d){if(!d)return"—";return new Date(d).toLocaleDateString("en-ZA",{day:"numeric",month:"short",year:"numeric"});}
 function asJsDate(d){
   if(!d)return null;
   if(d instanceof Date)return d;
