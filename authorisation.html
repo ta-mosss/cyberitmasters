@@ -264,32 +264,32 @@ function App() {
     try {
       const imgData = padRef.current.getImageData();
       
-      // ✅ FIXED: Call Cloud Function instead of writing directly to Firestore
-      const authoriseTicket = functions.httpsCallable('authoriseTicket');
-      
-      const result = await authoriseTicket({
-        ticketId: ticketRef,
-        name: clientName,
-        position: clientPosition,
-        signature: imgData
+      // ✅ SECURE: Call Netlify Function instead of writing directly to Firestore
+      const response = await fetch('/.netlify/functions/authorise', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ticketId: ticketRef,
+          name: clientName,
+          position: clientPosition,
+          signature: imgData
+        })
       });
+
+      const result = await response.json();
       
-      console.log('✅ Authorisation saved:', result.data);
+      if (!response.ok) {
+        throw new Error(result.error || 'Authorisation failed');
+      }
+      
+      console.log('✅ Authorisation saved:', result);
       setSuccess(true);
       
     } catch (err) {
       console.error('❌ Authorisation failed:', err);
-      
-      // Handle Firebase error codes
-      let message = "Failed to save authorisation. Please try again.";
-      if (err.code === 'not-found') {
-        message = "Ticket not found. Please check your ticket reference.";
-      } else if (err.code === 'invalid-argument') {
-        message = "Please fill in all required fields.";
-      } else if (err.code === 'deadline-exceeded') {
-        message = "Request timed out. Please check your internet connection.";
-      }
-      alert(message);
+      alert(err.message || "Failed to save authorisation. Please try again.");
     }
     setSubmitting(false);
   };
