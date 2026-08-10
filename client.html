@@ -444,10 +444,10 @@ const {useState,useEffect,useMemo}=React;
    The HTML then signs in with Firebase Auth and Firestore rules can
    enforce access using request.auth.uid / customerId.
 
-   DEVELOPMENT FALLBACK:
-   If portalAuthEndpoint is blank, the file uses the current legacy
-   ticket lookup. This preserves today's behaviour while you deploy
-   the secure auth endpoint. Do NOT use fallback mode in production.
+   SECURITY NOTE:
+   There is no browser-side Firestore authentication fallback. If the
+   Cloud Function is not configured, login is blocked rather than
+   exposing ticket documents directly to unauthenticated browsers.
    ============================================================ */
 
 const CFG={
@@ -458,8 +458,9 @@ const CFG={
   signoffBase:"https://cyberit.mbulahenigroup.co.za/clientsignoff.html",
   googleReview:"https://g.page/r/CUSUmJkZZNmSEBM/review",
   newTicketUrl:"https://cyberit.mbulahenigroup.co.za/",
-  // IMPORTANT: configure this before production deployment.
-  portalAuthEndpoint:"",
+  // Secure Firebase Cloud Function used for Ticket Number + Cellphone authentication.
+  // Replace this with the exact URL shown by Firebase after deployment if it differs.
+  portalAuthEndpoint:"https://africa-south1-test-bot-49f99.cloudfunctions.net/portalAuth",
   sessionKey:"cimopCustomerSessionV2"
 };
 
@@ -501,23 +502,40 @@ function StatusBadge({status}){const v=ST[status]||{l:status||"Unknown",c:"#6474
 function SLABadge({ticket}){const i=getSLAInfo(ticket);if(!i||i.status==="done")return null;if(i.status==="paused")return <span style={{color:"#8B5CF6",fontSize:11,fontWeight:700,fontFamily:"'IBM Plex Mono',monospace"}}>⏸ {i.label}</span>;const cls=i.status==="breach"?"sla-breach":i.status==="warn"?"sla-warn":"sla-ok";return <span className={cls}>⏱ {i.label}</span>;}
 function Toast({msg,type}){if(!msg)return null;return <div className={`toast ${type||"ok"}`}>{msg}</div>;}
 
-/* ---------- secure/legacy authentication gateway ---------- */
+/* ---------- secure customer authentication gateway ---------- */
 async function authenticatePortal(ticketRef,phone){
-  if(CFG.portalAuthEndpoint){
-    const r=await fetch(CFG.portalAuthEndpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({ticketRef,phone})});
-    if(!r.ok){const body=await r.json().catch(()=>({}));throw new Error(body.message||"Unable to verify portal access.");}
-    const result=await r.json();
-    if(!result.customToken||!result.customerId)throw new Error("Authentication service returned an invalid response.");
-    await auth.signInWithCustomToken(result.customToken);
-    return {customerId:result.customerId,bootstrapTicketRef:ticketRef,secure:true,customToken:result.customToken};
+  if(!CFG.portalAuthEndpoint){
+    throw new Error("Customer portal authentication is not configured yet.");
   }
 
-  // DEVELOPMENT ONLY — preserves the current portal's ticket+phone experience.
-  const snap=await db.collection("tickets").doc(ticketRef).get();
-  if(!snap.exists)throw new Error("Ticket not found. Please check your Ticket Number.");
-  const data=snap.data();
-  if(normalisePhone(data.phone)!==normalisePhone(phone))throw new Error("The cellphone number does not match this ticket.");
-  return {customerId:`legacy-${normalisePhone(phone)}`,bootstrapTicketRef:ticketRef,secure:false,bootstrapTicket:{id:snap.id,...data}};
+  const r=await fetch(CFG.portalAuthEndpoint,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({ticketRef,phone})
+  });
+
+  const result=await r.json().catch(()=>({}));
+
+  if(!r.ok){
+    throw new Error(result.message||"Unable to verify portal access.");
+  }
+
+  // Accept both response names for compatibility with the original
+  // and V2 authentication functions.
+  const customToken=result.customToken||result.token;
+
+  if(!customToken||!result.customerId){
+    throw new Error("Authentication service returned an invalid response.");
+  }
+
+  await auth.signInWithCustomToken(customToken);
+
+  return {
+    customerId:result.customerId,
+    bootstrapTicketRef:result.ticketRef||ticketRef,
+    secure:true,
+    customToken
+  };
 }
 
 async function loadCustomerProfile(identity,tickets){
@@ -530,19 +548,18 @@ async function loadCustomerProfile(identity,tickets){
 }
 
 async function loadCustomerTickets(identity){
-  // Secure mode: rules should permit only records belonging to auth.uid/customerId.
-  // Preferred schema: customers/{customerId}.tickets subcollection or tickets.customerId.
-  if(identity.secure){
-    const snap=await db.collection("tickets").where("customerId","==",identity.customerId).limit(100).get();
-    return snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
+  if(!identity?.secure||!identity.customerId){
+    throw new Error("Your secure customer session is not available. Please sign in again.");
   }
-  // Legacy bridge: retrieve the known bootstrap ticket, then find matching tickets
-  // by exact stored phone. This is temporary until the secure endpoint is deployed.
-  const first=identity.bootstrapTicket;
-  const phone=first?.phone||"";
-  const snap=await db.collection("tickets").where("phone","==",phone).orderBy("createdAt","desc").limit(100).get().catch(()=>null);
-  if(snap)return snap.docs.map(d=>({id:d.id,...d.data()}));
-  return first?[first]:[];
+
+  const snap=await db.collection("tickets")
+    .where("customerId","==",identity.customerId)
+    .limit(100)
+    .get();
+
+  return snap.docs
+    .map(d=>({id:d.id,...d.data()}))
+    .sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
 }
 
 /* ---------- login ---------- */
@@ -551,7 +568,7 @@ function LoginScreen({onLogin,initialTicket}){
   const [phone,setPhone]=useState("");
   const [loading,setLoading]=useState(false);const [error,setError]=useState("");
   const submit=async e=>{e.preventDefault();const tid=ticketId.trim().toUpperCase(),ph=phone.trim();if(!tid||!ph){setError("Enter your Ticket Number and cellphone number.");return;}setLoading(true);setError("");try{const identity=await authenticatePortal(tid,ph);const tickets=await loadCustomerTickets(identity);if(!tickets.length)throw new Error("We verified your access, but could not load your customer records.");const session={...identity,phone:normalisePhone(ph),createdAt:Date.now()};sessionStorage.setItem(CFG.sessionKey,JSON.stringify(session));onLogin(session,tickets);}catch(err){console.error(err);setError(err.message||"Unable to sign in. Please try again.");}finally{setLoading(false);}};
-  return <div className="page" style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"calc(100vh - 64px)"}}><div className="login-card fu"><div className="login-hero"><div className="login-icon">🔐</div><h1 className="login-title">Customer Portal</h1><p className="login-sub">Use any current or previous ticket number together with the cellphone number registered with us.</p></div><form onSubmit={submit}><div className="form-group"><label className="form-label">Ticket Number <span>*</span></label><input className="form-input mono" placeholder="CIM-1001" value={ticketId} onChange={e=>setTicketId(e.target.value.toUpperCase())} autoComplete="off"/></div><div className="form-group"><label className="form-label">Cellphone Number <span>*</span></label><input className="form-input" type="tel" placeholder="071 234 5678" value={phone} onChange={e=>setPhone(e.target.value)} autoComplete="tel"/></div>{error&&<div className="error-msg"><span>⚠️</span><span>{error}</span></div>}<button className="btn-login" disabled={loading}>{loading?<span>Verifying your access…</span>:"Access My Customer Portal →"}</button></form><div className="help-text"><strong>One login. All your support.</strong><br/>Your ticket number identifies an existing relationship; after verification, CIMOP loads your customer workspace and your related tickets.<br/><br/>Need help? <strong>{CFG.email}</strong></div></div></div>;
+  return <div className="page" style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"calc(100vh - 64px)"}}><div className="login-card fu"><div className="login-hero"><div className="login-icon">🔐</div><h1 className="login-title">Customer Portal</h1><p className="login-sub">Use any current or previous ticket number together with the cellphone number registered with us.</p></div><form onSubmit={submit}><div className="form-group"><label className="form-label">Ticket Number <span>*</span></label><input className="form-input mono" placeholder="CIM-1001 or 1001" value={ticketId} onChange={e=>setTicketId(e.target.value.toUpperCase())} autoComplete="off"/></div><div className="form-group"><label className="form-label">Cellphone Number <span>*</span></label><input className="form-input" type="tel" placeholder="071 234 5678" value={phone} onChange={e=>setPhone(e.target.value)} autoComplete="tel"/></div>{error&&<div className="error-msg"><span>⚠️</span><span>{error}</span></div>}<button className="btn-login" disabled={loading}>{loading?<span>Verifying your access…</span>:"Access My Customer Portal →"}</button></form><div className="help-text"><strong>One login. All your support.</strong><br/>Your ticket number identifies an existing relationship; after verification, CIMOP loads your customer workspace and your related tickets.<br/><br/>Need help? <strong>{CFG.email}</strong></div></div></div>;
 }
 
 /* ---------- dashboard ---------- */
@@ -568,7 +585,39 @@ function Dashboard({customer,tickets,onSelect,onLogout}){const [tab,setTab]=useS
 
 function Root(){const [session,setSession]=useState(null);const [customer,setCustomer]=useState(null);const [tickets,setTickets]=useState([]);const [selected,setSelected]=useState(null);const [loading,setLoading]=useState(true);const [toast,setToast]=useState({msg:"",type:"ok"});const [theme,setTheme]=useState("dark");
  const showToast=(msg,type="ok")=>{setToast({msg,type});setTimeout(()=>setToast({msg:"",type:"ok"}),3000);};
- useEffect(()=>{const raw=sessionStorage.getItem(CFG.sessionKey);if(!raw){setLoading(false);return;}const s=JSON.parse(raw);setSession(s);(async()=>{try{if(s.secure&&!auth.currentUser){await auth.signInWithCustomToken(s.customToken).catch(()=>{});}const t=await loadCustomerTickets(s);setTickets(t);setCustomer(await loadCustomerProfile(s,t));setSelected(null);}catch(e){console.error(e);sessionStorage.removeItem(CFG.sessionKey);setSession(null);}finally{setLoading(false);}})();},[]);
+ useEffect(()=>{
+   const raw=sessionStorage.getItem(CFG.sessionKey);
+   if(!raw){setLoading(false);return;}
+   let s;
+   try{s=JSON.parse(raw);}catch(e){sessionStorage.removeItem(CFG.sessionKey);setLoading(false);return;}
+
+   // Customer sessions expire after 12 hours. This avoids retaining an old
+   // custom token indefinitely in the browser session.
+   if(!s.secure||!s.customerId||!s.customToken||!s.createdAt||Date.now()-s.createdAt>12*60*60*1000){
+     sessionStorage.removeItem(CFG.sessionKey);
+     setLoading(false);
+     return;
+   }
+
+   setSession(s);
+   (async()=>{
+     try{
+       if(!auth.currentUser)await auth.signInWithCustomToken(s.customToken);
+       const t=await loadCustomerTickets(s);
+       if(!t.length)throw new Error("We verified your access, but no customer tickets are currently available.");
+       setTickets(t);
+       setCustomer(await loadCustomerProfile(s,t));
+       setSelected(null);
+     }catch(e){
+       console.error(e);
+       sessionStorage.removeItem(CFG.sessionKey);
+       if(auth.currentUser)await auth.signOut().catch(()=>{});
+       setSession(null);
+     }finally{
+       setLoading(false);
+     }
+   })();
+ },[]);
  useEffect(()=>{if(!session?.secure||!session.customerId)return;const unsub=db.collection("tickets").where("customerId","==",session.customerId).limit(100).onSnapshot(s=>{const t=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));setTickets(t);setSelected(cur=>cur? t.find(x=>x.id===cur.id)||cur : t[0]||null);},e=>console.error(e));return()=>unsub();},[session?.secure,session?.customerId]);
  const login=async(s,t)=>{setSession(s);setTickets(t);setCustomer(await loadCustomerProfile(s,t));setSelected(null);showToast(`Welcome to your customer portal`,'info');};
  const logout=async()=>{sessionStorage.removeItem(CFG.sessionKey);if(auth.currentUser)await auth.signOut().catch(()=>{});setSession(null);setCustomer(null);setTickets([]);setSelected(null);};
