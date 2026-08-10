@@ -1,7 +1,10 @@
 [build]
   publish = "."
   command = "echo 'No build step needed'"
-  functions = "netlify/functions"
+
+[functions]
+  directory = "netlify/functions"
+  external_node_modules = ["firebase-admin"]
 
 [[redirects]]
   from = "/api/*"
