@@ -419,6 +419,12 @@ const AC="#00C896",AC2="#0EA5E9";
 
 /* ── SLA HOURS by priority ── */
 const SLA_HOURS={Urgent:4,High:8,Medium:24,Low:48};
+let SLA_RUNTIME_HOURS={...SLA_HOURS};
+function applySlaPolicies(policies){
+  const next={...SLA_HOURS};
+  (policies||[]).forEach(p=>{ if(p&&p.priority&&Number(p.targetHours)>0) next[p.priority]=Number(p.targetHours); });
+  SLA_RUNTIME_HOURS=next;
+}
 
 /* ── STATUS LOOKUP ── */
 const ST={
@@ -651,7 +657,7 @@ function getSLAInfo(ticket){
   if(ticket.status==="resolved"||ticket.status==="closed"){
     return{status:"done",label:"Resolved"};
   }
-  const hours=SLA_HOURS[ticket.priority]||24;
+  const hours=SLA_RUNTIME_HOURS[ticket.priority]||24;
   const targetMinutes=hours*60;
   const elapsed=slaElapsedBusinessMinutes(ticket);
   const remaining=targetMinutes-elapsed;
@@ -1057,7 +1063,7 @@ function generateJobCard(ticket){
 const RBAC_ROLES={
   super_admin:{label:"Super Admin",icon:"👑",description:"Full platform access",permissions:["*" ]},
   operations_manager:{label:"Operations Manager",icon:"🧭",description:"Operations, customers, tickets and team visibility",permissions:[
-    "tickets.read","tickets.write","tickets.assign","customers.read","customers.write","assets.read","assets.write","sla.read","automation.read","notifications.read","analytics.read"
+    "tickets.read","tickets.write","tickets.assign","customers.read","customers.write","assets.read","assets.write","sla.read","sla.write","automation.read","automation.write","notifications.read","analytics.read"
   ]},
   engineer:{label:"Engineer",icon:"🛠️",description:"Assigned technical work and ticket execution",permissions:[
     "tickets.read_assigned","tickets.write_assigned","tickets.notes","tickets.time","customers.read","assets.read","notifications.read"
@@ -2665,6 +2671,276 @@ function SignoffModal({ticket,clientName,setClientName,clientPosition,setClientP
   );
 }
 
+
+/* ════════════════════════════════════════════════════
+   CIMOP STAGE 2 — SLA ENGINE v1
+   MVP: policy storage + live ticket SLA monitoring.
+   No Cloud Function required yet; calculation runs in the portal.
+════════════════════════════════════════════════════ */
+const DEFAULT_SLA_POLICIES=[
+  {priority:"Urgent",targetHours:4,active:true},
+  {priority:"High",targetHours:8,active:true},
+  {priority:"Medium",targetHours:24,active:true},
+  {priority:"Low",targetHours:48,active:true}
+];
+
+function formatSlaMinutes(m){
+  const n=Math.abs(Number(m)||0);
+  const h=Math.floor(n/60), min=Math.round(n%60);
+  return h?`${h}h ${min}m`:`${min}m`;
+}
+function slaStatusMeta(info){
+  if(!info) return {label:"No SLA",color:"var(--text4)",bg:"transparent"};
+  if(info.status==="breach") return {label:"BREACH",color:"#EF4444",bg:"rgba(239,68,68,.09)"};
+  if(info.status==="warn") return {label:"AT RISK",color:"#F59E0B",bg:"rgba(245,158,11,.09)"};
+  if(info.status==="paused") return {label:"PAUSED",color:"#8B5CF6",bg:"rgba(139,92,246,.09)"};
+  if(info.status==="done") return {label:"COMPLETED",color:"#10B981",bg:"rgba(16,185,129,.09)"};
+  return {label:"ON TRACK",color:"#10B981",bg:"rgba(16,185,129,.06)"};
+}
+
+
+/* ════════════════════════════════════════════════════
+   CIMOP STAGE 2 — AUTOMATION ENGINE v1
+   MVP: rules are stored in automations/{automationId}.
+   The browser executes safe internal actions while the Admin Portal
+   is open. Backend enforcement/Cloud Functions can replace this later.
+════════════════════════════════════════════════════ */
+const DEFAULT_AUTOMATIONS=[
+  {id:"ticket-created",name:"New ticket → notify operator",description:"Create an internal notification when a new ticket is logged.",active:true,triggerType:"ticket_created",actionType:"notification",severity:"info"},
+  {id:"ticket-assigned",name:"Assignment changed → notify operator",description:"Create an internal notification when an engineer assignment changes.",active:true,triggerType:"assignment_changed",actionType:"notification",severity:"info"},
+  {id:"ticket-awaiting-client",name:"Waiting on client → flag ticket",description:"Notify the operator when a ticket moves into a client-dependent status.",active:true,triggerType:"client_waiting",actionType:"notification",severity:"warning"},
+  {id:"sla-at-risk",name:"SLA at risk → alert operator",description:"Create an alert when an active ticket enters the SLA warning window.",active:true,triggerType:"sla_at_risk",actionType:"notification",severity:"warning"},
+  {id:"sla-breach",name:"SLA breach → escalate",description:"Create an urgent internal notification when an SLA target is breached.",active:true,triggerType:"sla_breach",actionType:"notification",severity:"critical"},
+  {id:"ticket-closed",name:"Ticket closed → record completion",description:"Record an internal completion notification when a ticket closes.",active:true,triggerType:"ticket_closed",actionType:"notification",severity:"success"}
+];
+
+function automationLabel(type){
+  return ({ticket_created:"Ticket created",assignment_changed:"Assignment changed",client_waiting:"Client waiting",sla_at_risk:"SLA at risk",sla_breach:"SLA breach",ticket_closed:"Ticket closed"})[type]||type;
+}
+function automationSeverityMeta(sev){
+  return ({critical:{label:"CRITICAL",color:"#EF4444",bg:"rgba(239,68,68,.10)"},warning:{label:"WARNING",color:"#F59E0B",bg:"rgba(245,158,11,.10)"},success:{label:"SUCCESS",color:"#10B981",bg:"rgba(16,185,129,.10)"},info:{label:"INFO",color:"#0EA5E9",bg:"rgba(14,165,233,.10)"}})[sev]||{label:"INFO",color:"#0EA5E9",bg:"rgba(14,165,233,.10)"};
+}
+async function loadAutomationRules(){
+  try{
+    const snap=await db.collection("automations").get();
+    const docs=snap.docs.map(d=>({id:d.id,...d.data()}));
+    return DEFAULT_AUTOMATIONS.map(def=>docs.find(x=>x.id===def.id)||def);
+  }catch(e){console.warn("Automation rules unavailable",e);return DEFAULT_AUTOMATIONS;}
+}
+async function ensureAutomationNotification(rule,ticket,actor,extra={}){
+  const ref=ticket?.ref||"unknown";
+  const uid=auth.currentUser?.uid||"current";
+  const dedupe=`${rule.id}__${ref}__${uid}__${extra.key||rule.triggerType}`.replace(/[^a-zA-Z0-9_-]/g,"_").slice(0,150);
+  const notification={
+    automationId:rule.id,ticketRef:ref,recipientUid:auth.currentUser?.uid||null,recipientEmail:auth.currentUser?.email||null,
+    title:extra.title||rule.name,message:extra.message||rule.description,severity:rule.severity||"info",read:false,
+    createdAt:ts(),createdBy:actor?.actorEmail||auth.currentUser?.email||"system",source:"automation-engine-v1"
+  };
+  const nref=db.collection("notifications").doc(dedupe);
+  const existing=await nref.get();
+  if(existing.exists)return existing.data();
+  await nref.set(notification);
+  return notification;
+}
+async function runAutomationForTicket(ticket,context={}){
+  if(!ticket||!auth.currentUser) return {ran:0};
+  const rules=await loadAutomationRules();
+  let ran=0;
+  for(const rule of rules.filter(r=>r.active!==false)){
+    let match=false,extra={};
+    const before=context.before||null;
+    const after=ticket;
+    if(rule.triggerType==="ticket_created" && context.eventType==="created") match=true;
+    if(rule.triggerType==="assignment_changed" && context.eventType==="assignment_changed"){
+      match=true; extra.message=`${after.ref} assignment changed to ${after.assignedEngineer||"Unassigned"}.`;
+    }
+    if(rule.triggerType==="client_waiting" && context.eventType==="status_changed" && SLA_PAUSED_STATUSES.includes(after.status)){
+      match=true; extra.message=`${after.ref} is waiting on ${ST[after.status]?.l||after.status}.`;
+    }
+    if(rule.triggerType==="ticket_closed" && context.eventType==="status_changed" && after.status==="closed"){
+      match=true; extra.message=`${after.ref} has been closed and recorded as completed.`;
+    }
+    if(rule.triggerType==="sla_at_risk" && context.eventType==="sla_scan" && context.slaStatus==="warn"){
+      match=true; extra.key="sla_at_risk"; extra.message=`${after.ref} is approaching its SLA target.`;
+    }
+    if(rule.triggerType==="sla_breach" && context.eventType==="sla_scan" && context.slaStatus==="breach"){
+      match=true; extra.key="sla_breach"; extra.message=`${after.ref} has breached its SLA target.`;
+    }
+    if(!match) continue;
+    try{
+      if(rule.actionType==="notification"){
+        await ensureAutomationNotification(rule,after,context.actor||{},extra);
+        ran++;
+      }
+    }catch(e){console.warn("Automation execution failed",rule.id,e);}
+  }
+  return {ran};
+}
+
+function AutomationEngine({tickets,role,showToast}){
+  const allowed=canAny(role,"automation.read");
+  const canWrite=hasPermission(role,"automation.write");
+  const [rules,setRules]=useState(DEFAULT_AUTOMATIONS);
+  const [loading,setLoading]=useState(true);
+  const [saving,setSaving]=useState(false);
+  const [query,setQuery]=useState("");
+  const [filter,setFilter]=useState("all");
+  const [selected,setSelected]=useState(null);
+  const [runBusy,setRunBusy]=useState(false);
+
+  useEffect(()=>{
+    if(!allowed){setLoading(false);return;}
+    const unsub=db.collection("automations").onSnapshot(snap=>{
+      const docs=snap.docs.map(d=>({id:d.id,...d.data()}));
+      setRules(DEFAULT_AUTOMATIONS.map(def=>docs.find(x=>x.id===def.id)||def));
+      setLoading(false);
+    },e=>{console.warn("Automation rules unavailable",e);setRules(DEFAULT_AUTOMATIONS);setLoading(false);});
+    return()=>unsub();
+  },[allowed]);
+
+  const deployDefaults=async()=>{
+    if(!canWrite)return;
+    setSaving(true);
+    try{
+      for(const r of DEFAULT_AUTOMATIONS){await db.collection("automations").doc(r.id).set({...r,updatedAt:ts(),updatedBy:auth.currentUser?.email||null},{merge:true});}
+      showToast("Default automation rules deployed ✓");
+    }catch(e){console.error(e);showToast("Failed to deploy automation rules","error");}
+    setSaving(false);
+  };
+  const saveRule=async(rule)=>{
+    if(!canWrite)return;
+    setSaving(true);
+    try{await db.collection("automations").doc(rule.id).set({...rule,updatedAt:ts(),updatedBy:auth.currentUser?.email||null},{merge:true});showToast("Automation saved ✓");}
+    catch(e){console.error(e);showToast("Automation save failed","error");}
+    setSaving(false);
+  };
+  const runSelected=async()=>{
+    if(!selected)return;
+    const ticket=tickets.find(t=>t.ref===selected);
+    if(!ticket){showToast("Select a valid ticket","error");return;}
+    setRunBusy(true);
+    try{
+      const result=await runAutomationForTicket(ticket,{eventType:"sla_scan",slaStatus:getSLAInfo(ticket)?.status,actor:{actorEmail:auth.currentUser?.email}});
+      showToast(`${result.ran} automation action(s) executed ✓`);
+    }catch(e){console.error(e);showToast("Automation test failed","error");}
+    setRunBusy(false);
+  };
+
+  if(!allowed)return <div className="page-content"><div className="card" style={{padding:32,textAlign:"center"}}><div style={{fontSize:30}}>🔒</div><div style={{fontWeight:700,color:"var(--text)",marginTop:8}}>Automation access restricted</div><div style={{fontSize:12,color:"var(--text3)",marginTop:5}}>Your role does not have automation.read permission.</div></div></div>;
+  const filtered=rules.filter(r=>(filter==="all"|| (filter==="active"?r.active!==false:r.active===false)) && (!query.trim()||`${r.name} ${r.description} ${automationLabel(r.triggerType)}`.toLowerCase().includes(query.trim().toLowerCase())));
+  const activeCount=rules.filter(r=>r.active!==false).length;
+  return <div className="page-content">
+    <div className="section-head"><div className="section-num">AUTO</div><div><div className="section-title">Automation Engine</div><div style={{fontSize:11,color:"var(--text3)",marginTop:2}}>Event → condition → action rules for the MSP workflow</div></div><div style={{marginLeft:"auto",fontSize:10,color:"var(--text4)"}}>MVP · browser-executed</div></div>
+    <div className="analytics-grid" style={{marginBottom:14}}>{[["Rules",rules.length,AC],["Active",activeCount,"#10B981"],["Triggers",new Set(rules.map(r=>r.triggerType)).size,"#0EA5E9"],["Actions",rules.filter(r=>r.actionType).length,"#8B5CF6"]].map(([l,v,c])=><div className="analytics-card" key={l}><div className="analytics-card-title">{l}</div><div className="analytics-big" style={{color:c}}>{v}</div><div className="analytics-sub">Automation engine v1</div></div>)}</div>
+    <div style={{display:"grid",gridTemplateColumns:"minmax(0,1.45fr) minmax(300px,.55fr)",gap:14,alignItems:"start"}}>
+      <div className="card"><div className="card-header"><div><div className="card-title">Automation rules</div><div style={{fontSize:10,color:"var(--text3)",marginTop:3}}>Rules are stored in <span className="mono">automations/{"{automationId}"}</span>.</div></div><div style={{display:"flex",gap:7}}>{canWrite&&<button className="btn btn-primary btn-sm" onClick={deployDefaults} disabled={saving}>⚙ Deploy Defaults</button>}</div></div>
+        <div style={{padding:"10px 12px",borderBottom:"1px solid var(--border)",display:"flex",gap:8,flexWrap:"wrap"}}><input className="field-input" style={{flex:1,minWidth:200}} placeholder="Search automation…" value={query} onChange={e=>setQuery(e.target.value)}/>{[["all","All"],["active","Active"],["inactive","Inactive"]].map(([k,l])=><button key={k} className={`analytics-pill${filter===k?" active":""}`} onClick={()=>setFilter(k)}>{l}</button>)}</div>
+        <div style={{overflowX:"auto"}}><table className="data-table"><thead><tr><th>Rule</th><th>Trigger</th><th>Action</th><th>Severity</th><th>Status</th>{canWrite&&<th></th>}</tr></thead><tbody>{filtered.length===0?<tr><td colSpan="6" style={{padding:28,textAlign:"center",color:"var(--text3)"}}>No automation rules found.</td></tr>:filtered.map(r=>{const meta=automationSeverityMeta(r.severity);return <tr key={r.id}><td><div style={{fontWeight:700,color:"var(--text)"}}>{r.name}</div><div style={{fontSize:10,color:"var(--text3)",marginTop:3}}>{r.description}</div></td><td><span className="rbac-permission">{automationLabel(r.triggerType)}</span></td><td>🔔 Internal notification</td><td><span style={{padding:"4px 7px",borderRadius:6,background:meta.bg,color:meta.color,fontSize:9,fontWeight:800}}>{meta.label}</span></td><td><button onClick={()=>canWrite&&setRules(prev=>prev.map(x=>x.id===r.id?{...x,active:x.active===false}:x))} style={{border:0,background:"transparent",cursor:canWrite?"pointer":"default",color:r.active!==false?"#10B981":"var(--text4)",fontWeight:800,fontSize:10}}>{r.active!==false?"ACTIVE":"INACTIVE"}</button></td>{canWrite&&<td><button className="btn btn-secondary btn-sm" onClick={()=>saveRule(r)} disabled={saving}>Save</button></td>}</tr>})}</tbody></table></div>
+      </div>
+      <div className="card"><div className="card-header"><div><div className="card-title">Test automation</div><div style={{fontSize:10,color:"var(--text3)",marginTop:3}}>Run an SLA trigger against one ticket.</div></div></div><div className="card-body"><select className="field-input" value={selected||""} onChange={e=>setSelected(e.target.value||null)}><option value="">Select ticket…</option>{tickets.map(t=><option key={t.ref} value={t.ref}>{t.ref} · {t.clientName||t.name||"Customer"}</option>)}</select><button className="btn btn-primary" style={{width:"100%",marginTop:9}} onClick={runSelected} disabled={!selected||runBusy}>{runBusy?"Running…":"▶ Run SLA Automation Test"}</button><div style={{marginTop:12,padding:10,borderRadius:8,background:"var(--bg3)",border:"1px solid var(--border)",fontSize:10,color:"var(--text3)",lineHeight:1.5}}>MVP action: creates an internal notification for the signed-in operator. It does not send email or WhatsApp yet.</div></div></div>
+    </div>
+    <div className="card" style={{marginTop:14}}><div className="card-header"><div><div className="card-title">How CIMOP automation works</div></div></div><div className="card-body" style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:10}}>{[["⚡","Trigger","Ticket created, assignment changed, client waiting, SLA at risk/breach or ticket closed."],["🔎","Condition","The engine checks the event and current ticket/SLA state."],["🔔","Action","MVP writes a notification record and can later add email, WhatsApp, workflows and backend jobs."]].map(([i,l,d])=><div key={l} style={{padding:12,border:"1px solid var(--border)",borderRadius:8,background:"var(--bg)"}}><div style={{fontSize:18}}>{i}</div><div style={{fontWeight:700,fontSize:11,color:"var(--text)",marginTop:6}}>{l}</div><div style={{fontSize:10,color:"var(--text3)",marginTop:4,lineHeight:1.5}}>{d}</div></div>)}</div></div>
+    <div style={{marginTop:12,padding:10,borderRadius:8,border:"1px solid var(--border)",background:"var(--bg3)",fontSize:10,color:"var(--text4)"}}>MVP note: automation runs while the Admin Portal is open. The next production step is a backend worker/Cloud Function so automations continue even when nobody has CIMOP open.</div>
+  </div>;
+}
+
+function SLAEngine({tickets,role,showToast}){
+  const allowed=canAny(role,"sla.read");
+  const canWrite=hasPermission(role,"sla.write");
+  const [policies,setPolicies]=useState(DEFAULT_SLA_POLICIES);
+  const [loading,setLoading]=useState(true);
+  const [saving,setSaving]=useState(false);
+  const [tick,setTick]=useState(Date.now());
+  const [filter,setFilter]=useState("all");
+  const [query,setQuery]=useState("");
+
+  useEffect(()=>{
+    if(!allowed){setLoading(false);return;}
+    const unsub=db.collection("slaPolicies").onSnapshot(snap=>{
+      const docs=snap.docs.map(d=>({id:d.id,...d.data()}));
+      const merged=DEFAULT_SLA_POLICIES.map(def=>docs.find(x=>x.priority===def.priority)||def);
+      setPolicies(merged); applySlaPolicies(merged); setLoading(false);
+    },e=>{console.warn("SLA policies unavailable",e);applySlaPolicies(DEFAULT_SLA_POLICIES);setLoading(false);});
+    return()=>unsub();
+  },[allowed]);
+
+  useEffect(()=>{
+    const id=setInterval(()=>setTick(Date.now()),30000);
+    return()=>clearInterval(id);
+  },[]);
+
+  const savePolicy=async(policy)=>{
+    if(!canWrite)return;
+    setSaving(true);
+    try{
+      await db.collection("slaPolicies").doc(policy.priority.toLowerCase()).set({
+        priority:policy.priority,targetHours:Number(policy.targetHours)||1,active:policy.active!==false,
+        businessHours:{start:"08:00",end:"17:00"},workDays:[1,2,3,4,5],updatedAt:ts(),updatedBy:auth.currentUser?.email||null
+      },{merge:true});
+      showToast(`${policy.priority} SLA saved ✓`);
+    }catch(e){console.error(e);showToast("SLA policy save failed","error");}
+    setSaving(false);
+  };
+
+  const seedPolicies=async()=>{
+    if(!canWrite)return;
+    setSaving(true);
+    try{
+      for(const p of DEFAULT_SLA_POLICIES){
+        await db.collection("slaPolicies").doc(p.priority.toLowerCase()).set({...p,businessHours:{start:"08:00",end:"17:00"},workDays:[1,2,3,4,5],updatedAt:ts(),updatedBy:auth.currentUser?.email||null},{merge:true});
+      }
+      showToast("Default SLA policies deployed ✓");
+    }catch(e){console.error(e);showToast("Failed to deploy SLA policies","error");}
+    setSaving(false);
+  };
+
+  if(!allowed)return <div className="page-content"><div className="card" style={{padding:32,textAlign:"center"}}><div style={{fontSize:30}}>🔒</div><div style={{fontWeight:700,color:"var(--text)",marginTop:8}}>SLA access restricted</div><div style={{fontSize:12,color:"var(--text3)",marginTop:5}}>Your role does not have sla.read permission.</div></div></div>;
+
+  const rows=tickets.filter(t=>getSLAInfo(t)).map(t=>({ticket:t,info:getSLAInfo(t)}));
+  const active=rows.filter(x=>!['resolved','closed'].includes(x.ticket.status));
+  const breaches=active.filter(x=>x.info.status==="breach").length;
+  const atRisk=active.filter(x=>x.info.status==="warn").length;
+  const paused=active.filter(x=>x.info.status==="paused").length;
+  const completed=rows.filter(x=>x.info.status==="done").length;
+  const filtered=active.filter(x=>{
+    const ok=filter==="all"||x.info.status===filter;
+    const q=query.trim().toLowerCase();
+    return ok&&(!q||[x.ticket.ref,x.ticket.clientName,x.ticket.company,x.ticket.issueTitle,x.ticket.assignedEngineer].join(" ").toLowerCase().includes(q));
+  }).sort((a,b)=>{
+    const rank={breach:0,warn:1,paused:2,ok:3};
+    return (rank[a.info.status]??9)-(rank[b.info.status]??9) || (a.info.remainingMinutes-b.info.remainingMinutes);
+  });
+
+  return <div className="page-content" key={tick}>
+    <div className="section-head"><div className="section-num">SLA</div><div><div className="section-title">SLA Engine</div><div style={{fontSize:11,color:"var(--text3)",marginTop:2}}>Priority targets, business-hour clock, pause states and live breach monitoring</div></div><div style={{marginLeft:"auto",fontSize:10,color:"var(--text4)"}}>Updates every 30 seconds</div></div>
+
+    <div className="analytics-grid" style={{marginBottom:14}}>
+      {[['Active',active.length,'#0EA5E9'],['Breaches',breaches,'#EF4444'],['At Risk',atRisk,'#F59E0B'],['Paused',paused,'#8B5CF6'],['Completed',completed,'#10B981']].map(([l,v,c])=><div className="analytics-card" key={l}><div className="analytics-card-title">{l}</div><div className="analytics-big" style={{color:c}}>{v}</div><div className="analytics-sub">{l==='Breaches'?'Needs immediate attention':l==='At Risk'?'Within 2 business hours':'Current SLA state'}</div></div>)}
+    </div>
+
+    <div style={{display:"grid",gridTemplateColumns:"minmax(0,1.35fr) minmax(300px,.65fr)",gap:14,alignItems:"start"}}>
+      <div className="card">
+        <div className="card-header"><div><div className="card-title">SLA Policies</div><div style={{fontSize:10,color:"var(--text3)",marginTop:3}}>Default MVP targets are measured in business hours.</div></div>{canWrite&&<button className="btn btn-primary btn-sm" onClick={seedPolicies} disabled={saving}>⚙ Deploy Defaults</button>}</div>
+        <div className="card-body" style={{padding:0,overflowX:"auto"}}>
+          <table className="data-table"><thead><tr><th>Priority</th><th>Target</th><th>Clock</th><th>Status</th>{canWrite&&<th></th>}</tr></thead><tbody>{policies.map(p=><tr key={p.priority}><td><strong>{p.priority}</strong></td><td>{canWrite?<input className="field-input" style={{width:90}} type="number" min="1" value={p.targetHours} onChange={e=>setPolicies(prev=>prev.map(x=>x.priority===p.priority?{...x,targetHours:e.target.value}:x))}/>:`${p.targetHours}h`}</td><td>Mon–Fri · 08:00–17:00</td><td><span style={{fontSize:10,fontWeight:800,color:p.active!==false?"#10B981":"var(--text4)"}}>{p.active!==false?"ACTIVE":"INACTIVE"}</span></td>{canWrite&&<td><button className="btn btn-secondary btn-sm" onClick={()=>savePolicy(p)} disabled={saving}>Save</button></td>}</tr>)}</tbody></table>
+        </div>
+      </div>
+
+      <div className="card"><div className="card-header"><div><div className="card-title">How the MVP clock works</div></div></div><div className="card-body">
+        {[['🕘','Starts','When the ticket is created.'],['⏸️','Pauses','Authorisation, payment, parts and client sign-off.'],['▶️','Resumes','When the ticket leaves a paused status.'],['🚨','Breach','When business-hour elapsed time exceeds the priority target.']].map(([i,l,d])=><div key={l} style={{display:"flex",gap:9,padding:"9px 0",borderBottom:"1px solid var(--border)"}}><span>{i}</span><div><div style={{fontSize:11,fontWeight:700,color:"var(--text)"}}>{l}</div><div style={{fontSize:10,color:"var(--text3)",marginTop:2}}>{d}</div></div></div>)}
+        <div style={{marginTop:12,padding:10,borderRadius:8,background:"var(--bg3)",border:"1px solid var(--border)",fontSize:10,color:"var(--text3)"}}>Business calendar: <strong style={{color:"var(--text)"}}>Monday–Friday, 08:00–17:00</strong>. Public holidays are not excluded in MVP v1.</div>
+      </div></div>
+    </div>
+
+    <div className="card" style={{marginTop:14}}>
+      <div className="card-header"><div><div className="card-title">Live SLA Monitor</div><div style={{fontSize:10,color:"var(--text3)",marginTop:3}}>{active.length} active ticket(s)</div></div><div style={{display:"flex",gap:7,flexWrap:"wrap"}}><input className="field-input" style={{width:220}} placeholder="Search ticket / customer / engineer…" value={query} onChange={e=>setQuery(e.target.value)}/>{[['all','All'],['breach','Breaches'],['warn','At Risk'],['paused','Paused'],['ok','On Track']].map(([k,l])=><button key={k} className={`analytics-pill${filter===k?" active":""}`} onClick={()=>setFilter(k)}>{l}</button>)}</div></div>
+      <div style={{overflowX:"auto"}}><table className="data-table"><thead><tr><th>Ticket</th><th>Customer</th><th>Priority</th><th>Status</th><th>SLA</th><th>Elapsed</th><th>Remaining</th><th>Engineer</th></tr></thead><tbody>{filtered.length===0?<tr><td colSpan="8" style={{padding:28,textAlign:"center",color:"var(--text3)"}}>No tickets match this SLA view.</td></tr>:filtered.map(({ticket,info})=>{const meta=slaStatusMeta(info);return <tr key={ticket.ref}><td className="mono" style={{color:AC,fontWeight:700}}>{ticket.ref}</td><td>{ticket.clientName||ticket.name||ticket.company||"—"}</td><td>{ticket.priority}</td><td><StatusBadge status={ticket.status}/></td><td><span style={{display:"inline-flex",padding:"4px 7px",borderRadius:6,background:meta.bg,color:meta.color,fontSize:9,fontWeight:800}}>{meta.label}</span></td><td className="mono">{formatSlaMinutes(info.elapsedMinutes)}</td><td className="mono" style={{color:info.status==='breach'?"#EF4444":info.status==='warn'?"#F59E0B":"var(--text)"}}>{info.status==='breach'?formatSlaMinutes(info.remainingMinutes)+" overdue":info.status==='paused'?"Paused":formatSlaMinutes(info.remainingMinutes)}</td><td>{ticket.assignedEngineer||"Unassigned"}</td></tr>})}</tbody></table></div>
+    </div>
+
+    <div style={{marginTop:12,padding:10,borderRadius:8,border:"1px solid var(--border)",background:"var(--bg3)",fontSize:10,color:"var(--text4)"}}>MVP note: the SLA clock is currently calculated client-side from ticket timestamps and embedded pause fields. A later backend worker can enforce breach actions and notifications independently of an open browser session.</div>
+  </div>;
+}
+
 function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError,onAuth,onUpdate,onAddNote,onBack,onNewTicket,theme,toggleTheme,showToast}){
   const role=normaliseRole(userProfile?.role || "support_agent");
   const isSuperAdmin=role==="super_admin";
@@ -2675,6 +2951,8 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
   const [note,setNote]=useState(""); const [eqRef,setEqRef]=useState("");
   const [saving,setSaving]=useState(false);
   const [activeTab,setActiveTab]=useState("tickets");
+  const [slaTick,setSlaTick]=useState(Date.now());
+  useEffect(()=>{const id=setInterval(()=>setSlaTick(Date.now()),30000);return()=>clearInterval(id);},[]);
   const [detailTab,setDetailTab]=useState("overview");
 
   const [activeEngineer,setActiveEngineer]=useState("Unassigned");
@@ -2700,6 +2978,23 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
     ref.on("value",handler);
     return()=>ref.off("value",handler);
   },[authed]);
+
+  useEffect(()=>{
+    if(!authed||!tickets.length) return;
+    let cancelled=false;
+    const scan=async()=>{
+      if(cancelled)return;
+      for(const ticket of tickets){
+        if(["closed","resolved"].includes(ticket.status))continue;
+        const info=getSLAInfo(ticket);
+        if(!info||!['warn','breach'].includes(info.status))continue;
+        try{await runAutomationForTicket(ticket,{eventType:"sla_scan",slaStatus:info.status,actor:{actorEmail:adminUser?.email||auth.currentUser?.email||"system"}});}catch(e){console.warn("SLA automation scan failed",ticket.ref,e);}
+      }
+    };
+    scan();
+    const id=setInterval(scan,30000);
+    return()=>{cancelled=true;clearInterval(id);};
+  },[authed,tickets.length]);
 
   useEffect(()=>{
     if(!authed||!tickets.length) return;
@@ -2960,6 +3255,8 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
             <button className={`nav-item${activeTab==="tickets"?" active":""}`} onClick={()=>setActiveTab("tickets")}><span className="ni">🎫</span>All Tickets{tickets.length>0&&<span className="badge">{tickets.length}</span>}</button>
             {canAny(role,"customers.read")&&<button className={`nav-item${activeTab==="customers"?" active":""}`} onClick={()=>setActiveTab("customers")}><span className="ni">👤</span>Customers</button>}
             {canAny(role,"assets.read")&&<button className={`nav-item${activeTab==="assets"?" active":""}`} onClick={()=>setActiveTab("assets")}><span className="ni">🖥️</span>Assets / CMDB</button>}
+            {canAny(role,"sla.read")&&<button className={`nav-item${activeTab==="sla"?" active":""}`} onClick={()=>setActiveTab("sla")}><span className="ni">⏱️</span>SLA Engine</button>}
+            {canAny(role,"automation.read")&&<button className={`nav-item${activeTab==="automation"?" active":""}`} onClick={()=>setActiveTab("automation")}><span className="ni">⚙️</span>Automation Engine</button>}
             {canAny(role,"tickets.write","tickets.write_assigned")&&<button className={`nav-item${activeTab==="new"?" active":""}`} onClick={()=>setActiveTab("new")}><span className="ni">✏️</span>Log New Ticket</button>}
             <button className={`nav-item${activeTab==="analytics"?" active":""}`} onClick={()=>setActiveTab("analytics")}><span className="ni">📊</span>Analytics</button>
              {isSuperAdmin&&<button className={`nav-item${activeTab==="team"?" active":""}`} onClick={()=>setActiveTab("team")}><span className="ni">👥</span>Team & Access</button>}
@@ -3029,8 +3326,8 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
       <div className="content-area">
         <div className="topbar">
           <div className="topbar-left">
-            <div className="topbar-title">{activeTab==="tickets"?"Ticket Manager":activeTab==="customers"?"Customer 360":activeTab==="assets"?"Asset / CMDB":activeTab==="analytics"?"Service Analytics":"Log New Ticket"}</div>
-            <div className="topbar-sub">{activeTab==="tickets"?`${filtered.length} result${filtered.length!==1?"s":""}`:activeTab==="customers"?"Customer master · Assets · Service history":activeTab==="assets"?`${assets?.length||0} managed asset${(assets?.length||0)!==1?"s":""}`:activeTab==="analytics"?"CSAT · SLA · Time · Service Quality":""}</div>
+            <div className="topbar-title">{activeTab==="tickets"?"Ticket Manager":activeTab==="customers"?"Customer 360":activeTab==="assets"?"Asset / CMDB":activeTab==="sla"?"SLA Engine":activeTab==="automation"?"Automation Engine":activeTab==="analytics"?"Service Analytics":"Log New Ticket"}</div>
+            <div className="topbar-sub">{activeTab==="tickets"?`${filtered.length} result${filtered.length!==1?"s":""}`:activeTab==="customers"?"Customer master · Assets · Service history":activeTab==="assets"?`${assets?.length||0} managed asset${(assets?.length||0)!==1?"s":""}`:activeTab==="sla"?"Priority targets · business clock · breach monitoring":activeTab==="automation"?"Triggers · conditions · actions":activeTab==="analytics"?"CSAT · SLA · Time · Service Quality":""}</div>
           </div>
           <div className="topbar-right">
             {overdueCount>0&&<span style={{background:"rgba(239,68,68,0.1)",border:"1px solid rgba(239,68,68,0.3)",color:"#F87171",fontSize:11,fontWeight:700,padding:"4px 10px",borderRadius:6,animation:"blink 1.5s infinite"}}>⚠️ {overdueCount} SLA Breach{overdueCount>1?"es":""}</span>}
@@ -3050,6 +3347,10 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
             <TicketForm mode="engineer" onSubmit={async(form)=>{setSaving(true);await onNewTicket(form);setActiveTab("tickets");setSaving(false);}} saving={saving} theme={theme} toggleTheme={toggleTheme}/>
           </div>
         )}
+
+        {activeTab==="sla"&&<SLAEngine tickets={tickets} role={role} showToast={showToast}/>}
+
+        {activeTab==="automation"&&<AutomationEngine tickets={tickets} role={role} showToast={showToast}/>}
 
         {activeTab==="analytics"&&(
           <AnalyticsDashboard tickets={tickets} onExport={(rows)=>{
@@ -3576,6 +3877,7 @@ function Root(){
   }]
 };
       await db.collection("tickets").doc(ref).set(ticket);
+      try{await runAutomationForTicket(ticket,{eventType:"created",actor:{actorEmail:adminUser?.email||auth.currentUser?.email||"Customer Portal"}});}catch(e){console.warn("Create automation failed",e);}
       if(photos&&photos.length){
         const result=await savePhotosForTicket(ref,photos);
         if(result.saved) await fsUpdate(ref,{photoCount:result.saved});
@@ -3625,6 +3927,8 @@ function Root(){
       }
       await fsUpdate(ref,next);
       for(const event of events) await fsAppendTimeline(ref,event);
+      if(events.some(e=>e.type==="status")) await runAutomationForTicket({...current,...next},{before:current,eventType:"status_changed",actor});
+      if(events.some(e=>e.type==="assignment")) await runAutomationForTicket({...current,...next},{before:current,eventType:"assignment_changed",actor});
       showToast("Updated ✓");
     }catch(e){console.error(e);showToast("Update failed","error");}
   };
