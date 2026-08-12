@@ -338,6 +338,11 @@ body.light .theme-toggle::after{left:19px;}
 .rbac-user-row:hover{background:rgba(0,200,150,.02);}
 .rbac-permission{display:inline-flex;align-items:center;gap:5px;font-size:10px;color:var(--text3);padding:4px 7px;border:1px solid var(--border);border-radius:6px;background:var(--bg);}
 @media(max-width:800px){.rbac-user-row{grid-template-columns:1fr;gap:5px;}}
+.rbac-actions{display:flex;align-items:center;justify-content:flex-end;gap:6px;}
+.rbac-edit-btn{background:transparent;border:1px solid var(--border);color:var(--text2);border-radius:7px;padding:6px 9px;font-size:11px;font-weight:700;}
+.rbac-edit-btn:hover{border-color:#00C896;color:#00C896;background:rgba(0,200,150,.05);}
+.rbac-profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 18px;}
+@media(max-width:600px){.rbac-profile-grid{grid-template-columns:1fr;}}
 </style>
 </head>
 <body class="dark">
@@ -1058,7 +1063,7 @@ async function getOrCreateUserProfile(firebaseUser){
       return {...fallback,...data,uid:firebaseUser.uid,role};
     }
     try{
-      const profile={...fallback,createdAt:ts(),updatedAt:ts()};
+      const profile={...fallback,jobTitle:"",department:"",phone:"",createdAt:ts(),updatedAt:ts(),lastLoginAt:ts()};
       await ref.set(profile,{merge:true});
       return profile;
     }catch(writeErr){
@@ -1076,11 +1081,70 @@ function RbacRoleBadge({role}){
   return <span className="rbac-role">{r.icon} {r.label}</span>;
 }
 
+function TeamMemberModal({user,role,adminUser,onSave,onClose}){
+  const [form,setForm]=useState({
+    displayName:user.displayName||"",
+    jobTitle:user.jobTitle||"",
+    department:user.department||"",
+    phone:user.phone||"",
+    role:normaliseRole(user.role),
+    active:user.active!==false
+  });
+  const [saving,setSaving]=useState(false);
+  const isSelf=user.uid===adminUser?.uid;
+  const set=(k,v)=>setForm(p=>({...p,[k]:v}));
+  const submit=async()=>{
+    if(!form.displayName.trim()) return;
+    setSaving(true);
+    try{await onSave(user.uid,{...form,displayName:form.displayName.trim(),jobTitle:form.jobTitle.trim(),department:form.department.trim(),phone:form.phone.trim()});}
+    finally{setSaving(false);}
+  };
+  return <div className="modal-overlay" onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
+    <div className="modal-box fu" style={{maxWidth:620}}>
+      <div className="modal-header">
+        <div><div className="card-title">👤 Team Member Profile</div><div style={{fontSize:10,color:"var(--text4)",marginTop:3}}>{user.email||user.uid}</div></div>
+        <button className="btn btn-ghost btn-sm" onClick={onClose}>✕</button>
+      </div>
+      <div className="modal-body">
+        <div className="rbac-profile-grid">
+          <div className="form-field"><Lbl c="Display Name *"/><input {...fi} value={form.displayName} onChange={e=>set("displayName",e.target.value)} placeholder="Full name"/></div>
+          <div className="form-field"><Lbl c="Job Title"/><input {...fi} value={form.jobTitle} onChange={e=>set("jobTitle",e.target.value)} placeholder="e.g. IT Engineer"/></div>
+          <div className="form-field"><Lbl c="Department"/><input {...fi} value={form.department} onChange={e=>set("department",e.target.value)} placeholder="e.g. Technical Support"/></div>
+          <div className="form-field"><Lbl c="Phone / WhatsApp"/><input {...fi} value={form.phone} onChange={e=>set("phone",e.target.value)} placeholder="072 665 0565"/></div>
+          <div className="form-field">
+            <Lbl c="Role"/>
+            <select {...fi} value={form.role} disabled={isSelf} onChange={e=>set("role",e.target.value)}>
+              {Object.entries(RBAC_ROLES).filter(([k])=>k!=="customer").map(([k,r])=><option key={k} value={k}>{r.label}</option>)}
+            </select>
+            {isSelf&&<div style={{fontSize:10,color:"var(--text4)",marginTop:4}}>Your own role cannot be changed from this screen.</div>}
+          </div>
+          <div className="form-field">
+            <Lbl c="Account Status"/>
+            <label style={{display:"flex",alignItems:"center",gap:9,minHeight:40,cursor:isSelf?"not-allowed":"pointer"}}>
+              <input type="checkbox" checked={form.active} disabled={isSelf} onChange={e=>set("active",e.target.checked)} style={{accentColor:"#00C896",width:16,height:16}}/>
+              <span style={{fontSize:12,color:form.active?"#10B981":"#F87171",fontWeight:700}}>{form.active?"Active":"Disabled"}</span>
+            </label>
+            {isSelf&&<div style={{fontSize:10,color:"var(--text4)",marginTop:-3}}>Your own account cannot be disabled.</div>}
+          </div>
+        </div>
+        <div style={{marginTop:16,padding:12,borderRadius:9,background:"var(--bg3)",border:"1px solid var(--border)",fontSize:11,color:"var(--text3)",lineHeight:1.6}}>
+          <strong style={{color:"var(--text2)"}}>RBAC profile:</strong> This information is stored in <span className="mono">users/{user.uid}</span>. Authentication remains controlled by Firebase Auth; this profile controls CIMOP role, status and staff details.
+        </div>
+        <div style={{display:"flex",justifyContent:"flex-end",gap:8,marginTop:18}}>
+          <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
+          <button className="btn btn-primary" onClick={submit} disabled={saving||!form.displayName.trim()}>{saving?"Saving…":"Save Profile"}</button>
+        </div>
+      </div>
+    </div>
+  </div>;
+}
+
 function TeamAccess({adminUser,role,showToast}){
   const [users,setUsers]=useState([]);
   const [loading,setLoading]=useState(true);
   const [savingUid,setSavingUid]=useState(null);
   const [error,setError]=useState("");
+  const [editing,setEditing]=useState(null);
   const load=useCallback(()=>{
     setLoading(true); setError("");
     return db.collection("users").orderBy("email").limit(200).get()
@@ -1095,17 +1159,20 @@ function TeamAccess({adminUser,role,showToast}){
     if(role!=="super_admin") return;
     load();
   },[load,role]);
-  const changeRole=async(uid,newRole)=>{
-    if(!canManageUsers(role)||uid===adminUser?.uid) return;
+  const saveProfile=async(uid,changes)=>{
+    if(!canManageUsers(role)) return;
     setSavingUid(uid);
     try{
-      await db.collection("users").doc(uid).set({role:newRole,updatedAt:ts(),updatedBy:adminUser.email||adminUser.uid},{merge:true});
-      setUsers(prev=>prev.map(u=>u.uid===uid?{...u,role:newRole}:u));
-      showToast("Role updated ✓");
-    }catch(e){console.error(e);showToast("Failed to update role","error");}
+      const payload={...changes,updatedAt:ts(),updatedBy:adminUser.email||adminUser.uid};
+      await db.collection("users").doc(uid).set(payload,{merge:true});
+      setUsers(prev=>prev.map(u=>u.uid===uid?{...u,...payload}:u));
+      setEditing(null);
+      showToast("Team member updated ✓");
+    }catch(e){console.error(e);showToast("Failed to update team member","error");}
     setSavingUid(null);
   };
   return <div className="page-content">
+    {editing&&<TeamMemberModal user={editing} role={role} adminUser={adminUser} onSave={saveProfile} onClose={()=>setEditing(null)}/>} 
     <div className="section-head"><div className="section-num">RB</div><div><div className="section-title">Team & Access</div><div style={{fontSize:11,color:"var(--text3)",marginTop:2}}>Role-based access control for CIMOP</div></div><div style={{marginLeft:"auto"}}><RbacRoleBadge role={role}/></div></div>
     <div className="card" style={{marginBottom:16}}>
       <div className="card-header"><div><div className="card-title">Access model</div><div style={{fontSize:11,color:"var(--text3)",marginTop:3}}>Permissions are attached to roles; user records live in <span className="mono">users/{'{uid}'}</span>.</div></div><button className="btn btn-secondary btn-sm" onClick={load}>↻ Refresh</button></div>
@@ -1114,15 +1181,16 @@ function TeamAccess({adminUser,role,showToast}){
       </div>
     </div>
     <div className="card">
-      <div className="card-header"><div className="card-title">Team members</div><div style={{fontSize:11,color:"var(--text3)"}}>{users.length} profile(s)</div></div>
+      <div className="card-header"><div><div className="card-title">Team members</div><div style={{fontSize:11,color:"var(--text3)",marginTop:3}}>Manage staff profile, role and account status</div></div><div style={{fontSize:11,color:"var(--text3)"}}>{users.length} profile(s)</div></div>
       {error&&<div style={{padding:14,color:"#F87171",fontSize:12}}>⚠️ {error}</div>}
       {loading?<div style={{padding:24,color:"var(--text3)",fontSize:12}}>Loading team profiles…</div>:users.length===0?<div style={{padding:24,color:"var(--text3)",fontSize:12}}>No user profiles found yet. Users are created automatically when they sign in.</div>:<>
-        <div className="rbac-user-row" style={{color:"var(--text4)",fontSize:10,fontWeight:700,textTransform:"uppercase"}}><div>User</div><div>Email</div><div>Role</div><div>Status</div></div>
-        {users.map(u=>{const ur=normaliseRole(u.role);const isSelf=u.uid===adminUser?.uid;return <div className="rbac-user-row" key={u.uid}>
-          <div><div style={{fontWeight:700,color:"var(--text)"}}>{u.displayName||u.email||u.uid}</div><div className="mono" style={{color:"var(--text4)",marginTop:2}}>{u.uid}</div></div>
+        <div className="rbac-user-row" style={{gridTemplateColumns:"1.4fr 1fr 150px 90px 70px",color:"var(--text4)",fontSize:10,fontWeight:700,textTransform:"uppercase"}}><div>User</div><div>Email</div><div>Role</div><div>Status</div><div></div></div>
+        {users.map(u=>{const ur=normaliseRole(u.role);const isSelf=u.uid===adminUser?.uid;return <div className="rbac-user-row" key={u.uid} style={{gridTemplateColumns:"1.4fr 1fr 150px 90px 70px"}}>
+          <div><div style={{fontWeight:700,color:"var(--text)"}}>{u.displayName||u.email||u.uid}</div><div className="mono" style={{color:"var(--text4)",marginTop:2}}>{u.uid}</div>{(u.jobTitle||u.department)&&<div style={{fontSize:10,color:"var(--text4)",marginTop:3}}>{[u.jobTitle,u.department].filter(Boolean).join(" · ")}</div>}</div>
           <div style={{color:"var(--text2)"}}>{u.email||"—"}</div>
-          <div>{canManageUsers(role)&&!isSelf?<select className="field-input" style={{padding:"6px 8px",fontSize:11}} value={ur} disabled={savingUid===u.uid} onChange={e=>changeRole(u.uid,e.target.value)}>{Object.entries(RBAC_ROLES).filter(([k])=>k!=="customer").map(([k,r])=><option key={k} value={k}>{r.label}</option>)}</select>:<RbacRoleBadge role={ur}/>}</div>
+          <div>{canManageUsers(role)&&!isSelf?<select className="field-input" style={{padding:"6px 8px",fontSize:11}} value={ur} disabled={savingUid===u.uid} onChange={e=>saveProfile(u.uid,{role:e.target.value})}>{Object.entries(RBAC_ROLES).filter(([k])=>k!=="customer").map(([k,r])=><option key={k} value={k}>{r.label}</option>)}</select>:<RbacRoleBadge role={ur}/>}</div>
           <div><span style={{color:u.active===false?"#F87171":"#10B981",fontWeight:700}}>{u.active===false?"Disabled":"Active"}</span>{isSelf&&<span style={{fontSize:9,color:"var(--text4)",marginLeft:5}}>YOU</span>}</div>
+          <div className="rbac-actions"><button className="rbac-edit-btn" disabled={savingUid===u.uid} onClick={()=>setEditing(u)}>Edit</button></div>
         </div>})}
       </>}
     </div>
