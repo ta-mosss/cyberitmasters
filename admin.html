@@ -343,6 +343,27 @@ body.light .theme-toggle::after{left:19px;}
 .rbac-edit-btn:hover{border-color:#00C896;color:#00C896;background:rgba(0,200,150,.05);}
 .rbac-profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 18px;}
 @media(max-width:600px){.rbac-profile-grid{grid-template-columns:1fr;}}
+.cmdb-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.cmdb-layout{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(320px,.85fr);gap:14px;align-items:start;}
+.cmdb-stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:14px;}
+.cmdb-stat{background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:12px 14px;}
+.cmdb-table-wrap{overflow:auto;}
+.cmdb-table{width:100%;border-collapse:collapse;min-width:880px;}
+.cmdb-table th{text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--text4);padding:10px 12px;border-bottom:1px solid var(--border);white-space:nowrap;}
+.cmdb-table td{padding:11px 12px;border-bottom:1px solid var(--border);font-size:11px;color:var(--text2);vertical-align:middle;}
+.cmdb-table tr:hover td{background:var(--bg3);}
+.cmdb-table tr.cmdb-selected td{background:rgba(0,200,150,.07);}
+.cmdb-chip{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--border);background:var(--bg3);border-radius:999px;padding:3px 8px;font-size:9px;font-weight:700;color:var(--text2);white-space:nowrap;}
+.cmdb-dot{width:6px;height:6px;border-radius:50%;display:inline-block;}
+.cmdb-empty{padding:34px 20px;text-align:center;color:var(--text3);font-size:12px;}
+.cmdb-modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.58);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;}
+.cmdb-modal{width:min(860px,100%);max-height:92vh;overflow:auto;background:var(--card);border:1px solid var(--border2);border-radius:14px;box-shadow:0 24px 80px rgba(0,0,0,.35);}
+.cmdb-modal-head{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.cmdb-modal-body{padding:20px;}
+.cmdb-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+@media(max-width:1050px){.cmdb-layout{grid-template-columns:1fr;}.cmdb-stats{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:700px){.cmdb-stats{grid-template-columns:1fr 1fr;}.cmdb-detail-grid{grid-template-columns:1fr;}.cmdb-modal-backdrop{padding:8px;}.cmdb-modal-body{padding:14px;}}
+
 </style>
 </head>
 <body class="dark">
@@ -1050,6 +1071,174 @@ function makeSiteId(form){const key=[form.company,form.address].map(normaliseIde
 function makeAssetId(form){const key=[form.serialNumber,form.manufacturer,form.modelNumber,form.deviceType].map(normaliseIdentity).filter(Boolean).join("|");return key?`ast_${cimopHash(key)}`:"";}
 function buildCustomer360(tickets){const map={};(tickets||[]).forEach(t=>{const customerId=t.customerId||makeCustomerId(t)||`legacy_${cimopHash([t.company,t.clientName||t.name,t.email,t.phone].join("|"))}`;if(!map[customerId])map[customerId]={id:customerId,name:t.clientName||t.name||"Unknown customer",company:t.company||"",email:t.email||"",phone:t.phone||"",address:t.address||"",tickets:[],contacts:{},sites:{},assets:{},contracts:{},services:{},quotes:[],satisfaction:[],timeTrackedMinutes:0,lastActivity:t.createdAt||null};const c=map[customerId];if(t.clientName||t.name)c.name=t.clientName||t.name;["company","email","phone","address"].forEach(k=>{if(!c[k]&&t[k])c[k]=t[k];});c.tickets.push(t);const contactId=t.contactId||makeContactId(t);if(contactId)c.contacts[contactId]={id:contactId,name:t.clientName||t.name||"Contact",email:t.email||"",phone:t.phone||""};const siteId=t.siteId||makeSiteId(t);if(siteId)c.sites[siteId]={id:siteId,address:t.address||""};const assetId=t.assetId||makeAssetId(t);if(assetId)c.assets[assetId]={id:assetId,deviceType:t.deviceType||"",manufacturer:t.manufacturer||"",modelNumber:t.modelNumber||"",serialNumber:t.serialNumber||"",warrantyStatus:t.warrantyStatus||""};if(t.contractId)c.contracts[t.contractId]={id:t.contractId};if(t.serviceType)c.services[t.serviceType]=(c.services[t.serviceType]||0)+1;if(t.quotationRef)c.quotes.push({ref:t.quotationRef,status:t.status||""});if(t.serviceRating)c.satisfaction.push(Number(t.serviceRating));c.timeTrackedMinutes+=Number(t.timeTrackedMinutes||0);if(!c.lastActivity||new Date(t.updatedAt||t.createdAt||0)>new Date(c.lastActivity))c.lastActivity=t.updatedAt||t.createdAt;});return Object.values(map).sort((a,b)=>new Date(b.lastActivity||0)-new Date(a.lastActivity||0));}
 function Customer360({tickets,role,showToast}){const [query,setQuery]=useState("");const [selectedId,setSelectedId]=useState(null);const customers=useMemo(()=>buildCustomer360(tickets),[tickets]);const allowed=canAny(role,"customers.read");const filtered=useMemo(()=>{const q=query.trim().toLowerCase();if(!q)return customers;return customers.filter(c=>[c.id,c.name,c.company,c.email,c.phone,c.address].join(" ").toLowerCase().includes(q));},[customers,query]);const selected=customers.find(c=>c.id===selectedId)||filtered[0]||null;useEffect(()=>{if(selected&&!selectedId)setSelectedId(selected.id);},[selected,selectedId]);if(!allowed)return <div className="page-content"><div className="card" style={{padding:28,textAlign:"center"}}><div style={{fontSize:32}}>🔒</div><div style={{fontWeight:700,color:"var(--text)",marginTop:8}}>Customer access restricted</div><div style={{fontSize:12,color:"var(--text3)",marginTop:5}}>Your role does not have customers.read permission.</div></div></div>;const openCount=c=>c.tickets.filter(t=>!['closed','resolved'].includes(t.status)).length;const avgRating=c=>c.satisfaction.length?(c.satisfaction.reduce((a,b)=>a+b,0)/c.satisfaction.length).toFixed(1):"—";return <div className="page-content"><div className="section-head"><div className="section-num">360</div><div><div className="section-title">Customer 360</div><div style={{fontSize:11,color:"var(--text3)",marginTop:2}}>One customer view across tickets, contacts, sites, assets and service history</div></div><div style={{marginLeft:"auto",fontSize:11,color:"var(--text3)"}}>{customers.length} customer(s)</div></div><div className="card" style={{marginBottom:14}}><div className="card-header"><div><div className="card-title">Customer master view</div><div style={{fontSize:11,color:"var(--text3)",marginTop:3}}>Stage 2 v1 derives the master record from ticket-linked identity fields. No new customer collection is required yet.</div></div></div><div className="card-body" style={{display:"flex",gap:8,flexWrap:"wrap"}}>{[["customers/{customerId}","Customer identity"],["contacts/{contactId}","People / contacts"],["sites/{siteId}","Locations"],["assets/{assetId}","Managed assets"],["contracts/{contractId}","Contracts"],["tickets/{ticketId}","Service history"]].map(([k,v])=><div key={k} className="rbac-permission"><strong className="mono">{k}</strong><span>· {v}</span></div>)}</div></div><div style={{display:"grid",gridTemplateColumns:"minmax(260px,0.85fr) minmax(0,1.7fr)",gap:14,alignItems:"start"}}><div className="card"><div className="card-header"><div className="card-title">Customers</div><div style={{fontSize:10,color:"var(--text4)"}}>{filtered.length}</div></div><div style={{padding:"10px 12px",borderBottom:"1px solid var(--border)"}}><input className="field-input" placeholder="Search customer, company, email, phone…" value={query} onChange={e=>setQuery(e.target.value)}/></div><div style={{maxHeight:560,overflowY:"auto"}}>{filtered.length===0?<div style={{padding:24,color:"var(--text3)",fontSize:12}}>No customer records found from the current ticket dataset.</div>:filtered.map(c=><button key={c.id} onClick={()=>setSelectedId(c.id)} style={{display:"block",width:"100%",textAlign:"left",border:0,borderBottom:"1px solid var(--border)",background:selected?.id===c.id?"var(--bg3)":"transparent",padding:"12px 14px",cursor:"pointer",fontFamily:"inherit"}}><div style={{fontWeight:700,color:"var(--text)",fontSize:13}}>{c.name}</div><div style={{fontSize:11,color:"var(--text3)",marginTop:2}}>{c.company||c.email||c.phone||"—"}</div><div style={{display:"flex",gap:8,marginTop:7,fontSize:10}}><span style={{color:AC}}>{c.tickets.length} tickets</span><span style={{color:openCount(c)>0?"#F59E0B":"var(--text4)"}}>{openCount(c)} open</span></div></button>)}</div></div>{selected?<div className="card"><div className="card-header"><div><div className="card-title">{selected.name}</div><div style={{fontSize:11,color:"var(--text3)",marginTop:3}}>{selected.company||"Individual customer"} · <span className="mono">{selected.id}</span></div></div><button className="btn btn-secondary btn-sm" onClick={()=>showToast("Customer 360 is live from ticket-linked data ✓")}>↻ Refresh</button></div><div className="card-body"><div style={{display:"grid",gridTemplateColumns:"repeat(4,minmax(0,1fr))",gap:8,marginBottom:16}}>{[["Tickets",selected.tickets.length],["Open",openCount(selected)],["Assets",Object.keys(selected.assets).length],["CSAT",avgRating(selected)]].map(([l,v])=><div key={l} style={{background:"var(--bg)",border:"1px solid var(--border)",borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:9,color:"var(--text4)",textTransform:"uppercase",fontWeight:700}}>{l}</div><div style={{fontSize:18,fontWeight:800,color:"var(--text)",marginTop:3}}>{v}</div></div>)}</div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}><div><div className="mini-section-title">Contact</div>{[["Name",selected.name],["Company",selected.company],["Email",selected.email],["Phone",selected.phone]].map(([l,v])=><div className="detail-row" key={l}><div className="detail-key">{l}</div><div className="detail-val">{v||"—"}</div></div>)}</div><div><div className="mini-section-title">Relationship</div>{[["Customer ID",selected.id],["Sites",Object.keys(selected.sites).length],["Contacts",Object.keys(selected.contacts).length],["Tracked time",`${Math.floor(selected.timeTrackedMinutes/60)}h ${selected.timeTrackedMinutes%60}m`]].map(([l,v])=><div className="detail-row" key={l}><div className="detail-key">{l}</div><div className="detail-val">{v}</div></div>)}</div></div><div className="divider"/><div className="mini-section-title">Managed assets</div>{Object.values(selected.assets).length===0?<div style={{fontSize:11,color:"var(--text3)",padding:"8px 0"}}>No asset identity captured yet.</div>:<div style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:8}}>{Object.values(selected.assets).map(a=><div key={a.id} style={{border:"1px solid var(--border)",borderRadius:8,padding:10,background:"var(--bg)"}}><div style={{fontWeight:700,fontSize:12,color:"var(--text)"}}>{[a.manufacturer,a.modelNumber].filter(Boolean).join(" ")||a.deviceType||"Asset"}</div><div style={{fontSize:10,color:"var(--text3)",marginTop:3}}>{a.serialNumber?`S/N ${a.serialNumber}`:"No serial captured"}{a.warrantyStatus?` · ${a.warrantyStatus}`:""}</div><div className="mono" style={{fontSize:9,color:"var(--text4)",marginTop:5}}>{a.id}</div></div>)}</div>}<div className="divider"/><div className="mini-section-title">Ticket history</div><div style={{overflowX:"auto"}}><table className="data-table"><thead><tr><th>Ref</th><th>Issue</th><th>Status</th><th>Priority</th><th>Engineer</th><th>Date</th></tr></thead><tbody>{[...selected.tickets].sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0)).map(t=><tr key={t.ref}><td className="mono" style={{color:AC}}>{t.ref}</td><td>{t.issueTitle||t.problemDescription||"—"}</td><td><StatusBadge status={t.status}/></td><td>{t.priority||"—"}</td><td>{t.assignedEngineer||"Unassigned"}</td><td className="mono">{t.createdAt?new Date(t.createdAt).toLocaleDateString("en-ZA"):"—"}</td></tr>)}</tbody></table></div></div></div>:<div className="card" style={{padding:40,textAlign:"center",color:"var(--text3)"}}>Select a customer to open the 360 view.</div>}</div></div>;
+}
+
+/* ════════════════════════════════════════════════════
+   CIMOP STAGE 2 — ASSET / CMDB v1
+   Canonical collection: assets/{assetId}
+   Assets are first-class managed configuration items. Ticket history can
+   bootstrap records, while this screen becomes the source of truth going
+   forward.
+════════════════════════════════════════════════════ */
+const CMDB_ASSET_TYPES=["Laptop","Desktop","Server","Printer","Network","Firewall","CCTV","Access Control","Mobile","Other"];
+const CMDB_ASSET_STATUS=["active","spare","repair","retired","lost"];
+const CMDB_CRITICALITY=["low","medium","high","critical"];
+const CMDB_WARRANTY=["active","expired","none","unknown"];
+const CMDB_EMPTY_ASSET={assetTag:"",name:"",deviceType:"Laptop",manufacturer:"",modelNumber:"",serialNumber:"",hostname:"",operatingSystem:"",ipAddress:"",macAddress:"",status:"active",criticality:"medium",warrantyStatus:"unknown",warrantyExpiry:"",purchaseDate:"",customerId:"",siteId:"",location:"",assignedEngineer:"Unassigned",notes:""};
+
+function cmdbStatusMeta(status){
+  const map={active:{label:"Active",color:"#10B981"},spare:{label:"Spare",color:"#0EA5E9"},repair:{label:"In Repair",color:"#F59E0B"},retired:{label:"Retired",color:"#64748B"},lost:{label:"Lost",color:"#EF4444"}};
+  return map[status]||{label:status||"Unknown",color:"#64748B"};
+}
+function cmdbCriticalityMeta(level){
+  const map={low:{label:"Low",color:"#64748B"},medium:{label:"Medium",color:"#0EA5E9"},high:{label:"High",color:"#F59E0B"},critical:{label:"Critical",color:"#EF4444"}};
+  return map[level]||map.medium;
+}
+function CMDBChip({status}){const m=cmdbStatusMeta(status);return <span className="cmdb-chip"><span className="cmdb-dot" style={{background:m.color}}/>{m.label}</span>;}
+function AssetModal({asset,customers,role,adminUser,onClose,onSaved,showToast}){
+  const editing=!!asset;
+  const [form,setForm]=useState({...CMDB_EMPTY_ASSET,...(asset||{})});
+  const [saving,setSaving]=useState(false);
+  const canWrite=canAny(role,"assets.write");
+  const set=(k,v)=>setForm(f=>({...f,[k]:v}));
+  const selectedCustomer=customers.find(c=>c.id===form.customerId);
+  const save=async()=>{
+    if(!canWrite){showToast("Asset write access is restricted","error");return;}
+    if(!form.name.trim() && !form.serialNumber.trim() && !form.hostname.trim()){
+      showToast("Enter an asset name, serial number or hostname","error");return;
+    }
+    setSaving(true);
+    try{
+      const id=editing?asset.id:(makeAssetId(form)||`ast_${cimopHash([form.name,form.hostname,Date.now()].join("|"))}`);
+      const existing=editing?asset:null;
+      const payload={
+        ...form,
+        id,
+        schemaVersion:1,
+        customerName:selectedCustomer?.name||form.customerName||"",
+        customerCompany:selectedCustomer?.company||form.customerCompany||"",
+        createdByUid:existing?.createdByUid||adminUser?.uid||null,
+        createdByEmail:existing?.createdByEmail||adminUser?.email||null,
+        createdAt:existing?.createdAt||ts(),
+        updatedAt:ts()
+      };
+      delete payload.customerName; delete payload.customerCompany;
+      // Keep identity snapshots separately so a later customer rename does not
+      // destroy historical CMDB context.
+      payload.customerNameSnapshot=selectedCustomer?.name||asset?.customerNameSnapshot||form.customerName||"";
+      payload.customerCompanySnapshot=selectedCustomer?.company||asset?.customerCompanySnapshot||form.customerCompany||"";
+      await db.collection("assets").doc(id).set(payload,{merge:true});
+      showToast(editing?"Asset updated ✓":"Asset created ✓");
+      onSaved(id);
+      onClose();
+    }catch(e){console.error(e);showToast(e.message||"Failed to save asset","error");}
+    setSaving(false);
+  };
+  return <div className="cmdb-modal-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)onClose();}}>
+    <div className="cmdb-modal">
+      <div className="cmdb-modal-head"><div><div className="card-title">{editing?"Edit CMDB Asset":"Register Managed Asset"}</div><div style={{fontSize:11,color:"var(--text3)",marginTop:3}}>{editing?<span className="mono">{asset.id}</span>:"Create the canonical configuration item record"}</div></div><button className="btn btn-ghost" onClick={onClose}>✕</button></div>
+      <div className="cmdb-modal-body">
+        <div className="form-grid">
+          <div className="form-field"><Lbl c="Asset Tag"/><input className="field-input" value={form.assetTag} onChange={e=>set("assetTag",e.target.value)} placeholder="e.g. CITM-LAP-001"/></div>
+          <div className="form-field"><Lbl c="Asset Name" req/><input className="field-input" value={form.name} onChange={e=>set("name",e.target.value)} placeholder="e.g. Reception Laptop"/></div>
+          <div className="form-field"><Lbl c="Asset Type"/><select className="field-input" value={form.deviceType} onChange={e=>set("deviceType",e.target.value)}>{CMDB_ASSET_TYPES.map(x=><option key={x}>{x}</option>)}</select></div>
+          <div className="form-field"><Lbl c="Status"/><select className="field-input" value={form.status} onChange={e=>set("status",e.target.value)}>{CMDB_ASSET_STATUS.map(x=><option key={x} value={x}>{cmdbStatusMeta(x).label}</option>)}</select></div>
+          <div className="form-field"><Lbl c="Manufacturer"/><input className="field-input" value={form.manufacturer} onChange={e=>set("manufacturer",e.target.value)} placeholder="Dell, HP, Lenovo…"/></div>
+          <div className="form-field"><Lbl c="Model"/><input className="field-input" value={form.modelNumber} onChange={e=>set("modelNumber",e.target.value)} placeholder="Model / product number"/></div>
+          <div className="form-field"><Lbl c="Serial Number"/><input className="field-input" value={form.serialNumber} onChange={e=>set("serialNumber",e.target.value)} placeholder="Serial / service tag"/></div>
+          <div className="form-field"><Lbl c="Hostname"/><input className="field-input" value={form.hostname} onChange={e=>set("hostname",e.target.value)} placeholder="e.g. RECEPTION-PC01"/></div>
+          <div className="form-field"><Lbl c="Operating System"/><input className="field-input" value={form.operatingSystem} onChange={e=>set("operatingSystem",e.target.value)} placeholder="Windows 11 Pro, Ubuntu…"/></div>
+          <div className="form-field"><Lbl c="Assigned Engineer"/><select className="field-input" value={form.assignedEngineer} onChange={e=>set("assignedEngineer",e.target.value)}>{ENGINEERS.map(e=><option key={e}>{e}</option>)}</select></div>
+          <div className="form-field"><Lbl c="Customer"/><select className="field-input" value={form.customerId} onChange={e=>set("customerId",e.target.value)}><option value="">— Select customer —</option>{customers.map(c=><option key={c.id} value={c.id}>{c.name}{c.company?` · ${c.company}`:""}</option>)}</select></div>
+          <div className="form-field"><Lbl c="Site / Location"/><input className="field-input" value={form.location} onChange={e=>set("location",e.target.value)} placeholder="Branch, office, server room…"/></div>
+          <div className="form-field"><Lbl c="IP Address"/><input className="field-input" value={form.ipAddress} onChange={e=>set("ipAddress",e.target.value)} placeholder="192.168.1.20"/></div>
+          <div className="form-field"><Lbl c="MAC Address"/><input className="field-input" value={form.macAddress} onChange={e=>set("macAddress",e.target.value)} placeholder="00:11:22:33:44:55"/></div>
+          <div className="form-field"><Lbl c="Criticality"/><select className="field-input" value={form.criticality} onChange={e=>set("criticality",e.target.value)}>{CMDB_CRITICALITY.map(x=><option key={x}>{x}</option>)}</select></div>
+          <div className="form-field"><Lbl c="Warranty"/><select className="field-input" value={form.warrantyStatus} onChange={e=>set("warrantyStatus",e.target.value)}>{CMDB_WARRANTY.map(x=><option key={x}>{x}</option>)}</select></div>
+          <div className="form-field"><Lbl c="Warranty Expiry"/><input className="field-input" type="date" value={form.warrantyExpiry} onChange={e=>set("warrantyExpiry",e.target.value)}/></div>
+          <div className="form-field"><Lbl c="Purchase Date"/><input className="field-input" type="date" value={form.purchaseDate} onChange={e=>set("purchaseDate",e.target.value)}/></div>
+          <div className="form-field span2"><Lbl c="Notes"/><textarea className="field-input" value={form.notes} onChange={e=>set("notes",e.target.value)} placeholder="Technical notes, configuration summary, important context…"/></div>
+        </div>
+        <div style={{display:"flex",justifyContent:"flex-end",gap:8,marginTop:18}}><button className="btn btn-secondary" onClick={onClose}>Cancel</button><button className="btn btn-primary" disabled={saving||!canWrite} onClick={save}>{saving?"Saving…":editing?"Save Changes":"Register Asset"}</button></div>
+      </div>
+    </div>
+  </div>;
+}
+
+function AssetCMDB({assets,tickets,role,adminUser,showToast,customers,onAssetSaved,assetDbError}){
+  const allowed=canAny(role,"assets.read");
+  const canWrite=canAny(role,"assets.write");
+  const [query,setQuery]=useState("");
+  const [status,setStatus]=useState("all");
+  const [type,setType]=useState("all");
+  const [selectedId,setSelectedId]=useState(null);
+  const [modal,setModal]=useState(null);
+  const [importing,setImporting]=useState(false);
+  const [importResult,setImportResult]=useState("");
+  const selected=assets.find(a=>a.id===selectedId)||null;
+  const filtered=useMemo(()=>{
+    const q=query.trim().toLowerCase();
+    return assets.filter(a=>{
+      const text=[a.id,a.assetTag,a.name,a.deviceType,a.manufacturer,a.modelNumber,a.serialNumber,a.hostname,a.ipAddress,a.customerNameSnapshot,a.customerCompanySnapshot,a.location,a.assignedEngineer].join(" ").toLowerCase();
+      return (!q||text.includes(q))&&(status==="all"||a.status===status)&&(type==="all"||a.deviceType===type);
+    }).sort((a,b)=>new Date(b.updatedAt||0)-new Date(a.updatedAt||0));
+  },[assets,query,status,type]);
+  useEffect(()=>{if(!selected&&filtered[0])setSelectedId(filtered[0].id);},[selected,filtered]);
+  const linkedTickets=useMemo(()=>selected?tickets.filter(t=>t.assetId===selected.id||makeAssetId(t)===selected.id):[],[selected,tickets]);
+  const stats=useMemo(()=>({total:assets.length,active:assets.filter(a=>a.status==="active").length,repair:assets.filter(a=>a.status==="repair").length,critical:assets.filter(a=>a.criticality==="critical"&&a.status!=="retired").length,warranty:assets.filter(a=>a.warrantyStatus==="active").length}),[assets]);
+  if(!allowed)return <div className="page-content"><div className="card" style={{padding:28,textAlign:"center"}}><div style={{fontSize:32}}>🔒</div><div style={{fontWeight:700,color:"var(--text)",marginTop:8}}>Asset access restricted</div><div style={{fontSize:12,color:"var(--text3)",marginTop:5}}>Your role does not have assets.read permission.</div></div></div>;
+  const importFromTickets=async()=>{
+    if(!canWrite){showToast("Asset write access is restricted","error");return;}
+    const candidates=tickets.filter(t=>t.deviceType||t.serialNumber||t.manufacturer||t.modelNumber);
+    if(!candidates.length){showToast("No ticket assets found to import","error");return;}
+    setImporting(true);setImportResult("");
+    try{
+      const byId={};
+      candidates.forEach(t=>{
+        const id=t.assetId||makeAssetId(t); if(!id)return;
+        const cur=byId[id]||{};
+        const customer=customers.find(c=>c.id===(t.customerId||makeCustomerId(t)));
+        byId[id]={
+          ...cur,id,schemaVersion:1,
+          name:cur.name||[t.manufacturer,t.modelNumber].filter(Boolean).join(" ")||t.deviceType||"Managed Asset",
+          deviceType:cur.deviceType||t.deviceType||"Other",manufacturer:cur.manufacturer||t.manufacturer||"",modelNumber:cur.modelNumber||t.modelNumber||"",serialNumber:cur.serialNumber||t.serialNumber||"",operatingSystem:cur.operatingSystem||t.operatingSystem||"",warrantyStatus:cur.warrantyStatus||t.warrantyStatus||"unknown",customerId:cur.customerId||t.customerId||"",customerNameSnapshot:cur.customerNameSnapshot||customer?.name||"",customerCompanySnapshot:cur.customerCompanySnapshot||customer?.company||"",siteId:cur.siteId||t.siteId||"",location:cur.location||t.address||"",status:cur.status||"active",criticality:cur.criticality||"medium",assignedEngineer:cur.assignedEngineer||t.assignedEngineer||"Unassigned",lastServiceAt:cur.lastServiceAt&&new Date(cur.lastServiceAt)>new Date(t.updatedAt||t.createdAt||0)?cur.lastServiceAt:(t.updatedAt||t.createdAt||ts()),source:"ticket-import",sourceTicketRefs:Array.from(new Set([...(cur.sourceTicketRefs||[]),t.ref])),updatedAt:ts()
+        };
+      });
+      const batch=db.batch();
+      Object.values(byId).forEach(a=>batch.set(db.collection("assets").doc(a.id),a,{merge:true}));
+      await batch.commit();
+      const n=Object.keys(byId).length;setImportResult(`${n} asset record${n===1?"":"s"} imported / updated from ticket history.`);showToast(`${n} CMDB asset(s) synced ✓`);
+    }catch(e){console.error(e);showToast(e.message||"Failed to import ticket assets","error");}
+    setImporting(false);
+  };
+  return <div className="page-content">
+    {modal&&<AssetModal asset={modal.asset} customers={customers} role={role} adminUser={adminUser} onClose={()=>setModal(null)} onSaved={id=>{setSelectedId(id);onAssetSaved&&onAssetSaved();}} showToast={showToast}/>} 
+    <div className="section-head"><div className="section-num">CM</div><div><div className="section-title">Asset / CMDB</div><div style={{fontSize:11,color:"var(--text3)",marginTop:2}}>Canonical managed assets, ownership, lifecycle and technical identity</div></div><div style={{marginLeft:"auto"}}><RbacRoleBadge role={role}/></div></div>
+    {assetDbError&&<div className="card" style={{marginBottom:14,borderColor:"rgba(245,158,11,.35)",background:"rgba(245,158,11,.05)"}}><div style={{padding:"12px 14px",display:"flex",gap:10,alignItems:"flex-start"}}><div style={{fontSize:18}}>⚠️</div><div><div style={{fontSize:12,fontWeight:700,color:"var(--text)"}}>CMDB is waiting for Firestore permissions</div><div style={{fontSize:11,color:"var(--text3)",marginTop:3}}>The admin UI is ready, but the <span className="mono">assets</span> collection is not readable for this role yet. Deploy the Stage 2 asset rules, then refresh.</div><div className="mono" style={{fontSize:9,color:"var(--text4)",marginTop:5}}>{assetDbError}</div></div></div></div>}
+    <div className="cmdb-stats">
+      {[["Total Assets",stats.total,"var(--text)"],["Active",stats.active,"#10B981"],["In Repair",stats.repair,"#F59E0B"],["Critical",stats.critical,"#EF4444"],["Warranty Active",stats.warranty,"#0EA5E9"]].map(([l,v,c])=><div className="cmdb-stat" key={l}><div style={{fontSize:9,color:"var(--text4)",textTransform:"uppercase",fontWeight:700,letterSpacing:".07em"}}>{l}</div><div style={{fontSize:20,fontWeight:800,color:c,marginTop:4}}>{v}</div></div>)}
+    </div>
+    <div className="card" style={{marginBottom:14}}><div className="card-header"><div><div className="card-title">CMDB data model</div><div style={{fontSize:11,color:"var(--text3)",marginTop:3}}>One canonical record per managed configuration item.</div></div><div className="cmdb-toolbar"><button className="btn btn-secondary btn-sm" disabled={importing||!canWrite} onClick={importFromTickets}>{importing?"Syncing…":"↻ Import from Tickets"}</button><button className="btn btn-primary btn-sm" disabled={!canWrite} onClick={()=>setModal({asset:null})}>+ Register Asset</button></div></div><div className="card-body" style={{display:"flex",gap:8,flexWrap:"wrap"}}>{[["assets/{assetId}","Identity + lifecycle"],["customerId","Customer relationship"],["siteId / location","Physical context"],["serial / hostname / IP / MAC","Technical identity"],["warranty / criticality","Risk + lifecycle"],["sourceTicketRefs[]","Service history link"]].map(([k,v])=><div key={k} className="rbac-permission"><strong className="mono">{k}</strong><span>· {v}</span></div>)}</div>{importResult&&<div style={{padding:"0 20px 14px",fontSize:11,color:AC}}>✓ {importResult}</div>}</div>
+    <div className="cmdb-layout">
+      <div className="card" style={{overflow:"hidden"}}>
+        <div className="card-header"><div><div className="card-title">Managed assets</div><div style={{fontSize:10,color:"var(--text3)",marginTop:3}}>{filtered.length} shown · {assets.length} total</div></div><button className="btn btn-ghost btn-sm" onClick={()=>{setQuery("");setStatus("all");setType("all");}}>Reset</button></div>
+        <div style={{padding:12,borderBottom:"1px solid var(--border)",display:"flex",gap:8,flexWrap:"wrap"}}>
+          <input className="field-input" style={{flex:1,minWidth:200}} placeholder="Search asset, serial, hostname, customer…" value={query} onChange={e=>setQuery(e.target.value)}/>
+          <select className="field-input" style={{width:"auto"}} value={status} onChange={e=>setStatus(e.target.value)}><option value="all">All Statuses</option>{CMDB_ASSET_STATUS.map(x=><option key={x} value={x}>{cmdbStatusMeta(x).label}</option>)}</select>
+          <select className="field-input" style={{width:"auto"}} value={type} onChange={e=>setType(e.target.value)}><option value="all">All Types</option>{CMDB_ASSET_TYPES.map(x=><option key={x}>{x}</option>)}</select>
+        </div>
+        {filtered.length===0?<div className="cmdb-empty">No CMDB assets match the current filters.<div style={{marginTop:8}}>{assets.length===0&&canWrite?<button className="btn btn-secondary btn-sm" onClick={importFromTickets}>Start by importing ticket assets</button>:null}</div></div>:<div className="cmdb-table-wrap"><table className="cmdb-table"><thead><tr><th>Asset</th><th>Type</th><th>Customer</th><th>Serial / Hostname</th><th>Status</th><th>Criticality</th><th>Updated</th></tr></thead><tbody>{filtered.map(a=>{const cm=cmdbCriticalityMeta(a.criticality);return <tr key={a.id} className={selected?.id===a.id?"cmdb-selected":""} onClick={()=>setSelectedId(a.id)} style={{cursor:"pointer"}}><td><div style={{fontWeight:700,color:"var(--text)"}}>{a.name||"Unnamed Asset"}</div><div className="mono" style={{fontSize:9,color:"var(--text4)",marginTop:3}}>{a.assetTag||a.id}</div></td><td>{a.deviceType||"Other"}</td><td><div style={{color:"var(--text)",fontWeight:600}}>{a.customerNameSnapshot||"Unassigned"}</div><div style={{fontSize:9,color:"var(--text4)"}}>{a.customerCompanySnapshot||""}</div></td><td><div>{a.serialNumber||"—"}</div><div className="mono" style={{fontSize:9,color:"var(--text4)",marginTop:2}}>{a.hostname||""}</div></td><td><CMDBChip status={a.status}/></td><td><span style={{fontSize:10,fontWeight:700,color:cm.color}}>{cm.label}</span></td><td className="mono" style={{fontSize:9}}>{a.updatedAt?new Date(a.updatedAt).toLocaleDateString("en-ZA"):"—"}</td></tr>})}</tbody></table></div>}
+      </div>
+      {selected?<div className="card"><div className="card-header"><div><div className="card-title">{selected.name||"Unnamed Asset"}</div><div className="mono" style={{fontSize:9,color:"var(--text4)",marginTop:3}}>{selected.id}</div></div><button className="btn btn-secondary btn-sm" disabled={!canWrite} onClick={()=>setModal({asset:selected})}>✎ Edit</button></div><div className="card-body">
+        <div style={{display:"flex",gap:7,flexWrap:"wrap",marginBottom:14}}><CMDBChip status={selected.status}/><span className="cmdb-chip">{selected.deviceType||"Other"}</span><span className="cmdb-chip" style={{color:cmdbCriticalityMeta(selected.criticality).color}}>{cmdbCriticalityMeta(selected.criticality).label} criticality</span></div>
+        <div className="cmdb-detail-grid">{[["Asset Tag",selected.assetTag],["Manufacturer",selected.manufacturer],["Model",selected.modelNumber],["Serial Number",selected.serialNumber],["Hostname",selected.hostname],["Operating System",selected.operatingSystem],["IP Address",selected.ipAddress],["MAC Address",selected.macAddress],["Customer",selected.customerNameSnapshot||"Unassigned"],["Location",selected.location],["Assigned Engineer",selected.assignedEngineer],["Warranty",selected.warrantyStatus],["Warranty Expiry",selected.warrantyExpiry],["Purchase Date",selected.purchaseDate]].map(([l,v])=><div className="detail-row" key={l}><div className="detail-key">{l}</div><div className="detail-val">{v||"—"}</div></div>)}</div>
+        <div className="divider"/><div className="mini-section-title">Notes</div><div style={{fontSize:11,color:"var(--text2)",lineHeight:1.6,background:"var(--bg)",border:"1px solid var(--border)",borderRadius:8,padding:10}}>{selected.notes||"No CMDB notes recorded."}</div>
+        <div className="divider"/><div className="mini-section-title">Linked service history <span style={{fontWeight:500,color:"var(--text4)"}}>({linkedTickets.length})</span></div>
+        {linkedTickets.length===0?<div style={{fontSize:11,color:"var(--text3)",padding:"8px 0"}}>No tickets are linked to this asset yet.</div>:<div style={{overflowX:"auto"}}><table className="data-table"><thead><tr><th>Ticket</th><th>Issue</th><th>Status</th><th>Date</th></tr></thead><tbody>{linkedTickets.sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0)).slice(0,12).map(t=><tr key={t.ref}><td className="mono" style={{color:AC}}>{t.ref}</td><td>{t.issueTitle||t.problemDescription||"—"}</td><td>{ST[t.status]?.l||t.status}</td><td className="mono">{t.createdAt?new Date(t.createdAt).toLocaleDateString("en-ZA"):"—"}</td></tr>)}</tbody></table></div>}
+        <div style={{marginTop:12,fontSize:9,color:"var(--text4)"}}>Created {selected.createdAt?new Date(selected.createdAt).toLocaleString("en-ZA"):"—"} · Updated {selected.updatedAt?new Date(selected.updatedAt).toLocaleString("en-ZA"):"—"}</div>
+      </div></div>:<div className="card" style={{padding:40,textAlign:"center",color:"var(--text3)"}}>Select an asset to open the CMDB record.</div>}
+    </div>
+  </div>;
 }
 
 async function getOrCreateUserProfile(firebaseUser){
@@ -2343,7 +2532,7 @@ function SignoffModal({ticket,clientName,setClientName,clientPosition,setClientP
   );
 }
 
-function Admin({tickets,loading,authed,adminUser,userProfile,onAuth,onUpdate,onAddNote,onBack,onNewTicket,theme,toggleTheme,showToast}){
+function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError,onAuth,onUpdate,onAddNote,onBack,onNewTicket,theme,toggleTheme,showToast}){
   const role=normaliseRole(userProfile?.role || "support_agent");
   const isSuperAdmin=role==="super_admin";
   const [pw,setPw]=useState(""); const [pwErr,setPwErr]=useState("");
@@ -2629,6 +2818,7 @@ function Admin({tickets,loading,authed,adminUser,userProfile,onAuth,onUpdate,onA
             <div className="nav-label">Tickets</div>
             <button className={`nav-item${activeTab==="tickets"?" active":""}`} onClick={()=>setActiveTab("tickets")}><span className="ni">🎫</span>All Tickets{tickets.length>0&&<span className="badge">{tickets.length}</span>}</button>
             {canAny(role,"customers.read")&&<button className={`nav-item${activeTab==="customers"?" active":""}`} onClick={()=>setActiveTab("customers")}><span className="ni">👤</span>Customers</button>}
+            {canAny(role,"assets.read")&&<button className={`nav-item${activeTab==="assets"?" active":""}`} onClick={()=>setActiveTab("assets")}><span className="ni">🖥️</span>Assets / CMDB</button>}
             {canAny(role,"tickets.write","tickets.write_assigned")&&<button className={`nav-item${activeTab==="new"?" active":""}`} onClick={()=>setActiveTab("new")}><span className="ni">✏️</span>Log New Ticket</button>}
             <button className={`nav-item${activeTab==="analytics"?" active":""}`} onClick={()=>setActiveTab("analytics")}><span className="ni">📊</span>Analytics</button>
              {isSuperAdmin&&<button className={`nav-item${activeTab==="team"?" active":""}`} onClick={()=>setActiveTab("team")}><span className="ni">👥</span>Team & Access</button>}
@@ -2698,8 +2888,8 @@ function Admin({tickets,loading,authed,adminUser,userProfile,onAuth,onUpdate,onA
       <div className="content-area">
         <div className="topbar">
           <div className="topbar-left">
-            <div className="topbar-title">{activeTab==="tickets"?"Ticket Manager":activeTab==="customers"?"Customer 360":activeTab==="analytics"?"Service Analytics":"Log New Ticket"}</div>
-            <div className="topbar-sub">{activeTab==="tickets"?`${filtered.length} result${filtered.length!==1?"s":""}`:activeTab==="customers"?"Customer master · Assets · Service history":activeTab==="analytics"?"CSAT · SLA · Time · Service Quality":""}</div>
+            <div className="topbar-title">{activeTab==="tickets"?"Ticket Manager":activeTab==="customers"?"Customer 360":activeTab==="assets"?"Asset / CMDB":activeTab==="analytics"?"Service Analytics":"Log New Ticket"}</div>
+            <div className="topbar-sub">{activeTab==="tickets"?`${filtered.length} result${filtered.length!==1?"s":""}`:activeTab==="customers"?"Customer master · Assets · Service history":activeTab==="assets"?`${assets?.length||0} managed asset${(assets?.length||0)!==1?"s":""}`:activeTab==="analytics"?"CSAT · SLA · Time · Service Quality":""}</div>
           </div>
           <div className="topbar-right">
             {overdueCount>0&&<span style={{background:"rgba(239,68,68,0.1)",border:"1px solid rgba(239,68,68,0.3)",color:"#F87171",fontSize:11,fontWeight:700,padding:"4px 10px",borderRadius:6,animation:"blink 1.5s infinite"}}>⚠️ {overdueCount} SLA Breach{overdueCount>1?"es":""}</span>}
@@ -2737,6 +2927,7 @@ function Admin({tickets,loading,authed,adminUser,userProfile,onAuth,onUpdate,onA
         )}
 
         {activeTab==="customers"&&<Customer360 tickets={tickets} role={role} showToast={showToast}/>}
+        {activeTab==="assets"&&<AssetCMDB assets={assets||[]} tickets={tickets} role={role} adminUser={adminUser} customers={buildCustomer360(tickets)} showToast={showToast} assetDbError={assetDbError}/>} 
        {activeTab==="team"&&isSuperAdmin&&<TeamAccess adminUser={adminUser} role={role} showToast={showToast}/>}
        {activeTab==="tickets"&&(
           <div style={{flex:1,display:"flex",minHeight:0,overflow:"hidden"}} className="admin-body">
@@ -3115,6 +3306,8 @@ function Admin({tickets,loading,authed,adminUser,userProfile,onAuth,onUpdate,onA
 function Root(){
   const [view,setView]=useState("portal");
   const [tickets,setTickets]=useState([]);
+  const [assets,setAssets]=useState([]);
+  const [assetDbError,setAssetDbError]=useState("");
   const [dbLoading,setDbLoading]=useState(true);
   const [lastTicket,setLastTicket]=useState(null);
   const [adminUser,setAdminUser]=useState(null);
@@ -3144,6 +3337,17 @@ function Root(){
       err=>{console.error(err);setDbLoading(false);showToast("Firebase error","error");});
     return()=>unsub();
   },[adminUser]);
+
+  useEffect(()=>{
+    if(!adminUser){setAssets([]);setAssetDbError("");return;}
+    const role=normaliseRole(userProfile?.role||"support_agent");
+    if(!hasPermission(role,"assets.read")){setAssets([]);setAssetDbError("");return;}
+    setAssetDbError("");
+    const unsub=db.collection("assets").orderBy("updatedAt","desc").limit(1000)
+      .onSnapshot(snap=>{setAssets(snap.docs.map(d=>({id:d.id,...d.data()})));},
+      err=>{console.error("Asset CMDB read failed",err);setAssets([]);setAssetDbError(err.message||"Asset CMDB read failed");});
+    return()=>unsub();
+  },[adminUser,userProfile]);
 
   useEffect(()=>{
     const unsub=auth.onAuthStateChanged(async(u)=>{
@@ -3267,7 +3471,7 @@ function Root(){
         </div>
       )}
       {view==="success"&&lastTicket&&<SuccessScreen ticket={lastTicket} onBack={()=>setView("portal")}/>}
-      {view==="admin"&&<Admin tickets={tickets} loading={dbLoading} authed={!!adminUser} adminUser={adminUser} userProfile={userProfile} onAuth={(u,p)=>{setAdminUser(u);setUserProfile(p);}} onUpdate={updateTicket} onAddNote={addNote} onBack={()=>{setView("portal");auth.signOut();setUserProfile(null);setAdminUser(null);}} onNewTicket={addTicket} theme={theme} toggleTheme={toggleTheme} showToast={showToast}/>}
+      {view==="admin"&&<Admin tickets={tickets} assets={assets} assetDbError={assetDbError} loading={dbLoading} authed={!!adminUser} adminUser={adminUser} userProfile={userProfile} onAuth={(u,p)=>{setAdminUser(u);setUserProfile(p);}} onUpdate={updateTicket} onAddNote={addNote} onBack={()=>{setView("portal");auth.signOut();setUserProfile(null);setAdminUser(null);}} onNewTicket={addTicket} theme={theme} toggleTheme={toggleTheme} showToast={showToast}/>}
       <Toast msg={toast.msg} type={toast.type}/>
     </>
   );
