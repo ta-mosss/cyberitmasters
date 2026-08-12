@@ -312,6 +312,23 @@ body.light .theme-toggle::after{left:19px;}
 @media(max-width:1100px){.analytics-grid{grid-template-columns:repeat(2,1fr);}.analytics-columns{grid-template-columns:1fr;}}
 @media(max-width:600px){.analytics-page{padding:14px;}.analytics-grid{grid-template-columns:1fr 1fr;}.chart-row{grid-template-columns:82px 1fr 38px;}}
 
+/* ── NOTIFICATION CENTRE ── */
+.notification-bell{position:relative;width:36px;height:36px;border:1px solid var(--border);border-radius:9px;background:var(--bg2);color:var(--text2);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;transition:.15s;}
+.notification-bell:hover{border-color:var(--border2);background:var(--bg3);color:var(--text);}
+.notification-count{position:absolute;top:-5px;right:-5px;min-width:16px;height:16px;padding:0 4px;border-radius:999px;background:#EF4444;color:#fff;border:2px solid var(--bg);font:800 9px/12px 'IBM Plex Mono',monospace;text-align:center;}
+.notification-item{display:flex;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:.15s;background:var(--card);}
+.notification-item:hover{background:var(--bg3);}
+.notification-item.unread{background:linear-gradient(90deg,rgba(14,165,233,.08),transparent 55%);}
+.notification-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;}
+.notification-title{font-size:12px;font-weight:750;color:var(--text);line-height:1.35;}
+.notification-message{font-size:11px;color:var(--text3);line-height:1.45;margin-top:3px;}
+.notification-meta{display:flex;align-items:center;gap:8px;margin-top:5px;font-size:9px;color:var(--text4);font-family:'IBM Plex Mono',monospace;}
+.notification-unread-dot{width:6px;height:6px;border-radius:50%;background:#0EA5E9;box-shadow:0 0 0 3px rgba(14,165,233,.12);flex-shrink:0;}
+.notification-filter{border:1px solid var(--border);background:var(--bg2);color:var(--text3);border-radius:7px;padding:6px 9px;font:600 10px inherit;cursor:pointer;}
+.notification-filter.active{border-color:rgba(14,165,233,.35);background:rgba(14,165,233,.10);color:#0EA5E9;}
+.notification-empty{padding:44px 20px;text-align:center;color:var(--text4);font-size:12px;}
+@media(max-width:900px){.notification-panel-grid{grid-template-columns:1fr!important;}.notification-side{display:none!important;}}
+
 /* ── PRINT STYLES ── */
 @media print{
   body *{visibility:hidden;}
@@ -2730,11 +2747,33 @@ async function loadAutomationRules(){
 async function ensureAutomationNotification(rule,ticket,actor,extra={}){
   const ref=ticket?.ref||"unknown";
   const uid=auth.currentUser?.uid||"current";
-  const dedupe=`${rule.id}__${ref}__${uid}__${extra.key||rule.triggerType}`.replace(/[^a-zA-Z0-9_-]/g,"_").slice(0,150);
+  const eventKey=extra.key||rule.triggerType;
+  const dedupe=`${rule.id}__${ref}__${uid}__${eventKey}`.replace(/[^a-zA-Z0-9_-]/g,"_").slice(0,150);
+  const severity=rule.severity||"info";
+  const category=extra.category||((severity==="critical"||severity==="warning")?"attention":"workflow");
   const notification={
-    automationId:rule.id,ticketRef:ref,recipientUid:auth.currentUser?.uid||null,recipientEmail:auth.currentUser?.email||null,
-    title:extra.title||rule.name,message:extra.message||rule.description,severity:rule.severity||"info",read:false,
-    createdAt:ts(),createdBy:actor?.actorEmail||auth.currentUser?.email||"system",source:"automation-engine-v1"
+    schemaVersion:2,
+    automationId:rule.id,
+    ticketRef:ref,
+    recipientUid:auth.currentUser?.uid||null,
+    recipientEmail:auth.currentUser?.email||null,
+    title:extra.title||rule.name,
+    message:extra.message||rule.description,
+    severity,
+    category,
+    priority:extra.priority||(severity==="critical"?"urgent":severity==="warning"?"high":"normal"),
+    icon:extra.icon||(severity==="critical"?"🚨":severity==="warning"?"⚠️":severity==="success"?"✅":"🔔"),
+    read:false,
+    readAt:null,
+    readByUid:null,
+    createdAt:ts(),
+    createdAtMs:Date.now(),
+    createdByUid:actor?.actorUid||auth.currentUser?.uid||null,
+    createdBy:actor?.actorEmail||auth.currentUser?.email||"system",
+    source:"automation-engine",
+    sourceVersion:"2.0",
+    dedupeKey:dedupe,
+    route:extra.route||"tickets"
   };
   const nref=db.collection("notifications").doc(dedupe);
   const existing=await nref.get();
@@ -2941,6 +2980,95 @@ function SLAEngine({tickets,role,showToast}){
   </div>;
 }
 
+function notificationSeverityMeta(sev){
+  return ({
+    critical:{label:"Critical",color:"#EF4444",bg:"rgba(239,68,68,.10)"},
+    warning:{label:"Warning",color:"#F59E0B",bg:"rgba(245,158,11,.10)"},
+    success:{label:"Success",color:"#10B981",bg:"rgba(16,185,129,.10)"},
+    info:{label:"Info",color:"#0EA5E9",bg:"rgba(14,165,233,.10)"}
+  })[sev]||{label:"Info",color:"#0EA5E9",bg:"rgba(14,165,233,.10)"};
+}
+function relativeTime(value){
+  const ms=new Date(value||0).getTime();
+  if(!ms)return "—";
+  const d=Math.max(0,Date.now()-ms),m=Math.floor(d/60000),h=Math.floor(m/60),day=Math.floor(h/24);
+  if(m<1)return "just now";
+  if(m<60)return `${m}m ago`;
+  if(h<24)return `${h}h ago`;
+  if(day<7)return `${day}d ago`;
+  return new Date(ms).toLocaleDateString("en-ZA");
+}
+function NotificationCenter({role,adminUser,tickets,onOpenTicket,showToast}){
+  const allowed=hasPermission(role,"notifications.read");
+  const [items,setItems]=useState([]);
+  const [loading,setLoading]=useState(true);
+  const [filter,setFilter]=useState("all");
+  const [query,setQuery]=useState("");
+  const [error,setError]=useState("");
+  const uid=adminUser?.uid;
+
+  useEffect(()=>{
+    if(!allowed||!uid){setItems([]);setLoading(false);return;}
+    setLoading(true);setError("");
+    const unsub=db.collection("notifications").where("recipientUid","==",uid).limit(100).onSnapshot(
+      snap=>{
+        const rows=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
+        setItems(rows);setLoading(false);
+      },
+      err=>{console.error("Notification centre listener failed",err);setError(err.message||"Notification centre unavailable");setLoading(false);}
+    );
+    return()=>unsub();
+  },[allowed,uid]);
+
+  const unread=items.filter(n=>!n.read);
+  const filtered=items.filter(n=>{
+    if(filter==="unread"&&n.read)return false;
+    if(filter!=="all"&&filter!=="unread"&&n.severity!==filter)return false;
+    const q=query.trim().toLowerCase();
+    return !q||[n.title,n.message,n.ticketRef,n.category,n.automationId].join(" ").toLowerCase().includes(q);
+  });
+
+  const markRead=async(n)=>{
+    if(n.read)return;
+    try{await db.collection("notifications").doc(n.id).update({read:true,readAt:ts(),readByUid:uid});}
+    catch(e){showToast("Could not mark notification as read","error");}
+  };
+  const markAllRead=async()=>{
+    const pending=unread.slice(0,450);
+    if(!pending.length)return;
+    try{
+      const batch=db.batch();
+      pending.forEach(n=>batch.update(db.collection("notifications").doc(n.id),{read:true,readAt:ts(),readByUid:uid}));
+      await batch.commit();showToast(`${pending.length} notification${pending.length===1?"":"s"} marked as read ✓`);
+    }catch(e){console.error(e);showToast("Failed to mark notifications as read","error");}
+  };
+  const open=async(n)=>{await markRead(n);if(n.ticketRef)onOpenTicket?.(n.ticketRef);};
+
+  if(!allowed)return <div className="page-content"><div className="card" style={{padding:32,textAlign:"center"}}><div style={{fontSize:30}}>🔒</div><div style={{fontWeight:700,color:"var(--text)",marginTop:8}}>Notification access restricted</div><div style={{fontSize:12,color:"var(--text3)",marginTop:5}}>Your role does not have notifications.read permission.</div></div></div>;
+
+  return <div className="page-content">
+    <div className="section-head"><div className="section-num">🔔</div><div><div className="section-title">Notification Centre</div><div style={{fontSize:11,color:"var(--text3)",marginTop:2}}>One operational inbox for SLA, ticket, assignment and automation events</div></div><div style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:8}}>{unread.length>0&&<span style={{fontSize:10,fontWeight:800,color:"#EF4444"}}>{unread.length} unread</span>}<button className="btn btn-secondary btn-sm" onClick={markAllRead} disabled={!unread.length}>✓ Mark all read</button></div></div>
+    {error&&<div style={{marginBottom:12,padding:11,borderRadius:8,border:"1px solid rgba(239,68,68,.25)",background:"rgba(239,68,68,.06)",color:"#F87171",fontSize:11}}>⚠️ {error}</div>}
+    <div className="notification-panel-grid" style={{display:"grid",gridTemplateColumns:"minmax(0,1.65fr) minmax(260px,.55fr)",gap:14,alignItems:"start"}}>
+      <div className="card">
+        <div className="card-header" style={{gap:10,flexWrap:"wrap"}}>
+          <div style={{flex:1,minWidth:220}}><div className="card-title">Operational inbox</div><div style={{fontSize:10,color:"var(--text3)",marginTop:3}}>Live Firestore stream · last 100 notifications</div></div>
+          <input className="field-input" style={{width:230}} placeholder="Search notifications…" value={query} onChange={e=>setQuery(e.target.value)}/>
+        </div>
+        <div style={{padding:"9px 12px",borderBottom:"1px solid var(--border)",display:"flex",gap:6,flexWrap:"wrap"}}>{[["all","All"],["unread","Unread"],["critical","Critical"],["warning","Warning"],["success","Success"],["info","Info"]].map(([k,l])=><button key={k} className={`notification-filter${filter===k?" active":""}`} onClick={()=>setFilter(k)}>{l}{k==="unread"&&unread.length?` · ${unread.length}`:""}</button>)}</div>
+        {loading?<div className="notification-empty">Loading notification stream…</div>:filtered.length===0?<div className="notification-empty"><div style={{fontSize:28,marginBottom:8}}>🫡</div>{items.length?"No notifications match the current filter.":"You're all clear. No operational notifications yet."}</div>:<div>{filtered.map(n=>{const meta=notificationSeverityMeta(n.severity);return <div key={n.id} className={`notification-item${n.read?"":" unread"}`} onClick={()=>open(n)}>
+          <div className="notification-icon" style={{background:meta.bg,color:meta.color,border:`1px solid ${meta.color}30`}}>{n.icon||"🔔"}</div>
+          <div style={{flex:1,minWidth:0}}><div style={{display:"flex",alignItems:"center",gap:7}}>{!n.read&&<span className="notification-unread-dot"/>}<div className="notification-title">{n.title}</div><span style={{marginLeft:"auto",fontSize:8,fontWeight:800,textTransform:"uppercase",letterSpacing:".06em",padding:"3px 6px",borderRadius:5,background:meta.bg,color:meta.color}}>{meta.label}</span></div><div className="notification-message">{n.message}</div><div className="notification-meta"><span>{relativeTime(n.createdAt)}</span>{n.ticketRef&&<span style={{color:AC}}>• {n.ticketRef}</span>}{n.category&&<span>• {n.category}</span>}{n.read&&<span>• read</span>}</div></div>
+        </div>})}</div>}
+      </div>
+      <div className="notification-side">
+        <div className="card" style={{marginBottom:14}}><div className="card-header"><div><div className="card-title">Inbox health</div><div style={{fontSize:10,color:"var(--text3)",marginTop:3}}>Current operational signal</div></div></div><div className="card-body">{[["Unread",unread.length,"#EF4444"],["Critical",items.filter(n=>n.severity==="critical"&&!n.read).length,"#EF4444"],["Warnings",items.filter(n=>n.severity==="warning"&&!n.read).length,"#F59E0B"],["Automation",items.filter(n=>n.automationId).length,"#8B5CF6"]].map(([l,v,c])=><div key={l} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"9px 0",borderBottom:"1px solid var(--border)"}}><span style={{fontSize:11,color:"var(--text3)"}}>{l}</span><strong style={{fontSize:15,color:c}}>{v}</strong></div>)}</div></div>
+        <div className="card"><div className="card-header"><div><div className="card-title">Notification contract</div><div style={{fontSize:10,color:"var(--text3)",marginTop:3}}>Designed for the next backend stage</div></div></div><div className="card-body" style={{fontSize:10,color:"var(--text3)",lineHeight:1.6}}><div>✓ recipient-scoped records</div><div>✓ idempotent automation dedupe</div><div>✓ severity + priority</div><div>✓ read receipts</div><div>✓ ticket deep links</div><div>✓ backend-worker ready schema</div></div></div>
+      </div>
+    </div>
+  </div>;
+}
+
 function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError,onAuth,onUpdate,onAddNote,onBack,onNewTicket,theme,toggleTheme,showToast}){
   const role=normaliseRole(userProfile?.role || "support_agent");
   const isSuperAdmin=role==="super_admin";
@@ -2959,6 +3087,7 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
   const [onlineEngineers,setOnlineEngineers]=useState({});
   const [chatCounts,setChatCounts]=useState({});
   const [lastRead,setLastRead]=useState({});
+  const [notificationCount,setNotificationCount]=useState(0);
 
   const [visibleCount,setVisibleCount]=useState(50);
   const [statusModal,setStatusModal]=useState(null);
@@ -2978,6 +3107,15 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
     ref.on("value",handler);
     return()=>ref.off("value",handler);
   },[authed]);
+
+  useEffect(()=>{
+    if(!authed||!adminUser||!hasPermission(role,"notifications.read")) { setNotificationCount(0); return; }
+    const unsub=db.collection("notifications").where("recipientUid","==",adminUser.uid).limit(100).onSnapshot(
+      snap=>setNotificationCount(snap.docs.reduce((n,d)=>n+(d.data()?.read?0:1),0)),
+      err=>{console.warn("Notification count unavailable",err);setNotificationCount(0);}
+    );
+    return()=>unsub();
+  },[authed,adminUser,role]);
 
   useEffect(()=>{
     if(!authed||!tickets.length) return;
@@ -3257,6 +3395,7 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
             {canAny(role,"assets.read")&&<button className={`nav-item${activeTab==="assets"?" active":""}`} onClick={()=>setActiveTab("assets")}><span className="ni">🖥️</span>Assets / CMDB</button>}
             {canAny(role,"sla.read")&&<button className={`nav-item${activeTab==="sla"?" active":""}`} onClick={()=>setActiveTab("sla")}><span className="ni">⏱️</span>SLA Engine</button>}
             {canAny(role,"automation.read")&&<button className={`nav-item${activeTab==="automation"?" active":""}`} onClick={()=>setActiveTab("automation")}><span className="ni">⚙️</span>Automation Engine</button>}
+            {canAny(role,"notifications.read")&&<button className={`nav-item${activeTab==="notifications"?" active":""}`} onClick={()=>setActiveTab("notifications")}><span className="ni">🔔</span>Notifications{notificationCount>0&&<span className="badge">{notificationCount>99?"99+":notificationCount}</span>}</button>}
             {canAny(role,"tickets.write","tickets.write_assigned")&&<button className={`nav-item${activeTab==="new"?" active":""}`} onClick={()=>setActiveTab("new")}><span className="ni">✏️</span>Log New Ticket</button>}
             <button className={`nav-item${activeTab==="analytics"?" active":""}`} onClick={()=>setActiveTab("analytics")}><span className="ni">📊</span>Analytics</button>
              {isSuperAdmin&&<button className={`nav-item${activeTab==="team"?" active":""}`} onClick={()=>setActiveTab("team")}><span className="ni">👥</span>Team & Access</button>}
@@ -3326,11 +3465,12 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
       <div className="content-area">
         <div className="topbar">
           <div className="topbar-left">
-            <div className="topbar-title">{activeTab==="tickets"?"Ticket Manager":activeTab==="customers"?"Customer 360":activeTab==="assets"?"Asset / CMDB":activeTab==="sla"?"SLA Engine":activeTab==="automation"?"Automation Engine":activeTab==="analytics"?"Service Analytics":"Log New Ticket"}</div>
-            <div className="topbar-sub">{activeTab==="tickets"?`${filtered.length} result${filtered.length!==1?"s":""}`:activeTab==="customers"?"Customer master · Assets · Service history":activeTab==="assets"?`${assets?.length||0} managed asset${(assets?.length||0)!==1?"s":""}`:activeTab==="sla"?"Priority targets · business clock · breach monitoring":activeTab==="automation"?"Triggers · conditions · actions":activeTab==="analytics"?"CSAT · SLA · Time · Service Quality":""}</div>
+            <div className="topbar-title">{activeTab==="tickets"?"Ticket Manager":activeTab==="customers"?"Customer 360":activeTab==="assets"?"Asset / CMDB":activeTab==="sla"?"SLA Engine":activeTab==="automation"?"Automation Engine":activeTab==="notifications"?"Notification Centre":activeTab==="analytics"?"Service Analytics":"Log New Ticket"}</div>
+            <div className="topbar-sub">{activeTab==="tickets"?`${filtered.length} result${filtered.length!==1?"s":""}`:activeTab==="customers"?"Customer master · Assets · Service history":activeTab==="assets"?`${assets?.length||0} managed asset${(assets?.length||0)!==1?"s":""}`:activeTab==="sla"?"Priority targets · business clock · breach monitoring":activeTab==="automation"?"Triggers · conditions · actions":activeTab==="notifications"?`${notificationCount} unread operational notification${notificationCount===1?"":"s"}`:activeTab==="analytics"?"CSAT · SLA · Time · Service Quality":""}</div>
           </div>
           <div className="topbar-right">
             {overdueCount>0&&<span style={{background:"rgba(239,68,68,0.1)",border:"1px solid rgba(239,68,68,0.3)",color:"#F87171",fontSize:11,fontWeight:700,padding:"4px 10px",borderRadius:6,animation:"blink 1.5s infinite"}}>⚠️ {overdueCount} SLA Breach{overdueCount>1?"es":""}</span>}
+            {canAny(role,"notifications.read")&&<button className="notification-bell" title="Open Notification Centre" onClick={()=>setActiveTab("notifications")}>🔔{notificationCount>0&&<span className="notification-count">{notificationCount>99?"99+":notificationCount}</span>}</button>}
             {onlineList.length>0&&(
               <div style={{display:"flex",alignItems:"center",gap:5,background:"rgba(0,200,150,0.08)",border:"1px solid rgba(0,200,150,0.2)",borderRadius:20,padding:"4px 10px"}}>
                 <div className="presence-online-dot" style={{width:6,height:6}}/>
@@ -3351,6 +3491,8 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
         {activeTab==="sla"&&<SLAEngine tickets={tickets} role={role} showToast={showToast}/>}
 
         {activeTab==="automation"&&<AutomationEngine tickets={tickets} role={role} showToast={showToast}/>}
+
+        {activeTab==="notifications"&&<NotificationCenter role={role} adminUser={adminUser} tickets={tickets} onOpenTicket={(ref)=>{setActiveTab("tickets");setSel(ref);setDetailTab("overview");}} showToast={showToast}/>}
 
         {activeTab==="analytics"&&(
           <AnalyticsDashboard tickets={tickets} onExport={(rows)=>{
