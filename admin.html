@@ -331,6 +331,13 @@ body.light .theme-toggle::after{left:19px;}
   .form-grid.cols3{grid-template-columns:1fr;}
   .stats-row{grid-template-columns:repeat(2,1fr);}
 }
+
+/* ── RBAC v1 ── */
+.rbac-role{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:14px;background:rgba(14,165,233,.10);border:1px solid rgba(14,165,233,.25);color:#0EA5E9;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;}
+.rbac-user-row{display:grid;grid-template-columns:1.4fr 1fr 150px 90px;gap:12px;align-items:center;padding:11px 12px;border-bottom:1px solid var(--border);font-size:12px;}
+.rbac-user-row:hover{background:rgba(0,200,150,.02);}
+.rbac-permission{display:inline-flex;align-items:center;gap:5px;font-size:10px;color:var(--text3);padding:4px 7px;border:1px solid var(--border);border-radius:6px;background:var(--bg);}
+@media(max-width:800px){.rbac-user-row{grid-template-columns:1fr;gap:5px;}}
 </style>
 </head>
 <body class="dark">
@@ -984,6 +991,142 @@ function generateJobCard(ticket){
 </body></html>`;
   const w=window.open("","_blank","width=900,height=700");
   if(w){ w.opener=null; w.document.write(html); w.document.close(); }
+}
+
+
+/* ════════════════════════════════════════════════════
+   CIMOP STAGE 2 — RBAC v1
+   Roles are stored in users/{uid}. Security rules must
+   enforce these permissions server-side; this layer is
+   the Admin Portal's UI/behaviour gate.
+════════════════════════════════════════════════════ */
+const RBAC_ROLES={
+  super_admin:{label:"Super Admin",icon:"👑",description:"Full platform access",permissions:["*" ]},
+  operations_manager:{label:"Operations Manager",icon:"🧭",description:"Operations, customers, tickets and team visibility",permissions:[
+    "tickets.read","tickets.write","tickets.assign","customers.read","customers.write","assets.read","assets.write","sla.read","automation.read","notifications.read","analytics.read"
+  ]},
+  engineer:{label:"Engineer",icon:"🛠️",description:"Assigned technical work and ticket execution",permissions:[
+    "tickets.read_assigned","tickets.write_assigned","tickets.notes","tickets.time","customers.read","assets.read","notifications.read"
+  ]},
+  support_agent:{label:"Support Agent",icon:"🎧",description:"Customer support and ticket coordination",permissions:[
+    "tickets.read","tickets.write","tickets.assign","customers.read","customers.write","notifications.read","analytics.read"
+  ]},
+  finance:{label:"Finance",icon:"💰",description:"Financial/customer visibility without technical administration",permissions:[
+    "tickets.read","customers.read","notifications.read","analytics.read"
+  ]},
+  customer:{label:"Customer",icon:"👤",description:"Customer portal access only",permissions:["portal.read","portal.write"]}
+};
+
+function normaliseRole(role){
+  return RBAC_ROLES[role]?role:"support_agent";
+}
+function roleLabel(role){return RBAC_ROLES[normaliseRole(role)].label;}
+function hasPermission(role,permission){
+  const r=normaliseRole(role);
+  const p=RBAC_ROLES[r]?.permissions||[];
+  return p.includes("*")||p.includes(permission);
+}
+function canAny(role,...permissions){return permissions.some(p=>hasPermission(role,p));}
+function canManageUsers(role){return normaliseRole(role)==="super_admin";}
+
+async function getOrCreateUserProfile(firebaseUser){
+  if(!firebaseUser) return null;
+  const legacy=CFG.adminEmails.map(x=>String(x).toLowerCase()).includes(String(firebaseUser.email||"").toLowerCase());
+  const fallback={
+    uid:firebaseUser.uid,
+    email:firebaseUser.email||"",
+    displayName:firebaseUser.displayName||firebaseUser.email||"",
+    role:legacy?"super_admin":"support_agent",
+    active:true,
+    source:legacy?"legacy-admin-email":"fallback"
+  };
+
+  /*
+     RBAC v1 is intentionally compatible with the existing Firebase rules.
+     Older CIMOP rules may not yet allow the client to read/write users/{uid}.
+     Therefore a denied users lookup MUST NOT block an otherwise authorised
+     admin from signing in. Once the RBAC Firestore rules are deployed, this
+     function will transparently start using the persisted profile.
+  */
+  try{
+    const ref=db.collection("users").doc(firebaseUser.uid);
+    const snap=await ref.get();
+    if(snap.exists){
+      const data=snap.data()||{};
+      const role=normaliseRole(data.role || fallback.role);
+      if(data.active===false) throw new Error("This user account is disabled.");
+      return {...fallback,...data,uid:firebaseUser.uid,role};
+    }
+    try{
+      const profile={...fallback,createdAt:ts(),updatedAt:ts()};
+      await ref.set(profile,{merge:true});
+      return profile;
+    }catch(writeErr){
+      console.warn("RBAC profile write not permitted yet; using fallback role.",writeErr);
+      return fallback;
+    }
+  }catch(readErr){
+    console.warn("RBAC users profile not readable yet; using fallback role.",readErr);
+    return fallback;
+  }
+}
+
+function RbacRoleBadge({role}){
+  const r=RBAC_ROLES[normaliseRole(role)];
+  return <span className="rbac-role">{r.icon} {r.label}</span>;
+}
+
+function TeamAccess({adminUser,role,showToast}){
+  const [users,setUsers]=useState([]);
+  const [loading,setLoading]=useState(true);
+  const [savingUid,setSavingUid]=useState(null);
+  const [error,setError]=useState("");
+  const load=useCallback(()=>{
+    setLoading(true); setError("");
+    return db.collection("users").orderBy("email").limit(200).get()
+      .then(s=>setUsers(s.docs.map(d=>({uid:d.id,...d.data()}))))
+      .catch(e=>{
+        console.warn("Team & Access users query is not permitted by the current Firestore rules.",e);
+        setError("RBAC is installed, but the current Firestore rules do not yet allow access to users/{uid}. Deploy the RBAC rules before managing team roles.");
+      })
+      .finally(()=>setLoading(false));
+  },[]);
+  useEffect(()=>{
+    if(role!=="super_admin") return;
+    load();
+  },[load,role]);
+  const changeRole=async(uid,newRole)=>{
+    if(!canManageUsers(role)||uid===adminUser?.uid) return;
+    setSavingUid(uid);
+    try{
+      await db.collection("users").doc(uid).set({role:newRole,updatedAt:ts(),updatedBy:adminUser.email||adminUser.uid},{merge:true});
+      setUsers(prev=>prev.map(u=>u.uid===uid?{...u,role:newRole}:u));
+      showToast("Role updated ✓");
+    }catch(e){console.error(e);showToast("Failed to update role","error");}
+    setSavingUid(null);
+  };
+  return <div className="page-content">
+    <div className="section-head"><div className="section-num">RB</div><div><div className="section-title">Team & Access</div><div style={{fontSize:11,color:"var(--text3)",marginTop:2}}>Role-based access control for CIMOP</div></div><div style={{marginLeft:"auto"}}><RbacRoleBadge role={role}/></div></div>
+    <div className="card" style={{marginBottom:16}}>
+      <div className="card-header"><div><div className="card-title">Access model</div><div style={{fontSize:11,color:"var(--text3)",marginTop:3}}>Permissions are attached to roles; user records live in <span className="mono">users/{'{uid}'}</span>.</div></div><button className="btn btn-secondary btn-sm" onClick={load}>↻ Refresh</button></div>
+      <div className="card-body" style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+        {Object.entries(RBAC_ROLES).filter(([k])=>k!=="customer").map(([k,r])=><div key={k} className="rbac-permission"><span>{r.icon}</span><strong>{r.label}</strong><span>· {r.description}</span></div>)}
+      </div>
+    </div>
+    <div className="card">
+      <div className="card-header"><div className="card-title">Team members</div><div style={{fontSize:11,color:"var(--text3)"}}>{users.length} profile(s)</div></div>
+      {error&&<div style={{padding:14,color:"#F87171",fontSize:12}}>⚠️ {error}</div>}
+      {loading?<div style={{padding:24,color:"var(--text3)",fontSize:12}}>Loading team profiles…</div>:users.length===0?<div style={{padding:24,color:"var(--text3)",fontSize:12}}>No user profiles found yet. Users are created automatically when they sign in.</div>:<>
+        <div className="rbac-user-row" style={{color:"var(--text4)",fontSize:10,fontWeight:700,textTransform:"uppercase"}}><div>User</div><div>Email</div><div>Role</div><div>Status</div></div>
+        {users.map(u=>{const ur=normaliseRole(u.role);const isSelf=u.uid===adminUser?.uid;return <div className="rbac-user-row" key={u.uid}>
+          <div><div style={{fontWeight:700,color:"var(--text)"}}>{u.displayName||u.email||u.uid}</div><div className="mono" style={{color:"var(--text4)",marginTop:2}}>{u.uid}</div></div>
+          <div style={{color:"var(--text2)"}}>{u.email||"—"}</div>
+          <div>{canManageUsers(role)&&!isSelf?<select className="field-input" style={{padding:"6px 8px",fontSize:11}} value={ur} disabled={savingUid===u.uid} onChange={e=>changeRole(u.uid,e.target.value)}>{Object.entries(RBAC_ROLES).filter(([k])=>k!=="customer").map(([k,r])=><option key={k} value={k}>{r.label}</option>)}</select>:<RbacRoleBadge role={ur}/>}</div>
+          <div><span style={{color:u.active===false?"#F87171":"#10B981",fontWeight:700}}>{u.active===false?"Disabled":"Active"}</span>{isSelf&&<span style={{fontSize:9,color:"var(--text4)",marginLeft:5}}>YOU</span>}</div>
+        </div>})}
+      </>}
+    </div>
+  </div>;
 }
 
 /* ── TINY ATOMS ── */
@@ -2114,7 +2257,9 @@ function SignoffModal({ticket,clientName,setClientName,clientPosition,setClientP
   );
 }
 
-function Admin({tickets,loading,authed,adminUser,onAuth,onUpdate,onAddNote,onBack,onNewTicket,theme,toggleTheme,showToast}){
+function Admin({tickets,loading,authed,adminUser,userProfile,onAuth,onUpdate,onAddNote,onBack,onNewTicket,theme,toggleTheme,showToast}){
+  const role=normaliseRole(userProfile?.role || "support_agent");
+  const isSuperAdmin=role==="super_admin";
   const [pw,setPw]=useState(""); const [pwErr,setPwErr]=useState("");
   const [sel,setSel]=useState(null);
   const [fSt,setFSt]=useState("all"); const [fTy,setFTy]=useState("all"); const [fEng,setFEng]=useState("all");
@@ -2276,10 +2421,14 @@ function Admin({tickets,loading,authed,adminUser,onAuth,onUpdate,onAddNote,onBac
       const cred=await auth.signInWithEmailAndPassword(loginEmail,pw);
       const token=await cred.user.getIdTokenResult(true);
       if(token.claims.admin||CFG.adminEmails.includes(cred.user.email)){
-        onAuth(cred.user);
+        const profile=await getOrCreateUserProfile(cred.user);
+        onAuth(cred.user,profile);
       } else {
-        await auth.signOut();
-        setPwErr("Access denied. This account is not an admin.");
+        try{
+          const profile=await getOrCreateUserProfile(cred.user);
+          if(profile&&profile.active!==false&&profile.role!=="customer"){ onAuth(cred.user,profile); }
+          else { await auth.signOut(); setPwErr("Access denied. This account does not have staff access."); }
+        }catch(e){ await auth.signOut(); setPwErr(e.message||"Access denied."); }
       }
     }catch(e){ setPwErr(e.message); }
     setLoginBusy(false);
@@ -2328,6 +2477,8 @@ function Admin({tickets,loading,authed,adminUser,onAuth,onUpdate,onAddNote,onBac
   const totalChatActivity=Object.values(chatCounts).reduce((a,c)=>a+c,0);
 
   const doStatusClick=(ticket,newStatus)=>{
+    if(!canAny(role,"tickets.write","tickets.write_assigned")){showToast("Your role cannot change ticket status","error");return;}
+    if(role==="engineer" && ticket.assignedEngineer && ticket.assignedEngineer!==activeEngineer && ticket.assignedUid!==adminUser?.uid){showToast("This ticket is not assigned to you","error");return;}
     if(newStatus==="closed"&&!ticket.clientSignoff?.signed){
       alert("A client sign-off is required before closing this ticket. Please use the ✍ Client Sign-Off button in the Actions tab.");
       return;
@@ -2349,14 +2500,14 @@ function Admin({tickets,loading,authed,adminUser,onAuth,onUpdate,onAddNote,onBac
     setStatusModal(null);
   };
 
-  const doNote=async()=>{if(!note.trim())return;setSaving(true);await onAddNote(sel,note.trim());setNote("");setSaving(false);};
-  const doQuote=async()=>{setSaving(true);await onUpdate(sel,{quotationRef:eqRef});setSaving(false);};
+  const doNote=async()=>{if(!note.trim())return;if(!canAny(role,"tickets.notes","tickets.write","tickets.write_assigned")){showToast("Your role cannot add ticket notes","error");return;}setSaving(true);await onAddNote(sel,note.trim());setNote("");setSaving(false);};
+  const doQuote=async()=>{if(!canAny(role,"tickets.write","tickets.write_assigned")){showToast("Your role cannot update quotations","error");return;}setSaving(true);await onUpdate(sel,{quotationRef:eqRef});setSaving(false);};
   const doAssign=async(eng)=>{
     await onUpdate(tk.ref,{assignedEngineer:eng});
     if(eng!=="Unassigned") setActiveEngineer(eng);
     try{await sendSysMsg(tk.ref,`Assigned to ${eng}`)}catch(e){}
   };
-  const doSaveParts=async(parts)=>{setSaving(true);await onUpdate(partsModal.ref,{parts});setPartsModal(null);setSaving(false);};
+  const doSaveParts=async(parts)=>{if(!canAny(role,"tickets.write","tickets.write_assigned")){showToast("Your role cannot update parts","error");return;}setSaving(true);await onUpdate(partsModal.ref,{parts});setPartsModal(null);setSaving(false);};
 
   const handleWaForward=(ticket,msgText)=>{
     const url=waUrl(ticket.phone,
@@ -2391,8 +2542,9 @@ function Admin({tickets,loading,authed,adminUser,onAuth,onUpdate,onAddNote,onBac
           <div className="nav-section">
             <div className="nav-label">Tickets</div>
             <button className={`nav-item${activeTab==="tickets"?" active":""}`} onClick={()=>setActiveTab("tickets")}><span className="ni">🎫</span>All Tickets{tickets.length>0&&<span className="badge">{tickets.length}</span>}</button>
-            <button className={`nav-item${activeTab==="new"?" active":""}`} onClick={()=>setActiveTab("new")}><span className="ni">✏️</span>Log New Ticket</button>
+            {canAny(role,"tickets.write","tickets.write_assigned")&&<button className={`nav-item${activeTab==="new"?" active":""}`} onClick={()=>setActiveTab("new")}><span className="ni">✏️</span>Log New Ticket</button>}
             <button className={`nav-item${activeTab==="analytics"?" active":""}`} onClick={()=>setActiveTab("analytics")}><span className="ni">📊</span>Analytics</button>
+             {isSuperAdmin&&<button className={`nav-item${activeTab==="team"?" active":""}`} onClick={()=>setActiveTab("team")}><span className="ni">👥</span>Team & Access</button>}
           </div>
           <div className="nav-section">
             <div className="nav-label">Live Chat</div>
@@ -2416,6 +2568,7 @@ function Admin({tickets,loading,authed,adminUser,onAuth,onUpdate,onAddNote,onBac
             </div>
             <div style={{padding:"4px 10px 2px"}}>
               <div style={{fontSize:9,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>Your Identity</div>
+               <div style={{marginBottom:7}}><RbacRoleBadge role={role}/></div>
               <select className="field-input" style={{fontSize:11,padding:"5px 8px"}} value={activeEngineer} onChange={e=>setActiveEngineer(e.target.value)}>
                 {ENGINEERS.map(eng=><option key={eng}>{eng}</option>)}
               </select>
@@ -2496,7 +2649,8 @@ function Admin({tickets,loading,authed,adminUser,onAuth,onUpdate,onAddNote,onBac
           }}/>
         )}
 
-        {activeTab==="tickets"&&(
+        {activeTab==="team"&&isSuperAdmin&&<TeamAccess adminUser={adminUser} role={role} showToast={showToast}/>}
+       {activeTab==="tickets"&&(
           <div style={{flex:1,display:"flex",minHeight:0,overflow:"hidden"}} className="admin-body">
             <div style={{flex:1,overflow:"hidden",display:"flex",flexDirection:"column"}}>
               <div style={{padding:"16px 20px 0"}}>
@@ -2876,6 +3030,7 @@ function Root(){
   const [dbLoading,setDbLoading]=useState(true);
   const [lastTicket,setLastTicket]=useState(null);
   const [adminUser,setAdminUser]=useState(null);
+  const [userProfile,setUserProfile]=useState(null);
   const [saving,setSaving]=useState(false);
   const [toast,setToast]=useState({msg:"",type:"ok"});
   const [theme,setTheme]=useState("dark");
@@ -2907,10 +3062,14 @@ function Root(){
       if(u){
         const token=await u.getIdTokenResult();
         if(token.claims.admin||CFG.adminEmails.includes(u.email)){
-          setAdminUser(u);
+          const profile=await getOrCreateUserProfile(u);
+          if(profile&&profile.active!==false){setAdminUser(u);setUserProfile(profile);}
+          else {await auth.signOut();setAdminUser(null);setUserProfile(null);}
         } else {
-          await auth.signOut();
+          /* Preserve the original CIMOP admin gate until RBAC rules/claims are deployed. */
           setAdminUser(null);
+          setUserProfile(null);
+          await auth.signOut();
         }
       } else {
         setAdminUser(null);
@@ -2935,7 +3094,15 @@ function Root(){
   ref,
   ticketNumber:num,
   status:"open",
-  createdAt:ts(),
+   schemaVersion:2,
+   customerId:form.customerId||"",
+   contactId:form.contactId||"",
+   siteId:form.siteId||"",
+   assetId:form.assetId||"",
+   contractId:form.contractId||"",
+   createdByUid:adminUser?.uid||null,
+   createdByEmail:adminUser?.email||null,
+   createdAt:ts(),
   updatedAt:ts(),
   notes:[],
   quotationRef:"",
@@ -3011,7 +3178,7 @@ function Root(){
         </div>
       )}
       {view==="success"&&lastTicket&&<SuccessScreen ticket={lastTicket} onBack={()=>setView("portal")}/>}
-      {view==="admin"&&<Admin tickets={tickets} loading={dbLoading} authed={!!adminUser} adminUser={adminUser} onAuth={(u)=>setAdminUser(u)} onUpdate={updateTicket} onAddNote={addNote} onBack={()=>{setView("portal");auth.signOut();}} onNewTicket={addTicket} theme={theme} toggleTheme={toggleTheme} showToast={showToast}/>}
+      {view==="admin"&&<Admin tickets={tickets} loading={dbLoading} authed={!!adminUser} adminUser={adminUser} userProfile={userProfile} onAuth={(u,p)=>{setAdminUser(u);setUserProfile(p);}} onUpdate={updateTicket} onAddNote={addNote} onBack={()=>{setView("portal");auth.signOut();setUserProfile(null);setAdminUser(null);}} onNewTicket={addTicket} theme={theme} toggleTheme={toggleTheme} showToast={showToast}/>}
       <Toast msg={toast.msg} type={toast.type}/>
     </>
   );
