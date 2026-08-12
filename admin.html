@@ -1457,23 +1457,83 @@ function TicketTimeline({ticket,showToast}){
     const source=stored.length?stored:timelineFallback(ticket||{});
     return [...source].sort((a,b)=>new Date(b.at||0)-new Date(a.at||0));
   },[stored,ticket]);
+
   const grouped=useMemo(()=>{
     const out=[];
     events.forEach(e=>{
       const d=e.at?new Date(e.at):null;
-      const key=d&&!Number.isNaN(d.getTime())?d.toLocaleDateString("en-ZA",{weekday:"short",day:"2-digit",month:"short",year:"numeric"}):"Unknown date";
-      let g=out.find(x=>x.key===key); if(!g){g={key,events:[]};out.push(g);} g.events.push(e);
+      const key=d&&!Number.isNaN(d.getTime())
+        ?d.toLocaleDateString("en-ZA",{weekday:"short",day:"2-digit",month:"short",year:"numeric"})
+        :"Unknown date";
+      let g=out.find(x=>x.key===key);
+      if(!g){g={key,events:[]};out.push(g);}
+      g.events.push(e);
     });
     return out;
   },[events]);
+
   return <div className="detail-body">
     <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
-      <div><div style={{fontSize:14,fontWeight:800,color:"var(--text)"}}>Ticket Timeline</div><div style={{fontSize:10,color:"var(--text3)",marginTop:3}}>A chronological service history for {ticket.ref}</div></div>
-      <span className="rbac-role" style={{fontSize:10}}>{events.length} event{events.length===1?"":"s"}</span>
+      <div>
+        <div style={{fontSize:14,fontWeight:800,color:"var(--text)"}}>Ticket Timeline</div>
+        <div style={{fontSize:10,color:"var(--text3)",marginTop:3}}>A chronological service history for {ticket.ref}</div>
+      </div>
+      <span className="rbac-role" style={{fontSize:10}}>
+        {events.length} event{events.length===1?"":"s"}
+      </span>
     </div>
-    {stored.length===0&&<div style={{padding:"8px 10px",borderRadius:8,border:"1px dashed var(--border2)",background:"var(--bg3)",fontSize:10,color:"var(--text3)",marginBottom:14}}>This is a compatibility timeline. Existing ticket history is being reconstructed; new activity will be recorded as native timeline events.</div>}
-    {events.length===0?<div style={{padding:28,textAlign:"center",color:"var(--text4)",fontSize:12}}>No timeline events yet.</div>:<div className="ticket-timeline">{grouped.map(group=><div key={group.key} className="timeline-day"><div className="timeline-day-label">{group.key}</div>{group.events.map((e,i)=>{const color=timelineColor(e.type);const dt=e.at?new Date(e.at):null;return <div className="timeline-event" key={e.id||`${group.key}-${i}`}><div className="timeline-rail"><div className="timeline-dot" style={{background:color,boxShadow:`0 0 0 3px ${color}18`}}>{timelineIcon(e.type)}</div>{i<group.events.length-1&&<div className="timeline-line"/>}</div><div className="timeline-card"><div style={{display:"flex",justifyContent:"space-between",gap:10,alignItems:"flex-start"}}><div><div style={{fontSize:12,fontWeight:750,color:"var(--text)"}}>{e.title||"Ticket updated"}</div><div style={{fontSize:11,color:"var(--text2)",marginTop:4,lineHeight:1.5,whiteSpace:"pre-wrap"}}>{e.detail||"—"}</div></div><div className="mono" style={{fontSize:9,color:"var(--text4)",whiteSpace:"nowrap"}}>{dt&&!Number.isNaN(dt.getTime())?dt.toLocaleTimeString("en-ZA",{hour:"2-digit",minute:"2-digit"}):"—"}</div></div><div style={{fontSize:9,color:"var(--text4)",marginTop:7}}>{e.actorName||e.actorEmail||"System"}{e.actorEmail&&e.actorName&&e.actorEmail!==e.actorName?` · ${e.actorEmail}`:""}</div></div></div>})}</div>)}</div>
-    <div style={{marginTop:16,padding:10,borderRadius:8,background:"var(--bg3)",border:"1px solid var(--border)",fontSize:10,color:"var(--text4)"}}>MVP model: timeline events live inside the ticket document. Later we can move high-volume audit events into a dedicated activity collection without changing the UI.</div>
+
+    {stored.length===0&&<div style={{padding:"8px 10px",borderRadius:8,border:"1px dashed var(--border2)",background:"var(--bg3)",fontSize:10,color:"var(--text3)",marginBottom:14}}>
+      This is a compatibility timeline. Existing ticket history is being reconstructed; new activity will be recorded as native timeline events.
+    </div>}
+
+    {events.length===0 ? (
+      <div style={{padding:28,textAlign:"center",color:"var(--text4)",fontSize:12}}>No timeline events yet.</div>
+    ) : (
+      <div className="ticket-timeline">
+        {grouped.map(group=><div key={group.key} className="timeline-day">
+          <div className="timeline-day-label">{group.key}</div>
+          {group.events.map((e,i)=>{
+            const color=timelineColor(e.type);
+            const dt=e.at?new Date(e.at):null;
+            return <div className="timeline-event" key={e.id||`${group.key}-${i}`}>
+              <div className="timeline-rail">
+                <div className="timeline-dot" style={{background:color,boxShadow:`0 0 0 3px ${color}18`}}>
+                  {timelineIcon(e.type)}
+                </div>
+                {i<group.events.length-1&&<div className="timeline-line"/>}
+              </div>
+
+              <div className="timeline-card">
+                <div style={{display:"flex",justifyContent:"space-between",gap:10,alignItems:"flex-start"}}>
+                  <div>
+                    <div style={{fontSize:12,fontWeight:750,color:"var(--text)"}}>
+                      {e.title||"Ticket updated"}
+                    </div>
+                    <div style={{fontSize:11,color:"var(--text2)",marginTop:4,lineHeight:1.5,whiteSpace:"pre-wrap"}}>
+                      {e.detail||"—"}
+                    </div>
+                  </div>
+                  <div className="mono" style={{fontSize:9,color:"var(--text4)",whiteSpace:"nowrap"}}>
+                    {dt&&!Number.isNaN(dt.getTime())
+                      ?dt.toLocaleTimeString("en-ZA",{hour:"2-digit",minute:"2-digit"})
+                      :"—"}
+                  </div>
+                </div>
+                <div style={{fontSize:9,color:"var(--text4)",marginTop:7}}>
+                  {e.actorName||e.actorEmail||"System"}
+                  {e.actorEmail&&e.actorName&&e.actorEmail!==e.actorName?` · ${e.actorEmail}`:""}
+                </div>
+              </div>
+            </div>;
+          })}
+        </div>)}
+      </div>
+    )}
+
+    <div style={{marginTop:16,padding:10,borderRadius:8,background:"var(--bg3)",border:"1px solid var(--border)",fontSize:10,color:"var(--text4)"}}>
+      MVP model: timeline events live inside the ticket document. Later we can move high-volume audit events into a dedicated activity collection without changing the UI.
+    </div>
   </div>;
 }
 
