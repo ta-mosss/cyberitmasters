@@ -392,7 +392,7 @@ const CFG={
   // rules checking request.auth.token.admin == true — this file cannot enforce
   // security on its own no matter what it checks client-side.
   adminEmails:["admin@mbulahenigroup.co.za"],
-  teamApi:"https://cimop-portal-auth.mosesanza.workers.dev/",
+  teamApi:"https://us-central1-test-bot-49f99.cloudfunctions.net/cimopTeamAdmin",
   zoho:"https://books.zohosecure.com/portal/mbulahenigroup/signin",
   adWin:"https://download.anydesk.com/AnyDesk.exe",
   adMac:"https://download.anydesk.com/anydesk.dmg",
@@ -2343,7 +2343,7 @@ function SignoffModal({ticket,clientName,setClientName,clientPosition,setClientP
   );
 }
 
-{tickets,loading,authed,adminUser,onAuth,onUpdate,onAddNote,onBack,onNewTicket,theme,toggleTheme,showToast}){
+function Admin({tickets,loading,authed,adminUser,onAuth,onUpdate,onAddNote,onBack,onNewTicket,theme,toggleTheme,showToast}){
   const [pw,setPw]=useState(""); const [pwErr,setPwErr]=useState("");
   const [sel,setSel]=useState(null);
   const [fSt,setFSt]=useState("all"); const [fTy,setFTy]=useState("all"); const [fEng,setFEng]=useState("all");
