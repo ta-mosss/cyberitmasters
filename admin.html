@@ -312,23 +312,32 @@ body.light .theme-toggle::after{left:19px;}
 @media(max-width:1100px){.analytics-grid{grid-template-columns:repeat(2,1fr);}.analytics-columns{grid-template-columns:1fr;}}
 @media(max-width:600px){.analytics-page{padding:14px;}.analytics-grid{grid-template-columns:1fr 1fr;}.chart-row{grid-template-columns:82px 1fr 38px;}}
 
-/* ── NOTIFICATION CENTRE ── */
-.notification-bell{position:relative;width:36px;height:36px;border:1px solid var(--border);border-radius:9px;background:var(--bg2);color:var(--text2);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;transition:.15s;}
-.notification-bell:hover{border-color:var(--border2);background:var(--bg3);color:var(--text);}
-.notification-count{position:absolute;top:-5px;right:-5px;min-width:16px;height:16px;padding:0 4px;border-radius:999px;background:#EF4444;color:#fff;border:2px solid var(--bg);font:800 9px/12px 'IBM Plex Mono',monospace;text-align:center;}
-.notification-item{display:flex;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:.15s;background:var(--card);}
-.notification-item:hover{background:var(--bg3);}
-.notification-item.unread{background:linear-gradient(90deg,rgba(14,165,233,.08),transparent 55%);}
-.notification-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;}
-.notification-title{font-size:12px;font-weight:750;color:var(--text);line-height:1.35;}
-.notification-message{font-size:11px;color:var(--text3);line-height:1.45;margin-top:3px;}
-.notification-meta{display:flex;align-items:center;gap:8px;margin-top:5px;font-size:9px;color:var(--text4);font-family:'IBM Plex Mono',monospace;}
-.notification-unread-dot{width:6px;height:6px;border-radius:50%;background:#0EA5E9;box-shadow:0 0 0 3px rgba(14,165,233,.12);flex-shrink:0;}
-.notification-filter{border:1px solid var(--border);background:var(--bg2);color:var(--text3);border-radius:7px;padding:6px 9px;font:600 10px inherit;cursor:pointer;}
-.notification-filter.active{border-color:rgba(14,165,233,.35);background:rgba(14,165,233,.10);color:#0EA5E9;}
-.notification-empty{padding:44px 20px;text-align:center;color:var(--text4);font-size:12px;}
-@media(max-width:900px){.notification-panel-grid{grid-template-columns:1fr!important;}.notification-side{display:none!important;}}
 
+/* ── TEAM & ACCESS ── */
+.team-page{padding:24px;overflow:auto;flex:1;background:var(--bg);}
+.team-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px;}
+.team-grid{display:grid;grid-template-columns:1.35fr .65fr;gap:16px;}
+.team-user-row{display:grid;grid-template-columns:1.6fr 1.1fr .8fr .7fr auto;gap:10px;align-items:center;padding:12px 14px;border-bottom:1px solid var(--border);}
+.team-user-row:hover{background:rgba(0,200,150,.025);}
+.team-avatar{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,rgba(0,200,150,.18),rgba(14,165,233,.18));border:1px solid rgba(0,200,150,.25);display:flex;align-items:center;justify-content:center;color:var(--text);font-size:12px;font-weight:800;flex-shrink:0;}
+.team-user-main{display:flex;align-items:center;gap:10px;min-width:0;}
+.team-user-name{font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.team-user-email{font-size:10px;color:var(--text4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}
+.team-role{font-size:10px;font-weight:700;padding:4px 8px;border-radius:12px;background:rgba(14,165,233,.08);color:#0EA5E9;display:inline-flex;width:max-content;}
+.team-status{font-size:10px;font-weight:700;padding:4px 8px;border-radius:12px;display:inline-flex;width:max-content;}
+.team-status.active{background:rgba(16,185,129,.1);color:#10B981;}
+.team-status.invited{background:rgba(245,158,11,.1);color:#F59E0B;}
+.team-status.disabled{background:rgba(239,68,68,.1);color:#F87171;}
+.team-detail{min-height:100%;}
+.team-stat{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:13px;}
+.team-stat-value{font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:700;color:var(--text);}
+.team-stat-label{font-size:10px;color:var(--text4);margin-top:3px;}
+.permission-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.permission-item{padding:9px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg);font-size:10px;color:var(--text3);}
+.invite-box{background:rgba(0,200,150,.06);border:1px solid rgba(0,200,150,.22);border-radius:10px;padding:12px;margin-top:12px;}
+.invite-link{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text2);word-break:break-all;background:var(--bg);border:1px solid var(--border);padding:9px;border-radius:7px;margin-top:8px;}
+@media(max-width:1000px){.team-grid{grid-template-columns:1fr;}.team-user-row{grid-template-columns:1.4fr .9fr .8fr auto;}.team-user-row .team-last-login{display:none;}}
+@media(max-width:650px){.team-page{padding:14px;}.team-user-row{grid-template-columns:1fr auto;gap:8px;}.team-user-row>*:not(.team-user-main):not(.team-actions){display:none;}.team-actions{grid-column:2;grid-row:1;}.permission-grid{grid-template-columns:1fr;}}
 /* ── PRINT STYLES ── */
 @media print{
   body *{visibility:hidden;}
@@ -348,41 +357,6 @@ body.light .theme-toggle::after{left:19px;}
   .form-grid.cols3{grid-template-columns:1fr;}
   .stats-row{grid-template-columns:repeat(2,1fr);}
 }
-
-/* ── RBAC v1 ── */
-.rbac-role{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:14px;background:rgba(14,165,233,.10);border:1px solid rgba(14,165,233,.25);color:#0EA5E9;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;}
-.rbac-user-row{display:grid;grid-template-columns:1.4fr 1fr 150px 90px;gap:12px;align-items:center;padding:11px 12px;border-bottom:1px solid var(--border);font-size:12px;}
-.rbac-user-row:hover{background:rgba(0,200,150,.02);}
-.rbac-permission{display:inline-flex;align-items:center;gap:5px;font-size:10px;color:var(--text3);padding:4px 7px;border:1px solid var(--border);border-radius:6px;background:var(--bg);}
-@media(max-width:800px){.rbac-user-row{grid-template-columns:1fr;gap:5px;}}
-.rbac-actions{display:flex;align-items:center;justify-content:flex-end;gap:6px;}
-.rbac-edit-btn{background:transparent;border:1px solid var(--border);color:var(--text2);border-radius:7px;padding:6px 9px;font-size:11px;font-weight:700;}
-.rbac-edit-btn:hover{border-color:#00C896;color:#00C896;background:rgba(0,200,150,.05);}
-.rbac-profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 18px;}
-@media(max-width:600px){.rbac-profile-grid{grid-template-columns:1fr;}}
-.cmdb-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
-.cmdb-layout{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(320px,.85fr);gap:14px;align-items:start;}
-.cmdb-stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:14px;}
-.cmdb-stat{background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:12px 14px;}
-.cmdb-table-wrap{overflow:auto;}
-.cmdb-table{width:100%;border-collapse:collapse;min-width:880px;}
-.cmdb-table th{text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--text4);padding:10px 12px;border-bottom:1px solid var(--border);white-space:nowrap;}
-.cmdb-table td{padding:11px 12px;border-bottom:1px solid var(--border);font-size:11px;color:var(--text2);vertical-align:middle;}
-.cmdb-table tr:hover td{background:var(--bg3);}
-.cmdb-table tr.cmdb-selected td{background:rgba(0,200,150,.07);}
-.cmdb-chip{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--border);background:var(--bg3);border-radius:999px;padding:3px 8px;font-size:9px;font-weight:700;color:var(--text2);white-space:nowrap;}
-.cmdb-dot{width:6px;height:6px;border-radius:50%;display:inline-block;}
-.cmdb-empty{padding:34px 20px;text-align:center;color:var(--text3);font-size:12px;}
-.cmdb-modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.58);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;}
-.cmdb-modal{width:min(860px,100%);max-height:92vh;overflow:auto;background:var(--card);border:1px solid var(--border2);border-radius:14px;box-shadow:0 24px 80px rgba(0,0,0,.35);}
-.cmdb-modal-head{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;}
-.cmdb-modal-body{padding:20px;}
-.cmdb-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-@media(max-width:1050px){.cmdb-layout{grid-template-columns:1fr;}.cmdb-stats{grid-template-columns:repeat(3,1fr);}}
-@media(max-width:700px){.cmdb-stats{grid-template-columns:1fr 1fr;}.cmdb-detail-grid{grid-template-columns:1fr;}.cmdb-modal-backdrop{padding:8px;}.cmdb-modal-body{padding:14px;}}
-
-
-.ticket-timeline{display:flex;flex-direction:column;gap:2px}.timeline-day{position:relative}.timeline-day-label{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--text4);padding:10px 0 8px 34px}.timeline-event{display:flex;gap:10px;min-height:68px}.timeline-rail{width:28px;display:flex;flex-direction:column;align-items:center;flex-shrink:0}.timeline-dot{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;position:relative;z-index:2;border:1px solid var(--card)}.timeline-line{width:1px;flex:1;background:var(--border2);margin:3px 0}.timeline-card{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:10px 11px;margin-bottom:8px}.timeline-card:hover{border-color:var(--border2)}
 </style>
 </head>
 <body class="dark">
@@ -405,7 +379,7 @@ const auth=firebase.auth();
 </script>
 
 <script type="text/babel">
-const {useState,useEffect,useRef,useCallback,useMemo}=React;
+const {useState,useEffect,useRef,useCallback}=React;
 
 /* ── CONFIG ── */
 const CFG={
@@ -417,7 +391,8 @@ const CFG={
   // Firebase Auth user's email. The real gate has to be your Firestore/RTDB security
   // rules checking request.auth.token.admin == true — this file cannot enforce
   // security on its own no matter what it checks client-side.
-  adminEmails:["admin@mbulahenigroup.co.za","ronewa@cyberit.co.za"],
+  adminEmails:["admin@mbulahenigroup.co.za"],
+  teamApi:"https://cimop-portal-auth.mosesanza.workers.dev/",
   zoho:"https://books.zohosecure.com/portal/mbulahenigroup/signin",
   adWin:"https://download.anydesk.com/AnyDesk.exe",
   adMac:"https://download.anydesk.com/anydesk.dmg",
@@ -436,12 +411,6 @@ const AC="#00C896",AC2="#0EA5E9";
 
 /* ── SLA HOURS by priority ── */
 const SLA_HOURS={Urgent:4,High:8,Medium:24,Low:48};
-let SLA_RUNTIME_HOURS={...SLA_HOURS};
-function applySlaPolicies(policies){
-  const next={...SLA_HOURS};
-  (policies||[]).forEach(p=>{ if(p&&p.priority&&Number(p.targetHours)>0) next[p.priority]=Number(p.targetHours); });
-  SLA_RUNTIME_HOURS=next;
-}
 
 /* ── STATUS LOOKUP ── */
 const ST={
@@ -480,7 +449,7 @@ const URG=["Standard (3–5 days)","Urgent (1–2 days)","Same Day"];
 const COND=["Good – No visible damage","Minor scratches","Cracked screen","Liquid damage","Physically broken","Other"];
 
 /* ── ENGINEERS ── */
-const ENGINEERS=["Unassigned","Ronewa","Tebogo","Sipho","Ayanda","Lerato"];
+const ENGINEERS=["Unassigned"];
 
 /* ── DEFAULT KNOWN FIXES ── */
 const DEFAULT_FIXES=[
@@ -504,36 +473,10 @@ async function nextTicketNumber(){
 }
 async function fsAdd(t){await db.collection("tickets").doc(t.ref).set(t);}
 async function fsUpdate(ref,ch){await db.collection("tickets").doc(ref).update({...ch,updatedAt:ts()});}
-async function fsAppendTimeline(ref,event){
-  const refDoc=db.collection("tickets").doc(ref);
-  await db.runTransaction(async tx=>{
-    const snap=await tx.get(refDoc);
-    if(!snap.exists) throw new Error("Ticket no longer exists.");
-    const current=snap.data()||{};
-    const timeline=Array.isArray(current.timeline)?current.timeline.slice():[];
-    timeline.push({
-      id:`tl_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
-      at:ts(),
-      ...event
-    });
-    // Keep the embedded MVP timeline bounded so ticket documents remain small.
-    const trimmed=timeline.slice(-250);
-    tx.update(refDoc,{timeline:trimmed,updatedAt:ts()});
-  });
-}
-async function fsNote(ref,txt,type="note",engineer="",actor={}){
+async function fsNote(ref,txt,type="note",engineer=""){
   const s=await db.collection("tickets").doc(ref).get();
-  const data=s.data()||{};
-  const notes=[...(data.notes||[]),{txt,at:ts(),type,engineer}];
+  const notes=[...(s.data().notes||[]),{txt,at:ts(),type,engineer}];
   await db.collection("tickets").doc(ref).update({notes,updatedAt:ts()});
-  await fsAppendTimeline(ref,{
-    type:"note",
-    title:type==="engineer-note"?"Engineer note added":"Internal note added",
-    detail:txt,
-    actorUid:actor.uid||null,
-    actorEmail:actor.email||null,
-    actorName:actor.name||engineer||actor.email||"Team member"
-  });
 }
 function ts(){return new Date().toISOString();}
 function makeTktRef(num){return`CIM-${String(num).padStart(4,"0")}`;}
@@ -674,7 +617,7 @@ function getSLAInfo(ticket){
   if(ticket.status==="resolved"||ticket.status==="closed"){
     return{status:"done",label:"Resolved"};
   }
-  const hours=SLA_RUNTIME_HOURS[ticket.priority]||24;
+  const hours=SLA_HOURS[ticket.priority]||24;
   const targetMinutes=hours*60;
   const elapsed=slaElapsedBusinessMinutes(ticket);
   const remaining=targetMinutes-elapsed;
@@ -1070,496 +1013,6 @@ function generateJobCard(ticket){
   if(w){ w.opener=null; w.document.write(html); w.document.close(); }
 }
 
-
-/* ════════════════════════════════════════════════════
-   CIMOP STAGE 2 — RBAC v1
-   Roles are stored in users/{uid}. Security rules must
-   enforce these permissions server-side; this layer is
-   the Admin Portal's UI/behaviour gate.
-════════════════════════════════════════════════════ */
-const RBAC_ROLES={
-  super_admin:{label:"Super Admin",icon:"👑",description:"Full platform access",permissions:["*" ]},
-  operations_manager:{label:"Operations Manager",icon:"🧭",description:"Operations, customers, tickets and team visibility",permissions:[
-    "tickets.read","tickets.write","tickets.assign","customers.read","customers.write","assets.read","assets.write","sla.read","sla.write","automation.read","automation.write","notifications.read","analytics.read"
-  ]},
-  engineer:{label:"Engineer",icon:"🛠️",description:"Assigned technical work and ticket execution",permissions:[
-    "tickets.read_assigned","tickets.write_assigned","tickets.notes","tickets.time","customers.read","assets.read","notifications.read"
-  ]},
-  support_agent:{label:"Support Agent",icon:"🎧",description:"Customer support and ticket coordination",permissions:[
-    "tickets.read","tickets.write","tickets.assign","customers.read","customers.write","notifications.read","analytics.read"
-  ]},
-  finance:{label:"Finance",icon:"💰",description:"Financial/customer visibility without technical administration",permissions:[
-    "tickets.read","customers.read","notifications.read","analytics.read"
-  ]},
-  customer:{label:"Customer",icon:"👤",description:"Customer portal access only",permissions:["portal.read","portal.write"]}
-};
-
-function normaliseRole(role){
-  return RBAC_ROLES[role]?role:"support_agent";
-}
-function roleLabel(role){return RBAC_ROLES[normaliseRole(role)].label;}
-function hasPermission(role,permission){
-  const r=normaliseRole(role);
-  const p=RBAC_ROLES[r]?.permissions||[];
-  return p.includes("*")||p.includes(permission);
-}
-function canAny(role,...permissions){return permissions.some(p=>hasPermission(role,p));}
-function canManageUsers(role){return normaliseRole(role)==="super_admin";}
-
-
-/* ════════════════════════════════════════════════════
-   CIMOP STAGE 2 — CUSTOMER 360 v1
-   Canonical model: customers/{customerId}, contacts/{contactId},
-   sites/{siteId}, assets/{assetId}, contracts/{contractId}.
-   v1 derives the 360 view from ticket-linked identity data so it can
-   ship before a dedicated customers collection/rule set is deployed.
-════════════════════════════════════════════════════ */
-function cimopHash(value){let h=2166136261,s=String(value||"").trim().toLowerCase();for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return(h>>>0).toString(36);}
-function normaliseIdentity(v){return String(v||"").trim().toLowerCase().replace(/\s+/g," ");}
-function makeCustomerId(form){const key=[form.company,form.clientName||form.name,form.email,form.phone].map(normaliseIdentity).filter(Boolean).join("|");return key?`cus_${cimopHash(key)}`:"";}
-function makeContactId(form){const key=[form.email,form.phone,form.clientName||form.name].map(normaliseIdentity).filter(Boolean).join("|");return key?`con_${cimopHash(key)}`:"";}
-function makeSiteId(form){const key=[form.company,form.address].map(normaliseIdentity).filter(Boolean).join("|");return key?`site_${cimopHash(key)}`:"";}
-function makeAssetId(form){const key=[form.serialNumber,form.manufacturer,form.modelNumber,form.deviceType].map(normaliseIdentity).filter(Boolean).join("|");return key?`ast_${cimopHash(key)}`:"";}
-function buildCustomer360(tickets){const map={};(tickets||[]).forEach(t=>{const customerId=t.customerId||makeCustomerId(t)||`legacy_${cimopHash([t.company,t.clientName||t.name,t.email,t.phone].join("|"))}`;if(!map[customerId])map[customerId]={id:customerId,name:t.clientName||t.name||"Unknown customer",company:t.company||"",email:t.email||"",phone:t.phone||"",address:t.address||"",tickets:[],contacts:{},sites:{},assets:{},contracts:{},services:{},quotes:[],satisfaction:[],timeTrackedMinutes:0,lastActivity:t.createdAt||null};const c=map[customerId];if(t.clientName||t.name)c.name=t.clientName||t.name;["company","email","phone","address"].forEach(k=>{if(!c[k]&&t[k])c[k]=t[k];});c.tickets.push(t);const contactId=t.contactId||makeContactId(t);if(contactId)c.contacts[contactId]={id:contactId,name:t.clientName||t.name||"Contact",email:t.email||"",phone:t.phone||""};const siteId=t.siteId||makeSiteId(t);if(siteId)c.sites[siteId]={id:siteId,address:t.address||""};const assetId=t.assetId||makeAssetId(t);if(assetId)c.assets[assetId]={id:assetId,deviceType:t.deviceType||"",manufacturer:t.manufacturer||"",modelNumber:t.modelNumber||"",serialNumber:t.serialNumber||"",warrantyStatus:t.warrantyStatus||""};if(t.contractId)c.contracts[t.contractId]={id:t.contractId};if(t.serviceType)c.services[t.serviceType]=(c.services[t.serviceType]||0)+1;if(t.quotationRef)c.quotes.push({ref:t.quotationRef,status:t.status||""});if(t.serviceRating)c.satisfaction.push(Number(t.serviceRating));c.timeTrackedMinutes+=Number(t.timeTrackedMinutes||0);if(!c.lastActivity||new Date(t.updatedAt||t.createdAt||0)>new Date(c.lastActivity))c.lastActivity=t.updatedAt||t.createdAt;});return Object.values(map).sort((a,b)=>new Date(b.lastActivity||0)-new Date(a.lastActivity||0));}
-function Customer360({tickets,role,showToast}){const [query,setQuery]=useState("");const [selectedId,setSelectedId]=useState(null);const customers=useMemo(()=>buildCustomer360(tickets),[tickets]);const allowed=canAny(role,"customers.read");const filtered=useMemo(()=>{const q=query.trim().toLowerCase();if(!q)return customers;return customers.filter(c=>[c.id,c.name,c.company,c.email,c.phone,c.address].join(" ").toLowerCase().includes(q));},[customers,query]);const selected=customers.find(c=>c.id===selectedId)||filtered[0]||null;useEffect(()=>{if(selected&&!selectedId)setSelectedId(selected.id);},[selected,selectedId]);if(!allowed)return <div className="page-content"><div className="card" style={{padding:28,textAlign:"center"}}><div style={{fontSize:32}}>🔒</div><div style={{fontWeight:700,color:"var(--text)",marginTop:8}}>Customer access restricted</div><div style={{fontSize:12,color:"var(--text3)",marginTop:5}}>Your role does not have customers.read permission.</div></div></div>;const openCount=c=>c.tickets.filter(t=>!['closed','resolved'].includes(t.status)).length;const avgRating=c=>c.satisfaction.length?(c.satisfaction.reduce((a,b)=>a+b,0)/c.satisfaction.length).toFixed(1):"—";return <div className="page-content"><div className="section-head"><div className="section-num">360</div><div><div className="section-title">Customer 360</div><div style={{fontSize:11,color:"var(--text3)",marginTop:2}}>One customer view across tickets, contacts, sites, assets and service history</div></div><div style={{marginLeft:"auto",fontSize:11,color:"var(--text3)"}}>{customers.length} customer(s)</div></div><div className="card" style={{marginBottom:14}}><div className="card-header"><div><div className="card-title">Customer master view</div><div style={{fontSize:11,color:"var(--text3)",marginTop:3}}>Stage 2 v1 derives the master record from ticket-linked identity fields. No new customer collection is required yet.</div></div></div><div className="card-body" style={{display:"flex",gap:8,flexWrap:"wrap"}}>{[["customers/{customerId}","Customer identity"],["contacts/{contactId}","People / contacts"],["sites/{siteId}","Locations"],["assets/{assetId}","Managed assets"],["contracts/{contractId}","Contracts"],["tickets/{ticketId}","Service history"]].map(([k,v])=><div key={k} className="rbac-permission"><strong className="mono">{k}</strong><span>· {v}</span></div>)}</div></div><div style={{display:"grid",gridTemplateColumns:"minmax(260px,0.85fr) minmax(0,1.7fr)",gap:14,alignItems:"start"}}><div className="card"><div className="card-header"><div className="card-title">Customers</div><div style={{fontSize:10,color:"var(--text4)"}}>{filtered.length}</div></div><div style={{padding:"10px 12px",borderBottom:"1px solid var(--border)"}}><input className="field-input" placeholder="Search customer, company, email, phone…" value={query} onChange={e=>setQuery(e.target.value)}/></div><div style={{maxHeight:560,overflowY:"auto"}}>{filtered.length===0?<div style={{padding:24,color:"var(--text3)",fontSize:12}}>No customer records found from the current ticket dataset.</div>:filtered.map(c=><button key={c.id} onClick={()=>setSelectedId(c.id)} style={{display:"block",width:"100%",textAlign:"left",border:0,borderBottom:"1px solid var(--border)",background:selected?.id===c.id?"var(--bg3)":"transparent",padding:"12px 14px",cursor:"pointer",fontFamily:"inherit"}}><div style={{fontWeight:700,color:"var(--text)",fontSize:13}}>{c.name}</div><div style={{fontSize:11,color:"var(--text3)",marginTop:2}}>{c.company||c.email||c.phone||"—"}</div><div style={{display:"flex",gap:8,marginTop:7,fontSize:10}}><span style={{color:AC}}>{c.tickets.length} tickets</span><span style={{color:openCount(c)>0?"#F59E0B":"var(--text4)"}}>{openCount(c)} open</span></div></button>)}</div></div>{selected?<div className="card"><div className="card-header"><div><div className="card-title">{selected.name}</div><div style={{fontSize:11,color:"var(--text3)",marginTop:3}}>{selected.company||"Individual customer"} · <span className="mono">{selected.id}</span></div></div><button className="btn btn-secondary btn-sm" onClick={()=>showToast("Customer 360 is live from ticket-linked data ✓")}>↻ Refresh</button></div><div className="card-body"><div style={{display:"grid",gridTemplateColumns:"repeat(4,minmax(0,1fr))",gap:8,marginBottom:16}}>{[["Tickets",selected.tickets.length],["Open",openCount(selected)],["Assets",Object.keys(selected.assets).length],["CSAT",avgRating(selected)]].map(([l,v])=><div key={l} style={{background:"var(--bg)",border:"1px solid var(--border)",borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:9,color:"var(--text4)",textTransform:"uppercase",fontWeight:700}}>{l}</div><div style={{fontSize:18,fontWeight:800,color:"var(--text)",marginTop:3}}>{v}</div></div>)}</div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}><div><div className="mini-section-title">Contact</div>{[["Name",selected.name],["Company",selected.company],["Email",selected.email],["Phone",selected.phone]].map(([l,v])=><div className="detail-row" key={l}><div className="detail-key">{l}</div><div className="detail-val">{v||"—"}</div></div>)}</div><div><div className="mini-section-title">Relationship</div>{[["Customer ID",selected.id],["Sites",Object.keys(selected.sites).length],["Contacts",Object.keys(selected.contacts).length],["Tracked time",`${Math.floor(selected.timeTrackedMinutes/60)}h ${selected.timeTrackedMinutes%60}m`]].map(([l,v])=><div className="detail-row" key={l}><div className="detail-key">{l}</div><div className="detail-val">{v}</div></div>)}</div></div><div className="divider"/><div className="mini-section-title">Managed assets</div>{Object.values(selected.assets).length===0?<div style={{fontSize:11,color:"var(--text3)",padding:"8px 0"}}>No asset identity captured yet.</div>:<div style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:8}}>{Object.values(selected.assets).map(a=><div key={a.id} style={{border:"1px solid var(--border)",borderRadius:8,padding:10,background:"var(--bg)"}}><div style={{fontWeight:700,fontSize:12,color:"var(--text)"}}>{[a.manufacturer,a.modelNumber].filter(Boolean).join(" ")||a.deviceType||"Asset"}</div><div style={{fontSize:10,color:"var(--text3)",marginTop:3}}>{a.serialNumber?`S/N ${a.serialNumber}`:"No serial captured"}{a.warrantyStatus?` · ${a.warrantyStatus}`:""}</div><div className="mono" style={{fontSize:9,color:"var(--text4)",marginTop:5}}>{a.id}</div></div>)}</div>}<div className="divider"/><div className="mini-section-title">Ticket history</div><div style={{overflowX:"auto"}}><table className="data-table"><thead><tr><th>Ref</th><th>Issue</th><th>Status</th><th>Priority</th><th>Engineer</th><th>Date</th></tr></thead><tbody>{[...selected.tickets].sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0)).map(t=><tr key={t.ref}><td className="mono" style={{color:AC}}>{t.ref}</td><td>{t.issueTitle||t.problemDescription||"—"}</td><td><StatusBadge status={t.status}/></td><td>{t.priority||"—"}</td><td>{t.assignedEngineer||"Unassigned"}</td><td className="mono">{t.createdAt?new Date(t.createdAt).toLocaleDateString("en-ZA"):"—"}</td></tr>)}</tbody></table></div></div></div>:<div className="card" style={{padding:40,textAlign:"center",color:"var(--text3)"}}>Select a customer to open the 360 view.</div>}</div></div>;
-}
-
-/* ════════════════════════════════════════════════════
-   CIMOP STAGE 2 — ASSET / CMDB v1
-   Canonical collection: assets/{assetId}
-   Assets are first-class managed configuration items. Ticket history can
-   bootstrap records, while this screen becomes the source of truth going
-   forward.
-════════════════════════════════════════════════════ */
-const CMDB_ASSET_TYPES=["Laptop","Desktop","Server","Printer","Network","Firewall","CCTV","Access Control","Mobile","Other"];
-const CMDB_ASSET_STATUS=["active","spare","repair","retired","lost"];
-const CMDB_CRITICALITY=["low","medium","high","critical"];
-const CMDB_WARRANTY=["active","expired","none","unknown"];
-const CMDB_EMPTY_ASSET={assetTag:"",name:"",deviceType:"Laptop",manufacturer:"",modelNumber:"",serialNumber:"",hostname:"",operatingSystem:"",ipAddress:"",macAddress:"",status:"active",criticality:"medium",warrantyStatus:"unknown",warrantyExpiry:"",purchaseDate:"",customerId:"",siteId:"",location:"",assignedEngineer:"Unassigned",notes:""};
-
-function cmdbStatusMeta(status){
-  const map={active:{label:"Active",color:"#10B981"},spare:{label:"Spare",color:"#0EA5E9"},repair:{label:"In Repair",color:"#F59E0B"},retired:{label:"Retired",color:"#64748B"},lost:{label:"Lost",color:"#EF4444"}};
-  return map[status]||{label:status||"Unknown",color:"#64748B"};
-}
-function cmdbCriticalityMeta(level){
-  const map={low:{label:"Low",color:"#64748B"},medium:{label:"Medium",color:"#0EA5E9"},high:{label:"High",color:"#F59E0B"},critical:{label:"Critical",color:"#EF4444"}};
-  return map[level]||map.medium;
-}
-function CMDBChip({status}){const m=cmdbStatusMeta(status);return <span className="cmdb-chip"><span className="cmdb-dot" style={{background:m.color}}/>{m.label}</span>;}
-function AssetModal({asset,customers,role,adminUser,onClose,onSaved,showToast}){
-  const editing=!!asset;
-  const [form,setForm]=useState({...CMDB_EMPTY_ASSET,...(asset||{})});
-  const [saving,setSaving]=useState(false);
-  const canWrite=canAny(role,"assets.write");
-  const set=(k,v)=>setForm(f=>({...f,[k]:v}));
-  const selectedCustomer=customers.find(c=>c.id===form.customerId);
-  const save=async()=>{
-    if(!canWrite){showToast("Asset write access is restricted","error");return;}
-    if(!form.name.trim() && !form.serialNumber.trim() && !form.hostname.trim()){
-      showToast("Enter an asset name, serial number or hostname","error");return;
-    }
-    setSaving(true);
-    try{
-      const id=editing?asset.id:(makeAssetId(form)||`ast_${cimopHash([form.name,form.hostname,Date.now()].join("|"))}`);
-      const existing=editing?asset:null;
-      const payload={
-        ...form,
-        id,
-        schemaVersion:1,
-        customerName:selectedCustomer?.name||form.customerName||"",
-        customerCompany:selectedCustomer?.company||form.customerCompany||"",
-        createdByUid:existing?.createdByUid||adminUser?.uid||null,
-        createdByEmail:existing?.createdByEmail||adminUser?.email||null,
-        createdAt:existing?.createdAt||ts(),
-        updatedAt:ts()
-      };
-      delete payload.customerName; delete payload.customerCompany;
-      // Keep identity snapshots separately so a later customer rename does not
-      // destroy historical CMDB context.
-      payload.customerNameSnapshot=selectedCustomer?.name||asset?.customerNameSnapshot||form.customerName||"";
-      payload.customerCompanySnapshot=selectedCustomer?.company||asset?.customerCompanySnapshot||form.customerCompany||"";
-      await db.collection("assets").doc(id).set(payload,{merge:true});
-      showToast(editing?"Asset updated ✓":"Asset created ✓");
-      onSaved(id);
-      onClose();
-    }catch(e){console.error(e);showToast(e.message||"Failed to save asset","error");}
-    setSaving(false);
-  };
-  return <div className="cmdb-modal-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)onClose();}}>
-    <div className="cmdb-modal">
-      <div className="cmdb-modal-head"><div><div className="card-title">{editing?"Edit CMDB Asset":"Register Managed Asset"}</div><div style={{fontSize:11,color:"var(--text3)",marginTop:3}}>{editing?<span className="mono">{asset.id}</span>:"Create the canonical configuration item record"}</div></div><button className="btn btn-ghost" onClick={onClose}>✕</button></div>
-      <div className="cmdb-modal-body">
-        <div className="form-grid">
-          <div className="form-field"><Lbl c="Asset Tag"/><input className="field-input" value={form.assetTag} onChange={e=>set("assetTag",e.target.value)} placeholder="e.g. CITM-LAP-001"/></div>
-          <div className="form-field"><Lbl c="Asset Name" req/><input className="field-input" value={form.name} onChange={e=>set("name",e.target.value)} placeholder="e.g. Reception Laptop"/></div>
-          <div className="form-field"><Lbl c="Asset Type"/><select className="field-input" value={form.deviceType} onChange={e=>set("deviceType",e.target.value)}>{CMDB_ASSET_TYPES.map(x=><option key={x}>{x}</option>)}</select></div>
-          <div className="form-field"><Lbl c="Status"/><select className="field-input" value={form.status} onChange={e=>set("status",e.target.value)}>{CMDB_ASSET_STATUS.map(x=><option key={x} value={x}>{cmdbStatusMeta(x).label}</option>)}</select></div>
-          <div className="form-field"><Lbl c="Manufacturer"/><input className="field-input" value={form.manufacturer} onChange={e=>set("manufacturer",e.target.value)} placeholder="Dell, HP, Lenovo…"/></div>
-          <div className="form-field"><Lbl c="Model"/><input className="field-input" value={form.modelNumber} onChange={e=>set("modelNumber",e.target.value)} placeholder="Model / product number"/></div>
-          <div className="form-field"><Lbl c="Serial Number"/><input className="field-input" value={form.serialNumber} onChange={e=>set("serialNumber",e.target.value)} placeholder="Serial / service tag"/></div>
-          <div className="form-field"><Lbl c="Hostname"/><input className="field-input" value={form.hostname} onChange={e=>set("hostname",e.target.value)} placeholder="e.g. RECEPTION-PC01"/></div>
-          <div className="form-field"><Lbl c="Operating System"/><input className="field-input" value={form.operatingSystem} onChange={e=>set("operatingSystem",e.target.value)} placeholder="Windows 11 Pro, Ubuntu…"/></div>
-          <div className="form-field"><Lbl c="Assigned Engineer"/><select className="field-input" value={form.assignedEngineer} onChange={e=>set("assignedEngineer",e.target.value)}>{ENGINEERS.map(e=><option key={e}>{e}</option>)}</select></div>
-          <div className="form-field"><Lbl c="Customer"/><select className="field-input" value={form.customerId} onChange={e=>set("customerId",e.target.value)}><option value="">— Select customer —</option>{customers.map(c=><option key={c.id} value={c.id}>{c.name}{c.company?` · ${c.company}`:""}</option>)}</select></div>
-          <div className="form-field"><Lbl c="Site / Location"/><input className="field-input" value={form.location} onChange={e=>set("location",e.target.value)} placeholder="Branch, office, server room…"/></div>
-          <div className="form-field"><Lbl c="IP Address"/><input className="field-input" value={form.ipAddress} onChange={e=>set("ipAddress",e.target.value)} placeholder="192.168.1.20"/></div>
-          <div className="form-field"><Lbl c="MAC Address"/><input className="field-input" value={form.macAddress} onChange={e=>set("macAddress",e.target.value)} placeholder="00:11:22:33:44:55"/></div>
-          <div className="form-field"><Lbl c="Criticality"/><select className="field-input" value={form.criticality} onChange={e=>set("criticality",e.target.value)}>{CMDB_CRITICALITY.map(x=><option key={x}>{x}</option>)}</select></div>
-          <div className="form-field"><Lbl c="Warranty"/><select className="field-input" value={form.warrantyStatus} onChange={e=>set("warrantyStatus",e.target.value)}>{CMDB_WARRANTY.map(x=><option key={x}>{x}</option>)}</select></div>
-          <div className="form-field"><Lbl c="Warranty Expiry"/><input className="field-input" type="date" value={form.warrantyExpiry} onChange={e=>set("warrantyExpiry",e.target.value)}/></div>
-          <div className="form-field"><Lbl c="Purchase Date"/><input className="field-input" type="date" value={form.purchaseDate} onChange={e=>set("purchaseDate",e.target.value)}/></div>
-          <div className="form-field span2"><Lbl c="Notes"/><textarea className="field-input" value={form.notes} onChange={e=>set("notes",e.target.value)} placeholder="Technical notes, configuration summary, important context…"/></div>
-        </div>
-        <div style={{display:"flex",justifyContent:"flex-end",gap:8,marginTop:18}}><button className="btn btn-secondary" onClick={onClose}>Cancel</button><button className="btn btn-primary" disabled={saving||!canWrite} onClick={save}>{saving?"Saving…":editing?"Save Changes":"Register Asset"}</button></div>
-      </div>
-    </div>
-  </div>;
-}
-
-function AssetCMDB({assets,tickets,role,adminUser,showToast,customers,onAssetSaved,assetDbError}){
-  const allowed=canAny(role,"assets.read");
-  const canWrite=canAny(role,"assets.write");
-  const [query,setQuery]=useState("");
-  const [status,setStatus]=useState("all");
-  const [type,setType]=useState("all");
-  const [selectedId,setSelectedId]=useState(null);
-  const [modal,setModal]=useState(null);
-  const [importing,setImporting]=useState(false);
-  const [importResult,setImportResult]=useState("");
-  const selected=assets.find(a=>a.id===selectedId)||null;
-  const filtered=useMemo(()=>{
-    const q=query.trim().toLowerCase();
-    return assets.filter(a=>{
-      const text=[a.id,a.assetTag,a.name,a.deviceType,a.manufacturer,a.modelNumber,a.serialNumber,a.hostname,a.ipAddress,a.customerNameSnapshot,a.customerCompanySnapshot,a.location,a.assignedEngineer].join(" ").toLowerCase();
-      return (!q||text.includes(q))&&(status==="all"||a.status===status)&&(type==="all"||a.deviceType===type);
-    }).sort((a,b)=>new Date(b.updatedAt||0)-new Date(a.updatedAt||0));
-  },[assets,query,status,type]);
-  useEffect(()=>{if(!selected&&filtered[0])setSelectedId(filtered[0].id);},[selected,filtered]);
-  const linkedTickets=useMemo(()=>selected?tickets.filter(t=>t.assetId===selected.id||makeAssetId(t)===selected.id):[],[selected,tickets]);
-  const stats=useMemo(()=>({total:assets.length,active:assets.filter(a=>a.status==="active").length,repair:assets.filter(a=>a.status==="repair").length,critical:assets.filter(a=>a.criticality==="critical"&&a.status!=="retired").length,warranty:assets.filter(a=>a.warrantyStatus==="active").length}),[assets]);
-  if(!allowed)return <div className="page-content"><div className="card" style={{padding:28,textAlign:"center"}}><div style={{fontSize:32}}>🔒</div><div style={{fontWeight:700,color:"var(--text)",marginTop:8}}>Asset access restricted</div><div style={{fontSize:12,color:"var(--text3)",marginTop:5}}>Your role does not have assets.read permission.</div></div></div>;
-  const importFromTickets=async()=>{
-    if(!canWrite){showToast("Asset write access is restricted","error");return;}
-    const candidates=tickets.filter(t=>t.deviceType||t.serialNumber||t.manufacturer||t.modelNumber);
-    if(!candidates.length){showToast("No ticket assets found to import","error");return;}
-    setImporting(true);setImportResult("");
-    try{
-      const byId={};
-      candidates.forEach(t=>{
-        const id=t.assetId||makeAssetId(t); if(!id)return;
-        const cur=byId[id]||{};
-        const customer=customers.find(c=>c.id===(t.customerId||makeCustomerId(t)));
-        byId[id]={
-          ...cur,id,schemaVersion:1,
-          name:cur.name||[t.manufacturer,t.modelNumber].filter(Boolean).join(" ")||t.deviceType||"Managed Asset",
-          deviceType:cur.deviceType||t.deviceType||"Other",manufacturer:cur.manufacturer||t.manufacturer||"",modelNumber:cur.modelNumber||t.modelNumber||"",serialNumber:cur.serialNumber||t.serialNumber||"",operatingSystem:cur.operatingSystem||t.operatingSystem||"",warrantyStatus:cur.warrantyStatus||t.warrantyStatus||"unknown",customerId:cur.customerId||t.customerId||"",customerNameSnapshot:cur.customerNameSnapshot||customer?.name||"",customerCompanySnapshot:cur.customerCompanySnapshot||customer?.company||"",siteId:cur.siteId||t.siteId||"",location:cur.location||t.address||"",status:cur.status||"active",criticality:cur.criticality||"medium",assignedEngineer:cur.assignedEngineer||t.assignedEngineer||"Unassigned",lastServiceAt:cur.lastServiceAt&&new Date(cur.lastServiceAt)>new Date(t.updatedAt||t.createdAt||0)?cur.lastServiceAt:(t.updatedAt||t.createdAt||ts()),source:"ticket-import",sourceTicketRefs:Array.from(new Set([...(cur.sourceTicketRefs||[]),t.ref])),updatedAt:ts()
-        };
-      });
-      const batch=db.batch();
-      Object.values(byId).forEach(a=>batch.set(db.collection("assets").doc(a.id),a,{merge:true}));
-      await batch.commit();
-      const n=Object.keys(byId).length;setImportResult(`${n} asset record${n===1?"":"s"} imported / updated from ticket history.`);showToast(`${n} CMDB asset(s) synced ✓`);
-    }catch(e){console.error(e);showToast(e.message||"Failed to import ticket assets","error");}
-    setImporting(false);
-  };
-  return <div className="page-content">
-    {modal&&<AssetModal asset={modal.asset} customers={customers} role={role} adminUser={adminUser} onClose={()=>setModal(null)} onSaved={id=>{setSelectedId(id);onAssetSaved&&onAssetSaved();}} showToast={showToast}/>} 
-    <div className="section-head"><div className="section-num">CM</div><div><div className="section-title">Asset / CMDB</div><div style={{fontSize:11,color:"var(--text3)",marginTop:2}}>Canonical managed assets, ownership, lifecycle and technical identity</div></div><div style={{marginLeft:"auto"}}><RbacRoleBadge role={role}/></div></div>
-    {assetDbError&&<div className="card" style={{marginBottom:14,borderColor:"rgba(245,158,11,.35)",background:"rgba(245,158,11,.05)"}}><div style={{padding:"12px 14px",display:"flex",gap:10,alignItems:"flex-start"}}><div style={{fontSize:18}}>⚠️</div><div><div style={{fontSize:12,fontWeight:700,color:"var(--text)"}}>CMDB is waiting for Firestore permissions</div><div style={{fontSize:11,color:"var(--text3)",marginTop:3}}>The admin UI is ready, but the <span className="mono">assets</span> collection is not readable for this role yet. Deploy the Stage 2 asset rules, then refresh.</div><div className="mono" style={{fontSize:9,color:"var(--text4)",marginTop:5}}>{assetDbError}</div></div></div></div>}
-    <div className="cmdb-stats">
-      {[["Total Assets",stats.total,"var(--text)"],["Active",stats.active,"#10B981"],["In Repair",stats.repair,"#F59E0B"],["Critical",stats.critical,"#EF4444"],["Warranty Active",stats.warranty,"#0EA5E9"]].map(([l,v,c])=><div className="cmdb-stat" key={l}><div style={{fontSize:9,color:"var(--text4)",textTransform:"uppercase",fontWeight:700,letterSpacing:".07em"}}>{l}</div><div style={{fontSize:20,fontWeight:800,color:c,marginTop:4}}>{v}</div></div>)}
-    </div>
-    <div className="card" style={{marginBottom:14}}><div className="card-header"><div><div className="card-title">CMDB data model</div><div style={{fontSize:11,color:"var(--text3)",marginTop:3}}>One canonical record per managed configuration item.</div></div><div className="cmdb-toolbar"><button className="btn btn-secondary btn-sm" disabled={importing||!canWrite} onClick={importFromTickets}>{importing?"Syncing…":"↻ Import from Tickets"}</button><button className="btn btn-primary btn-sm" disabled={!canWrite} onClick={()=>setModal({asset:null})}>+ Register Asset</button></div></div><div className="card-body" style={{display:"flex",gap:8,flexWrap:"wrap"}}>{[["assets/{assetId}","Identity + lifecycle"],["customerId","Customer relationship"],["siteId / location","Physical context"],["serial / hostname / IP / MAC","Technical identity"],["warranty / criticality","Risk + lifecycle"],["sourceTicketRefs[]","Service history link"]].map(([k,v])=><div key={k} className="rbac-permission"><strong className="mono">{k}</strong><span>· {v}</span></div>)}</div>{importResult&&<div style={{padding:"0 20px 14px",fontSize:11,color:AC}}>✓ {importResult}</div>}</div>
-    <div className="cmdb-layout">
-      <div className="card" style={{overflow:"hidden"}}>
-        <div className="card-header"><div><div className="card-title">Managed assets</div><div style={{fontSize:10,color:"var(--text3)",marginTop:3}}>{filtered.length} shown · {assets.length} total</div></div><button className="btn btn-ghost btn-sm" onClick={()=>{setQuery("");setStatus("all");setType("all");}}>Reset</button></div>
-        <div style={{padding:12,borderBottom:"1px solid var(--border)",display:"flex",gap:8,flexWrap:"wrap"}}>
-          <input className="field-input" style={{flex:1,minWidth:200}} placeholder="Search asset, serial, hostname, customer…" value={query} onChange={e=>setQuery(e.target.value)}/>
-          <select className="field-input" style={{width:"auto"}} value={status} onChange={e=>setStatus(e.target.value)}><option value="all">All Statuses</option>{CMDB_ASSET_STATUS.map(x=><option key={x} value={x}>{cmdbStatusMeta(x).label}</option>)}</select>
-          <select className="field-input" style={{width:"auto"}} value={type} onChange={e=>setType(e.target.value)}><option value="all">All Types</option>{CMDB_ASSET_TYPES.map(x=><option key={x}>{x}</option>)}</select>
-        </div>
-        {filtered.length===0?<div className="cmdb-empty">No CMDB assets match the current filters.<div style={{marginTop:8}}>{assets.length===0&&canWrite?<button className="btn btn-secondary btn-sm" onClick={importFromTickets}>Start by importing ticket assets</button>:null}</div></div>:<div className="cmdb-table-wrap"><table className="cmdb-table"><thead><tr><th>Asset</th><th>Type</th><th>Customer</th><th>Serial / Hostname</th><th>Status</th><th>Criticality</th><th>Updated</th></tr></thead><tbody>{filtered.map(a=>{const cm=cmdbCriticalityMeta(a.criticality);return <tr key={a.id} className={selected?.id===a.id?"cmdb-selected":""} onClick={()=>setSelectedId(a.id)} style={{cursor:"pointer"}}><td><div style={{fontWeight:700,color:"var(--text)"}}>{a.name||"Unnamed Asset"}</div><div className="mono" style={{fontSize:9,color:"var(--text4)",marginTop:3}}>{a.assetTag||a.id}</div></td><td>{a.deviceType||"Other"}</td><td><div style={{color:"var(--text)",fontWeight:600}}>{a.customerNameSnapshot||"Unassigned"}</div><div style={{fontSize:9,color:"var(--text4)"}}>{a.customerCompanySnapshot||""}</div></td><td><div>{a.serialNumber||"—"}</div><div className="mono" style={{fontSize:9,color:"var(--text4)",marginTop:2}}>{a.hostname||""}</div></td><td><CMDBChip status={a.status}/></td><td><span style={{fontSize:10,fontWeight:700,color:cm.color}}>{cm.label}</span></td><td className="mono" style={{fontSize:9}}>{a.updatedAt?new Date(a.updatedAt).toLocaleDateString("en-ZA"):"—"}</td></tr>})}</tbody></table></div>}
-      </div>
-      {selected?<div className="card"><div className="card-header"><div><div className="card-title">{selected.name||"Unnamed Asset"}</div><div className="mono" style={{fontSize:9,color:"var(--text4)",marginTop:3}}>{selected.id}</div></div><button className="btn btn-secondary btn-sm" disabled={!canWrite} onClick={()=>setModal({asset:selected})}>✎ Edit</button></div><div className="card-body">
-        <div style={{display:"flex",gap:7,flexWrap:"wrap",marginBottom:14}}><CMDBChip status={selected.status}/><span className="cmdb-chip">{selected.deviceType||"Other"}</span><span className="cmdb-chip" style={{color:cmdbCriticalityMeta(selected.criticality).color}}>{cmdbCriticalityMeta(selected.criticality).label} criticality</span></div>
-        <div className="cmdb-detail-grid">{[["Asset Tag",selected.assetTag],["Manufacturer",selected.manufacturer],["Model",selected.modelNumber],["Serial Number",selected.serialNumber],["Hostname",selected.hostname],["Operating System",selected.operatingSystem],["IP Address",selected.ipAddress],["MAC Address",selected.macAddress],["Customer",selected.customerNameSnapshot||"Unassigned"],["Location",selected.location],["Assigned Engineer",selected.assignedEngineer],["Warranty",selected.warrantyStatus],["Warranty Expiry",selected.warrantyExpiry],["Purchase Date",selected.purchaseDate]].map(([l,v])=><div className="detail-row" key={l}><div className="detail-key">{l}</div><div className="detail-val">{v||"—"}</div></div>)}</div>
-        <div className="divider"/><div className="mini-section-title">Notes</div><div style={{fontSize:11,color:"var(--text2)",lineHeight:1.6,background:"var(--bg)",border:"1px solid var(--border)",borderRadius:8,padding:10}}>{selected.notes||"No CMDB notes recorded."}</div>
-        <div className="divider"/><div className="mini-section-title">Linked service history <span style={{fontWeight:500,color:"var(--text4)"}}>({linkedTickets.length})</span></div>
-        {linkedTickets.length===0?<div style={{fontSize:11,color:"var(--text3)",padding:"8px 0"}}>No tickets are linked to this asset yet.</div>:<div style={{overflowX:"auto"}}><table className="data-table"><thead><tr><th>Ticket</th><th>Issue</th><th>Status</th><th>Date</th></tr></thead><tbody>{linkedTickets.sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0)).slice(0,12).map(t=><tr key={t.ref}><td className="mono" style={{color:AC}}>{t.ref}</td><td>{t.issueTitle||t.problemDescription||"—"}</td><td>{ST[t.status]?.l||t.status}</td><td className="mono">{t.createdAt?new Date(t.createdAt).toLocaleDateString("en-ZA"):"—"}</td></tr>)}</tbody></table></div>}
-        <div style={{marginTop:12,fontSize:9,color:"var(--text4)"}}>Created {selected.createdAt?new Date(selected.createdAt).toLocaleString("en-ZA"):"—"} · Updated {selected.updatedAt?new Date(selected.updatedAt).toLocaleString("en-ZA"):"—"}</div>
-      </div></div>:<div className="card" style={{padding:40,textAlign:"center",color:"var(--text3)"}}>Select an asset to open the CMDB record.</div>}
-    </div>
-  </div>;
-}
-
-async function getOrCreateUserProfile(firebaseUser){
-  if(!firebaseUser) return null;
-  const legacy=CFG.adminEmails.map(x=>String(x).toLowerCase()).includes(String(firebaseUser.email||"").toLowerCase());
-  const fallback={
-    uid:firebaseUser.uid,
-    email:firebaseUser.email||"",
-    displayName:firebaseUser.displayName||firebaseUser.email||"",
-    role:legacy?"super_admin":"support_agent",
-    active:true,
-    source:legacy?"legacy-admin-email":"fallback"
-  };
-
-  /*
-     RBAC v1 is intentionally compatible with the existing Firebase rules.
-     Older CIMOP rules may not yet allow the client to read/write users/{uid}.
-     Therefore a denied users lookup MUST NOT block an otherwise authorised
-     admin from signing in. Once the RBAC Firestore rules are deployed, this
-     function will transparently start using the persisted profile.
-  */
-  try{
-    const ref=db.collection("users").doc(firebaseUser.uid);
-    const snap=await ref.get();
-    if(snap.exists){
-      const data=snap.data()||{};
-      const role=normaliseRole(data.role || fallback.role);
-      if(data.active===false) throw new Error("This user account is disabled.");
-      return {...fallback,...data,uid:firebaseUser.uid,role};
-    }
-    try{
-      const profile={...fallback,jobTitle:"",department:"",phone:"",createdAt:ts(),updatedAt:ts(),lastLoginAt:ts()};
-      await ref.set(profile,{merge:true});
-      return profile;
-    }catch(writeErr){
-      console.warn("RBAC profile write not permitted yet; using fallback role.",writeErr);
-      return fallback;
-    }
-  }catch(readErr){
-    console.warn("RBAC users profile not readable yet; using fallback role.",readErr);
-    return fallback;
-  }
-}
-
-function RbacRoleBadge({role}){
-  const r=RBAC_ROLES[normaliseRole(role)];
-  return <span className="rbac-role">{r.icon} {r.label}</span>;
-}
-
-function TeamMemberModal({user,role,adminUser,onSave,onClose}){
-  const [form,setForm]=useState({
-    displayName:user.displayName||"",
-    jobTitle:user.jobTitle||"",
-    department:user.department||"",
-    phone:user.phone||"",
-    role:normaliseRole(user.role),
-    active:user.active!==false
-  });
-  const [saving,setSaving]=useState(false);
-  const isSelf=user.uid===adminUser?.uid;
-  const set=(k,v)=>setForm(p=>({...p,[k]:v}));
-  const submit=async()=>{
-    if(!form.displayName.trim()) return;
-    setSaving(true);
-    try{await onSave(user.uid,{...form,displayName:form.displayName.trim(),jobTitle:form.jobTitle.trim(),department:form.department.trim(),phone:form.phone.trim()});}
-    finally{setSaving(false);}
-  };
-  return <div className="modal-overlay" onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
-    <div className="modal-box fu" style={{maxWidth:620}}>
-      <div className="modal-header">
-        <div><div className="card-title">👤 Team Member Profile</div><div style={{fontSize:10,color:"var(--text4)",marginTop:3}}>{user.email||user.uid}</div></div>
-        <button className="btn btn-ghost btn-sm" onClick={onClose}>✕</button>
-      </div>
-      <div className="modal-body">
-        <div className="rbac-profile-grid">
-          <div className="form-field"><Lbl c="Display Name *"/><input {...fi} value={form.displayName} onChange={e=>set("displayName",e.target.value)} placeholder="Full name"/></div>
-          <div className="form-field"><Lbl c="Job Title"/><input {...fi} value={form.jobTitle} onChange={e=>set("jobTitle",e.target.value)} placeholder="e.g. IT Engineer"/></div>
-          <div className="form-field"><Lbl c="Department"/><input {...fi} value={form.department} onChange={e=>set("department",e.target.value)} placeholder="e.g. Technical Support"/></div>
-          <div className="form-field"><Lbl c="Phone / WhatsApp"/><input {...fi} value={form.phone} onChange={e=>set("phone",e.target.value)} placeholder="072 665 0565"/></div>
-          <div className="form-field">
-            <Lbl c="Role"/>
-            <select {...fi} value={form.role} disabled={isSelf} onChange={e=>set("role",e.target.value)}>
-              {Object.entries(RBAC_ROLES).filter(([k])=>k!=="customer").map(([k,r])=><option key={k} value={k}>{r.label}</option>)}
-            </select>
-            {isSelf&&<div style={{fontSize:10,color:"var(--text4)",marginTop:4}}>Your own role cannot be changed from this screen.</div>}
-          </div>
-          <div className="form-field">
-            <Lbl c="Account Status"/>
-            <label style={{display:"flex",alignItems:"center",gap:9,minHeight:40,cursor:isSelf?"not-allowed":"pointer"}}>
-              <input type="checkbox" checked={form.active} disabled={isSelf} onChange={e=>set("active",e.target.checked)} style={{accentColor:"#00C896",width:16,height:16}}/>
-              <span style={{fontSize:12,color:form.active?"#10B981":"#F87171",fontWeight:700}}>{form.active?"Active":"Disabled"}</span>
-            </label>
-            {isSelf&&<div style={{fontSize:10,color:"var(--text4)",marginTop:-3}}>Your own account cannot be disabled.</div>}
-          </div>
-        </div>
-        <div style={{marginTop:16,padding:12,borderRadius:9,background:"var(--bg3)",border:"1px solid var(--border)",fontSize:11,color:"var(--text3)",lineHeight:1.6}}>
-          <strong style={{color:"var(--text2)"}}>RBAC profile:</strong> This information is stored in <span className="mono">users/{user.uid}</span>. Authentication remains controlled by Firebase Auth; this profile controls CIMOP role, status and staff details.
-        </div>
-        <div style={{display:"flex",justifyContent:"flex-end",gap:8,marginTop:18}}>
-          <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
-          <button className="btn btn-primary" onClick={submit} disabled={saving||!form.displayName.trim()}>{saving?"Saving…":"Save Profile"}</button>
-        </div>
-      </div>
-    </div>
-  </div>;
-}
-
-function TeamAccess({adminUser,role,showToast}){
-  const [users,setUsers]=useState([]);
-  const [loading,setLoading]=useState(true);
-  const [savingUid,setSavingUid]=useState(null);
-  const [error,setError]=useState("");
-  const [editing,setEditing]=useState(null);
-  const load=useCallback(()=>{
-    setLoading(true); setError("");
-    return db.collection("users").orderBy("email").limit(200).get()
-      .then(s=>setUsers(s.docs.map(d=>({uid:d.id,...d.data()}))))
-      .catch(e=>{
-        console.warn("Team & Access users query is not permitted by the current Firestore rules.",e);
-        setError("RBAC is installed, but the current Firestore rules do not yet allow access to users/{uid}. Deploy the RBAC rules before managing team roles.");
-      })
-      .finally(()=>setLoading(false));
-  },[]);
-  useEffect(()=>{
-    if(role!=="super_admin") return;
-    load();
-  },[load,role]);
-  const saveProfile=async(uid,changes)=>{
-    if(!canManageUsers(role)) return;
-    setSavingUid(uid);
-    try{
-      const payload={...changes,updatedAt:ts(),updatedBy:adminUser.email||adminUser.uid};
-      await db.collection("users").doc(uid).set(payload,{merge:true});
-      setUsers(prev=>prev.map(u=>u.uid===uid?{...u,...payload}:u));
-      setEditing(null);
-      showToast("Team member updated ✓");
-    }catch(e){console.error(e);showToast("Failed to update team member","error");}
-    setSavingUid(null);
-  };
-  return <div className="page-content">
-    {editing&&<TeamMemberModal user={editing} role={role} adminUser={adminUser} onSave={saveProfile} onClose={()=>setEditing(null)}/>} 
-    <div className="section-head"><div className="section-num">RB</div><div><div className="section-title">Team & Access</div><div style={{fontSize:11,color:"var(--text3)",marginTop:2}}>Role-based access control for CIMOP</div></div><div style={{marginLeft:"auto"}}><RbacRoleBadge role={role}/></div></div>
-    <div className="card" style={{marginBottom:16}}>
-      <div className="card-header"><div><div className="card-title">Access model</div><div style={{fontSize:11,color:"var(--text3)",marginTop:3}}>Permissions are attached to roles; user records live in <span className="mono">users/{'{uid}'}</span>.</div></div><button className="btn btn-secondary btn-sm" onClick={load}>↻ Refresh</button></div>
-      <div className="card-body" style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-        {Object.entries(RBAC_ROLES).filter(([k])=>k!=="customer").map(([k,r])=><div key={k} className="rbac-permission"><span>{r.icon}</span><strong>{r.label}</strong><span>· {r.description}</span></div>)}
-      </div>
-    </div>
-    <div className="card">
-      <div className="card-header"><div><div className="card-title">Team members</div><div style={{fontSize:11,color:"var(--text3)",marginTop:3}}>Manage staff profile, role and account status</div></div><div style={{fontSize:11,color:"var(--text3)"}}>{users.length} profile(s)</div></div>
-      {error&&<div style={{padding:14,color:"#F87171",fontSize:12}}>⚠️ {error}</div>}
-      {loading?<div style={{padding:24,color:"var(--text3)",fontSize:12}}>Loading team profiles…</div>:users.length===0?<div style={{padding:24,color:"var(--text3)",fontSize:12}}>No user profiles found yet. Users are created automatically when they sign in.</div>:<>
-        <div className="rbac-user-row" style={{gridTemplateColumns:"1.4fr 1fr 150px 90px 70px",color:"var(--text4)",fontSize:10,fontWeight:700,textTransform:"uppercase"}}><div>User</div><div>Email</div><div>Role</div><div>Status</div><div></div></div>
-        {users.map(u=>{const ur=normaliseRole(u.role);const isSelf=u.uid===adminUser?.uid;return <div className="rbac-user-row" key={u.uid} style={{gridTemplateColumns:"1.4fr 1fr 150px 90px 70px"}}>
-          <div><div style={{fontWeight:700,color:"var(--text)"}}>{u.displayName||u.email||u.uid}</div><div className="mono" style={{color:"var(--text4)",marginTop:2}}>{u.uid}</div>{(u.jobTitle||u.department)&&<div style={{fontSize:10,color:"var(--text4)",marginTop:3}}>{[u.jobTitle,u.department].filter(Boolean).join(" · ")}</div>}</div>
-          <div style={{color:"var(--text2)"}}>{u.email||"—"}</div>
-          <div>{canManageUsers(role)&&!isSelf?<select className="field-input" style={{padding:"6px 8px",fontSize:11}} value={ur} disabled={savingUid===u.uid} onChange={e=>saveProfile(u.uid,{role:e.target.value})}>{Object.entries(RBAC_ROLES).filter(([k])=>k!=="customer").map(([k,r])=><option key={k} value={k}>{r.label}</option>)}</select>:<RbacRoleBadge role={ur}/>}</div>
-          <div><span style={{color:u.active===false?"#F87171":"#10B981",fontWeight:700}}>{u.active===false?"Disabled":"Active"}</span>{isSelf&&<span style={{fontSize:9,color:"var(--text4)",marginLeft:5}}>YOU</span>}</div>
-          <div className="rbac-actions"><button className="rbac-edit-btn" disabled={savingUid===u.uid} onClick={()=>setEditing(u)}>Edit</button></div>
-        </div>})}
-      </>}
-    </div>
-  </div>;
-}
-
-/* ════════════════════════════════════════════════════
-   CIMOP STAGE 2 — TICKET TIMELINE v1
-   Embedded event history inside tickets/{ticketId}.timeline[]
-   so the MVP does not require a new collection yet.
-════════════════════════════════════════════════════ */
-function timelineFallback(ticket){
-  const events=[];
-  const actor=ticket.createdByEmail||ticket.engineerName||"System";
-  if(ticket.createdAt) events.push({id:"fallback-created",type:"created",title:"Ticket created",detail:`${ticket.ref} was created`,at:ticket.createdAt,actorName:actor});
-  if(ticket.assignedEngineer&&ticket.assignedEngineer!=="Unassigned") events.push({id:"fallback-assignment",type:"assignment",title:"Engineer assigned",detail:`Assigned to ${ticket.assignedEngineer}`,at:ticket.updatedAt||ticket.createdAt,actorName:actor});
-  (ticket.notes||[]).forEach((n,i)=>events.push({id:`fallback-note-${i}`,type:"note",title:n.type==="engineer-note"?"Engineer note added":"Internal note added",detail:n.txt,at:n.at,actorName:n.engineer||actor}));
-  if(ticket.quotationRef) events.push({id:"fallback-quote",type:"quote",title:"Quotation linked",detail:ticket.quotationRef,at:ticket.updatedAt||ticket.createdAt,actorName:actor});
-  if((ticket.parts||[]).length) events.push({id:"fallback-parts",type:"parts",title:"Parts / inventory updated",detail:`${ticket.parts.length} part${ticket.parts.length===1?"":"s"} on ticket`,at:ticket.updatedAt||ticket.createdAt,actorName:actor});
-  if(ticket.resolvedAt) events.push({id:"fallback-resolved",type:"status",title:"Ticket resolved",detail:"Resolution recorded",at:ticket.resolvedAt,actorName:actor});
-  if(ticket.closedAt) events.push({id:"fallback-closed",type:"status",title:"Ticket closed",detail:"Ticket moved to closed",at:ticket.closedAt,actorName:actor});
-  return events;
-}
-function timelineIcon(type){return {created:"🎫",status:"🔄",assignment:"👨‍🔧",note:"📝",parts:"🔩",time:"⏱️",quote:"📄",signoff:"✍️",update:"⚙️"}[type]||"•";}
-function timelineColor(type){return {created:AC,status:"#8B5CF6",assignment:"#0EA5E9",note:"#F59E0B",parts:"#F97316",time:"#10B981",quote:"#6366F1",signoff:"#14B8A6",update:"#64748B"}[type]||"#64748B";}
-function TicketTimeline({ticket,showToast}){
-  const stored=Array.isArray(ticket?.timeline)?ticket.timeline:[];
-  const events=useMemo(()=>{
-    const source=stored.length?stored:timelineFallback(ticket||{});
-    return [...source].sort((a,b)=>new Date(b.at||0)-new Date(a.at||0));
-  },[stored,ticket]);
-
-  const grouped=useMemo(()=>{
-    const out=[];
-    events.forEach(e=>{
-      const d=e.at?new Date(e.at):null;
-      const key=d&&!Number.isNaN(d.getTime())
-        ?d.toLocaleDateString("en-ZA",{weekday:"short",day:"2-digit",month:"short",year:"numeric"})
-        :"Unknown date";
-      let g=out.find(x=>x.key===key);
-      if(!g){g={key,events:[]};out.push(g);}
-      g.events.push(e);
-    });
-    return out;
-  },[events]);
-
-  return <div className="detail-body">
-    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14}}>
-      <div>
-        <div style={{fontSize:14,fontWeight:800,color:"var(--text)"}}>Ticket Timeline</div>
-        <div style={{fontSize:10,color:"var(--text3)",marginTop:3}}>A chronological service history for {ticket.ref}</div>
-      </div>
-      <span className="rbac-role" style={{fontSize:10}}>
-        {events.length} event{events.length===1?"":"s"}
-      </span>
-    </div>
-
-    {stored.length===0&&<div style={{padding:"8px 10px",borderRadius:8,border:"1px dashed var(--border2)",background:"var(--bg3)",fontSize:10,color:"var(--text3)",marginBottom:14}}>
-      This is a compatibility timeline. Existing ticket history is being reconstructed; new activity will be recorded as native timeline events.
-    </div>}
-
-    {events.length===0 ? (
-      <div style={{padding:28,textAlign:"center",color:"var(--text4)",fontSize:12}}>No timeline events yet.</div>
-    ) : (
-      <div className="ticket-timeline">
-        {grouped.map(group=><div key={group.key} className="timeline-day">
-          <div className="timeline-day-label">{group.key}</div>
-          {group.events.map((e,i)=>{
-            const color=timelineColor(e.type);
-            const dt=e.at?new Date(e.at):null;
-            return <div className="timeline-event" key={e.id||`${group.key}-${i}`}>
-              <div className="timeline-rail">
-                <div className="timeline-dot" style={{background:color,boxShadow:`0 0 0 3px ${color}18`}}>
-                  {timelineIcon(e.type)}
-                </div>
-                {i<group.events.length-1&&<div className="timeline-line"/>}
-              </div>
-
-              <div className="timeline-card">
-                <div style={{display:"flex",justifyContent:"space-between",gap:10,alignItems:"flex-start"}}>
-                  <div>
-                    <div style={{fontSize:12,fontWeight:750,color:"var(--text)"}}>
-                      {e.title||"Ticket updated"}
-                    </div>
-                    <div style={{fontSize:11,color:"var(--text2)",marginTop:4,lineHeight:1.5,whiteSpace:"pre-wrap"}}>
-                      {e.detail||"—"}
-                    </div>
-                  </div>
-                  <div className="mono" style={{fontSize:9,color:"var(--text4)",whiteSpace:"nowrap"}}>
-                    {dt&&!Number.isNaN(dt.getTime())
-                      ?dt.toLocaleTimeString("en-ZA",{hour:"2-digit",minute:"2-digit"})
-                      :"—"}
-                  </div>
-                </div>
-                <div style={{fontSize:9,color:"var(--text4)",marginTop:7}}>
-                  {e.actorName||e.actorEmail||"System"}
-                  {e.actorEmail&&e.actorName&&e.actorEmail!==e.actorName?` · ${e.actorEmail}`:""}
-                </div>
-              </div>
-            </div>;
-          })}
-        </div>)}
-      </div>
-    )}
-
-    <div style={{marginTop:16,padding:10,borderRadius:8,background:"var(--bg3)",border:"1px solid var(--border)",fontSize:10,color:"var(--text4)"}}>
-      MVP model: timeline events live inside the ticket document. Later we can move high-volume audit events into a dedicated activity collection without changing the UI.
-    </div>
-  </div>;
-}
-
 /* ── TINY ATOMS ── */
 function Lbl({c,req}){return<div className="field-label">{c}{req&&<span style={{color:"#F87171",marginLeft:3}}>*</span>}</div>;}
 function Field({l,e,span,children}){return<div className={`form-field${span?" span2":""}`}><Lbl c={l}/>{children}{e&&<div className="field-error">{e}</div>}</div>;}
@@ -1701,7 +1154,7 @@ function ClientHistoryModal({ticket,allTickets,onClose}){
             <div key={t.ref} className="history-ticket">
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
                 <span className="history-ref">{t.ref}</span>
-                <StatusBadge status={t.status}/>
+                <StatusBadge s={t.status}/>
               </div>
               <div className="history-issue">{t.issueTitle||t.problemDescription||"—"}</div>
               <div style={{fontSize:10,color:"var(--text3)",marginTop:3,fontFamily:"'IBM Plex Mono',monospace"}}>{new Date(t.createdAt).toLocaleDateString("en-ZA")} · {SVCS.find(s=>s.id===t.serviceType)?.label||t.serviceType}</div>
@@ -1779,7 +1232,7 @@ function FollowUpModal({tickets,onClose}){
               <div style={{flex:1}}>
                 <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3}}>
                   <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:AC}}>{t.ref}</span>
-                  <StatusBadge status={t.status}/>
+                  <StatusBadge s={t.status}/>
                 </div>
                 <div style={{fontSize:12,color:"var(--text2)"}}>{t.clientName||t.name} · {t.phone}</div>
               </div>
@@ -1963,7 +1416,7 @@ function TicketChat({ticket, activeEngineer, onWaForward}){
 /* ════════════════════════════════════════════════════
    TICKET FORM
 ════════════════════════════════════════════════════ */
-function TicketForm({mode,onSubmit,saving,theme,toggleTheme}){
+function TicketForm({mode,onSubmit,saving,theme,toggleTheme,engineerOptions}){
   const isEng=mode==="engineer";
   const [svc,setSvc]=useState("");
   const [f,setF]=useState({
@@ -2125,7 +1578,7 @@ function TicketForm({mode,onSubmit,saving,theme,toggleTheme}){
                     <Field l="Engineer Name *" e={err.engineerName}><input {...fi} value={f.engineerName} onChange={e=>set("engineerName",e.target.value)} placeholder="Your name"/></Field>
                     <Field l="Assign To">
                       <select {...fi} value={f.assignedEngineer} onChange={e=>set("assignedEngineer",e.target.value)}>
-                        {ENGINEERS.map(eng=><option key={eng}>{eng}</option>)}
+                        {(engineerOptions||ENGINEERS).map(eng=><option key={eng}>{eng}</option>)}
                       </select>
                     </Field>
                     <Field l="Internal Note (optional)" span><input {...fi} value={f.engineerNote} onChange={e=>set("engineerNote",e.target.value)} placeholder="Context for the team"/></Field>
@@ -2503,6 +1956,208 @@ function AnalyticsDashboard({tickets,onExport}){
   );
 }
 
+
+/* ════════════════════════════════════════════════════
+   TEAM & ACCESS — IDENTITY ADMINISTRATION
+   Authentication stays in Firebase Auth. Account lifecycle,
+   claims and privileged mutations are performed by the secure
+   CIMOP backend endpoint configured in CFG.teamApi.
+════════════════════════════════════════════════════ */
+const TEAM_ROLES={
+  super_admin:{label:"Super Admin",icon:"👑",desc:"Full CIMOP control, identity and security administration."},
+  operations_manager:{label:"Operations Manager",icon:"🧭",desc:"Customers, tickets, engineers, SLA and operational workflows."},
+  support_agent:{label:"Support Agent",icon:"🎧",desc:"Customer support, tickets, communication and follow-ups."},
+  engineer:{label:"Engineer",icon:"🔧",desc:"Assigned technical work, assets and engineering notes."},
+  finance:{label:"Finance",icon:"💰",desc:"Financial visibility and customer billing context."}
+};
+const TEAM_PERMISSIONS={
+  super_admin:["All permissions","Team & Access","RBAC / Roles","Audit & Security","Customers","Tickets","Assets / CMDB","SLA & Automation","Finance"],
+  operations_manager:["Customers","Tickets","Assets / CMDB","SLA & Automation","Team visibility","Reports"],
+  support_agent:["Customers","Tickets","Customer communication","Follow-ups","Knowledge Base"],
+  engineer:["Assigned tickets","Assets / CMDB","Engineering notes","Time tracking","Knowledge Base"],
+  finance:["Customer financial context","Invoices / Quotes","Reports"]
+};
+
+async function teamApi(action,payload={}){
+  if(!CFG.teamApi) throw new Error("CIMOP team administration backend is not configured.");
+  const user=auth.currentUser;
+  if(!user) throw new Error("Your admin session has expired. Please sign in again.");
+  const token=await user.getIdToken(true);
+  const res=await fetch(CFG.teamApi,{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${token}`},body:JSON.stringify({action,...payload})});
+  let data={};
+  try{data=await res.json();}catch(e){}
+  if(!res.ok||data.ok===false) throw new Error(data.error||`Team service returned ${res.status}`);
+  return data;
+}
+
+function TeamAccess({adminUser,showToast,onEngineersChanged}){
+  const [users,setUsers]=useState([]);
+  const [loading,setLoading]=useState(true);
+  const [saving,setSaving]=useState(false);
+  const [search,setSearch]=useState("");
+  const [selected,setSelected]=useState(null);
+  const [showCreate,setShowCreate]=useState(false);
+  const [inviteLink,setInviteLink]=useState("");
+  const [freshStart,setFreshStart]=useState(false);
+  const [confirmPhrase,setConfirmPhrase]=useState("");
+  const [form,setForm]=useState({displayName:"",email:"",phone:"",jobTitle:"",department:"Technical Services",role:"engineer"});
+
+  const load=async()=>{
+    setLoading(true);
+    try{const d=await teamApi("list");setUsers(d.users||[]);onEngineersChanged&&onEngineersChanged((d.users||[]).filter(u=>u.status==="active"&&u.role==="engineer").map(u=>u.displayName).filter(Boolean));}
+    catch(e){console.error(e);showToast(e.message||"Failed to load team","error");}
+    finally{setLoading(false);}
+  };
+  useEffect(()=>{load();},[]);
+
+  const create=async()=>{
+    if(!form.displayName.trim()||!form.email.trim()){showToast("Name and email are required","error");return;}
+    setSaving(true);setInviteLink("");
+    try{
+      const d=await teamApi("create",{user:{...form,displayName:form.displayName.trim(),email:form.email.trim().toLowerCase()}});
+      setInviteLink(d.passwordResetLink||"");
+      showToast("Team account created ✓");
+      setShowCreate(false);
+      setForm({displayName:"",email:"",phone:"",jobTitle:"",department:"Technical Services",role:"engineer"});
+      await load();
+      if(d.email){
+        try{await auth.sendPasswordResetEmail(d.email);showToast("Account created + password setup email sent ✓");}catch(e){console.warn("Password email failed",e);}
+      }
+    }catch(e){console.error(e);showToast(e.message||"Failed to create account","error");}
+    finally{setSaving(false);}
+  };
+
+  const patch=async(changes)=>{
+    if(!selected)return;
+    setSaving(true);
+    try{await teamApi("update",{uid:selected.uid,changes});showToast("Account updated ✓");setSelected(null);await load();}
+    catch(e){showToast(e.message||"Update failed","error");}
+    finally{setSaving(false);}
+  };
+
+  const toggleStatus=async(u)=>{
+    if(u.uid===adminUser?.uid){showToast("You cannot disable your own Super Admin account.","error");return;}
+    const next=u.status==="active"?"disabled":"active";
+    if(!confirm(`${next==="disabled"?"Disable":"Reactivate"} ${u.displayName||u.email}?`))return;
+    setSaving(true);
+    try{await teamApi("status",{uid:u.uid,status:next});showToast(`Account ${next} ✓`);await load();setSelected(null);}
+    catch(e){showToast(e.message||"Status change failed","error");}
+    finally{setSaving(false);}
+  };
+
+  const resetPassword=async(u)=>{
+    try{await auth.sendPasswordResetEmail(u.email);showToast("Password reset email sent ✓");}
+    catch(e){showToast(e.message||"Could not send reset email","error");}
+  };
+
+  const filtered=users.filter(u=>{
+    const q=search.trim().toLowerCase();
+    return !q||[u.displayName,u.email,u.role,u.department,u.jobTitle].some(v=>String(v||"").toLowerCase().includes(q));
+  });
+  const active=users.filter(u=>u.status==="active").length;
+  const engineers=users.filter(u=>u.status==="active"&&u.role==="engineer").length;
+  const disabled=users.filter(u=>u.status==="disabled").length;
+
+  const doFreshStart=async()=>{
+    if(confirmPhrase!=="RESET TEAM"){showToast("Type RESET TEAM exactly to continue","error");return;}
+    setSaving(true);
+    try{const d=await teamApi("freshStart",{confirm:"RESET TEAM"});showToast(`${d.removed||0} old team accounts removed. Fresh start ready ✓`);setFreshStart(false);setConfirmPhrase("");await load();}
+    catch(e){showToast(e.message||"Fresh start failed","error");}
+    finally{setSaving(false);}
+  };
+
+  return <div className="team-page">
+    <div className="team-toolbar">
+      <div>
+        <div style={{fontSize:22,fontWeight:800,color:"var(--text)",marginBottom:4}}>👥 Team & Access</div>
+        <div style={{fontSize:12,color:"var(--text3)"}}>Manage CIMOP identities, roles, account lifecycle and access — without opening Firebase Console.</div>
+      </div>
+      <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+        <button className="btn btn-secondary btn-sm" onClick={load}>↻ Refresh</button>
+        <button className="btn btn-danger btn-sm" onClick={()=>setFreshStart(true)}>🧹 Fresh Team Start</button>
+        <button className="btn btn-primary" onClick={()=>setShowCreate(true)}>+ Create Team Member</button>
+      </div>
+    </div>
+
+    <div className="analytics-grid" style={{gridTemplateColumns:"repeat(4,1fr)",marginBottom:16}}>
+      <div className="team-stat"><div className="team-stat-value">{users.length}</div><div className="team-stat-label">Total accounts</div></div>
+      <div className="team-stat"><div className="team-stat-value">{active}</div><div className="team-stat-label">Active team members</div></div>
+      <div className="team-stat"><div className="team-stat-value">{engineers}</div><div className="team-stat-label">Active engineers</div></div>
+      <div className="team-stat"><div className="team-stat-value">{disabled}</div><div className="team-stat-label">Disabled accounts</div></div>
+    </div>
+
+    <div className="team-grid">
+      <div className="card">
+        <div className="card-header">
+          <div className="card-title">Team Directory</div>
+          <div className="searchbar" style={{width:240}}><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search name, email, role…"/></div>
+        </div>
+        <div style={{padding:"8px 14px",borderBottom:"1px solid var(--border)",fontSize:9,color:"var(--text4)",textTransform:"uppercase",letterSpacing:".08em",display:"grid",gridTemplateColumns:"1.6fr 1.1fr .8fr .7fr auto",gap:10}}>
+          <span>Team Member</span><span>Role</span><span>Status</span><span className="team-last-login">Last Login</span><span></span>
+        </div>
+        {loading?<div style={{padding:30,textAlign:"center",color:"var(--text4)"}}>Loading team directory…</div>:
+          filtered.length===0?<div style={{padding:30,textAlign:"center",color:"var(--text4)"}}>No team accounts found.</div>:
+          filtered.map(u=><div className="team-user-row" key={u.uid}>
+            <div className="team-user-main">
+              <div className="team-avatar">{(u.displayName||u.email||"?").slice(0,1).toUpperCase()}</div>
+              <div style={{minWidth:0}}><div className="team-user-name">{u.displayName||"Unnamed user"}</div><div className="team-user-email">{u.email}</div></div>
+            </div>
+            <div><span className="team-role">{TEAM_ROLES[u.role]?.icon||"👤"} {TEAM_ROLES[u.role]?.label||u.role||"Unassigned"}</span></div>
+            <div><span className={`team-status ${u.status||"active"}`}>{u.status||"active"}</span></div>
+            <div className="team-last-login" style={{fontSize:10,color:"var(--text4)",fontFamily:"'IBM Plex Mono',monospace"}}>{u.lastLoginAt?new Date(u.lastLoginAt).toLocaleDateString("en-ZA"):"Never"}</div>
+            <div className="team-actions"><button className="btn btn-secondary btn-sm" onClick={()=>setSelected(u)}>Manage</button></div>
+          </div>)}
+      </div>
+
+      <div className="card team-detail">
+        <div className="card-header"><div className="card-title">Access Model</div></div>
+        <div className="card-body">
+          <div style={{fontSize:12,color:"var(--text2)",lineHeight:1.7,marginBottom:14}}>Firebase Authentication answers <strong>who the user is</strong>. CIMOP RBAC answers <strong>what they can do</strong>. Privileged account mutations are performed server-side.</div>
+          {Object.entries(TEAM_ROLES).map(([k,v])=><div key={k} style={{padding:"10px 0",borderBottom:"1px solid var(--border)"}}><div style={{fontSize:12,fontWeight:700,color:"var(--text)"}}>{v.icon} {v.label}</div><div style={{fontSize:10,color:"var(--text3)",marginTop:2}}>{v.desc}</div></div>)}
+          <div style={{marginTop:14,fontSize:10,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",letterSpacing:".08em",marginBottom:8}}>Security rules</div>
+          <div className="permission-grid"><div className="permission-item">🔐 Super Admin required for identity administration</div><div className="permission-item">🧾 Every mutation writes an audit event</div><div className="permission-item">🚫 Accounts are disabled, not casually erased</div><div className="permission-item">👑 Super Admin cannot disable itself</div></div>
+        </div>
+      </div>
+    </div>
+
+    {inviteLink&&<div className="invite-box"><div style={{fontSize:12,fontWeight:700,color:AC}}>✓ Account created — setup link available</div><div style={{fontSize:10,color:"var(--text3)",marginTop:3}}>The system also attempted to send the password setup email. Keep this link as a secure fallback.</div><div className="invite-link">{inviteLink}</div><div style={{display:"flex",gap:8,marginTop:8}}><button className="btn btn-secondary btn-sm" onClick={()=>navigator.clipboard?.writeText(inviteLink)}>Copy setup link</button><button className="btn btn-ghost btn-sm" onClick={()=>setInviteLink("")}>Dismiss</button></div></div>}
+
+    {showCreate&&<div className="modal-overlay" onClick={e=>{if(e.target===e.currentTarget&&!saving)setShowCreate(false);}}><div className="modal-box fu" style={{maxWidth:620}}>
+      <div className="modal-header"><div><div className="card-title">+ Create Team Member</div><div style={{fontSize:10,color:"var(--text4)",marginTop:3}}>Creates Firebase Auth + CIMOP profile + RBAC claims.</div></div><button className="btn btn-ghost btn-sm" onClick={()=>setShowCreate(false)}>✕</button></div>
+      <div className="modal-body"><div className="form-grid">
+        <Field l="Full Name *"><input {...fi} value={form.displayName} onChange={e=>setForm(f=>({...f,displayName:e.target.value}))} placeholder="John Smith"/></Field>
+        <Field l="Email *"><input {...fi} type="email" value={form.email} onChange={e=>setForm(f=>({...f,email:e.target.value}))} placeholder="john@company.co.za"/></Field>
+        <Field l="Mobile"><input {...fi} value={form.phone} onChange={e=>setForm(f=>({...f,phone:e.target.value}))} placeholder="+27 72 000 0000"/></Field>
+        <Field l="Job Title"><input {...fi} value={form.jobTitle} onChange={e=>setForm(f=>({...f,jobTitle:e.target.value}))} placeholder="Senior IT Engineer"/></Field>
+        <Field l="Department"><input {...fi} value={form.department} onChange={e=>setForm(f=>({...f,department:e.target.value}))} placeholder="Technical Services"/></Field>
+        <Field l="Role"><select {...fi} value={form.role} onChange={e=>setForm(f=>({...f,role:e.target.value}))}>{Object.entries(TEAM_ROLES).filter(([k])=>k!=="super_admin"||adminUser?.email===CFG.adminEmails[0]).map(([k,v])=><option key={k} value={k}>{v.label}</option>)}</select></Field>
+      </div><div style={{marginTop:14,padding:12,background:"var(--bg3)",borderRadius:8,fontSize:11,color:"var(--text3)"}}>The new user will receive a Firebase password setup email. No password is stored or displayed by CIMOP.</div><div style={{display:"flex",justifyContent:"flex-end",gap:8,marginTop:18}}><button className="btn btn-secondary" onClick={()=>setShowCreate(false)}>Cancel</button><button className="btn btn-primary" onClick={create} disabled={saving}>{saving?"Creating…":"Create Account"}</button></div></div>
+    </div></div>}
+
+    {selected&&<div className="modal-overlay" onClick={e=>{if(e.target===e.currentTarget&&!saving)setSelected(null);}}><div className="modal-box fu" style={{maxWidth:650}}>
+      <div className="modal-header"><div><div className="card-title">Manage Account</div><div style={{fontSize:10,color:"var(--text4)",marginTop:3}}>{selected.email}</div></div><button className="btn btn-ghost btn-sm" onClick={()=>setSelected(null)}>✕</button></div>
+      <div className="modal-body">
+        <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:18}}><div className="team-avatar" style={{width:46,height:46}}>{(selected.displayName||selected.email||"?").slice(0,1).toUpperCase()}</div><div><div style={{fontSize:15,fontWeight:800,color:"var(--text)"}}>{selected.displayName}</div><div style={{fontSize:11,color:"var(--text3)"}}>{selected.email} · {selected.status}</div></div></div>
+        <div className="form-grid">
+          <Field l="Display Name"><input {...fi} value={selected.displayName||""} onChange={e=>setSelected(u=>({...u,displayName:e.target.value}))}/></Field>
+          <Field l="Role"><select {...fi} value={selected.role||"engineer"} onChange={e=>setSelected(u=>({...u,role:e.target.value}))}>{Object.entries(TEAM_ROLES).map(([k,v])=><option key={k} value={k}>{v.label}</option>)}</select></Field>
+          <Field l="Mobile"><input {...fi} value={selected.phone||""} onChange={e=>setSelected(u=>({...u,phone:e.target.value}))}/></Field>
+          <Field l="Job Title"><input {...fi} value={selected.jobTitle||""} onChange={e=>setSelected(u=>({...u,jobTitle:e.target.value}))}/></Field>
+          <Field l="Department"><input {...fi} value={selected.department||""} onChange={e=>setSelected(u=>({...u,department:e.target.value}))}/></Field>
+          <Field l="Account UID"><input {...fi} value={selected.uid||""} readOnly/></Field>
+        </div>
+        <div style={{marginTop:16,padding:12,background:"var(--bg3)",borderRadius:9}}><div style={{fontSize:10,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",letterSpacing:".08em",marginBottom:8}}>Account Security</div><div style={{display:"flex",gap:8,flexWrap:"wrap"}}><button className="btn btn-secondary btn-sm" onClick={()=>resetPassword(selected)}>🔑 Send Password Reset</button><button className={selected.status==="active"?"btn btn-danger btn-sm":"btn btn-primary btn-sm"} onClick={()=>toggleStatus(selected)}>{selected.status==="active"?"⛔ Disable Account":"✓ Reactivate Account"}</button></div></div>
+        <div style={{display:"flex",justifyContent:"flex-end",gap:8,marginTop:18}}><button className="btn btn-secondary" onClick={()=>setSelected(null)}>Cancel</button><button className="btn btn-primary" onClick={()=>patch({displayName:selected.displayName||"",phone:selected.phone||"",jobTitle:selected.jobTitle||"",department:selected.department||"",role:selected.role||"engineer"})} disabled={saving}>{saving?"Saving…":"Save Changes"}</button></div>
+      </div>
+    </div></div>}
+
+    {freshStart&&<div className="modal-overlay" onClick={e=>{if(e.target===e.currentTarget&&!saving)setFreshStart(false);}}><div className="modal-box fu" style={{maxWidth:520}}>
+      <div className="modal-header"><div><div className="card-title" style={{color:"#F87171"}}>🧹 Fresh Team Start</div><div style={{fontSize:10,color:"var(--text4)",marginTop:3}}>Destructive identity cleanup</div></div><button className="btn btn-ghost btn-sm" onClick={()=>setFreshStart(false)}>✕</button></div>
+      <div className="modal-body"><div style={{background:"rgba(239,68,68,.08)",border:"1px solid rgba(239,68,68,.25)",borderRadius:9,padding:12,fontSize:12,color:"#F87171",lineHeight:1.6}}>This removes every Firebase Auth team account except the Super Admin performing this action and the configured protected administrator emails. Ronewa, Tebogo, Sipho, Ayanda, Lerato and any other non-protected staff accounts will be removed. Ticket history is not deleted.</div><div style={{marginTop:16}}><Lbl c="Type RESET TEAM to confirm"/><input className="field-input" style={{marginTop:5}} value={confirmPhrase} onChange={e=>setConfirmPhrase(e.target.value)} placeholder="RESET TEAM"/></div><div style={{display:"flex",justifyContent:"flex-end",gap:8,marginTop:18}}><button className="btn btn-secondary" onClick={()=>setFreshStart(false)}>Cancel</button><button className="btn btn-danger" onClick={doFreshStart} disabled={saving||confirmPhrase!=="RESET TEAM"}>{saving?"Cleaning…":"Remove Old Team Accounts"}</button></div></div>
+    </div></div>}
+  </div>;
+}
+
 /* ════════════════════════════════════════════════════
    ADMIN PORTAL
 ════════════════════════════════════════════════════ */
@@ -2688,390 +2343,7 @@ function SignoffModal({ticket,clientName,setClientName,clientPosition,setClientP
   );
 }
 
-
-/* ════════════════════════════════════════════════════
-   CIMOP STAGE 2 — SLA ENGINE v1
-   MVP: policy storage + live ticket SLA monitoring.
-   No Cloud Function required yet; calculation runs in the portal.
-════════════════════════════════════════════════════ */
-const DEFAULT_SLA_POLICIES=[
-  {priority:"Urgent",targetHours:4,active:true},
-  {priority:"High",targetHours:8,active:true},
-  {priority:"Medium",targetHours:24,active:true},
-  {priority:"Low",targetHours:48,active:true}
-];
-
-function formatSlaMinutes(m){
-  const n=Math.abs(Number(m)||0);
-  const h=Math.floor(n/60), min=Math.round(n%60);
-  return h?`${h}h ${min}m`:`${min}m`;
-}
-function slaStatusMeta(info){
-  if(!info) return {label:"No SLA",color:"var(--text4)",bg:"transparent"};
-  if(info.status==="breach") return {label:"BREACH",color:"#EF4444",bg:"rgba(239,68,68,.09)"};
-  if(info.status==="warn") return {label:"AT RISK",color:"#F59E0B",bg:"rgba(245,158,11,.09)"};
-  if(info.status==="paused") return {label:"PAUSED",color:"#8B5CF6",bg:"rgba(139,92,246,.09)"};
-  if(info.status==="done") return {label:"COMPLETED",color:"#10B981",bg:"rgba(16,185,129,.09)"};
-  return {label:"ON TRACK",color:"#10B981",bg:"rgba(16,185,129,.06)"};
-}
-
-
-/* ════════════════════════════════════════════════════
-   CIMOP STAGE 2 — AUTOMATION ENGINE v1
-   MVP: rules are stored in automations/{automationId}.
-   The browser executes safe internal actions while the Admin Portal
-   is open. Backend enforcement/Cloud Functions can replace this later.
-════════════════════════════════════════════════════ */
-const DEFAULT_AUTOMATIONS=[
-  {id:"ticket-created",name:"New ticket → notify operator",description:"Create an internal notification when a new ticket is logged.",active:true,triggerType:"ticket_created",actionType:"notification",severity:"info"},
-  {id:"ticket-assigned",name:"Assignment changed → notify operator",description:"Create an internal notification when an engineer assignment changes.",active:true,triggerType:"assignment_changed",actionType:"notification",severity:"info"},
-  {id:"ticket-awaiting-client",name:"Waiting on client → flag ticket",description:"Notify the operator when a ticket moves into a client-dependent status.",active:true,triggerType:"client_waiting",actionType:"notification",severity:"warning"},
-  {id:"sla-at-risk",name:"SLA at risk → alert operator",description:"Create an alert when an active ticket enters the SLA warning window.",active:true,triggerType:"sla_at_risk",actionType:"notification",severity:"warning"},
-  {id:"sla-breach",name:"SLA breach → escalate",description:"Create an urgent internal notification when an SLA target is breached.",active:true,triggerType:"sla_breach",actionType:"notification",severity:"critical"},
-  {id:"ticket-closed",name:"Ticket closed → record completion",description:"Record an internal completion notification when a ticket closes.",active:true,triggerType:"ticket_closed",actionType:"notification",severity:"success"}
-];
-
-function automationLabel(type){
-  return ({ticket_created:"Ticket created",assignment_changed:"Assignment changed",client_waiting:"Client waiting",sla_at_risk:"SLA at risk",sla_breach:"SLA breach",ticket_closed:"Ticket closed"})[type]||type;
-}
-function automationSeverityMeta(sev){
-  return ({critical:{label:"CRITICAL",color:"#EF4444",bg:"rgba(239,68,68,.10)"},warning:{label:"WARNING",color:"#F59E0B",bg:"rgba(245,158,11,.10)"},success:{label:"SUCCESS",color:"#10B981",bg:"rgba(16,185,129,.10)"},info:{label:"INFO",color:"#0EA5E9",bg:"rgba(14,165,233,.10)"}})[sev]||{label:"INFO",color:"#0EA5E9",bg:"rgba(14,165,233,.10)"};
-}
-async function loadAutomationRules(){
-  try{
-    const snap=await db.collection("automations").get();
-    const docs=snap.docs.map(d=>({id:d.id,...d.data()}));
-    return DEFAULT_AUTOMATIONS.map(def=>docs.find(x=>x.id===def.id)||def);
-  }catch(e){console.warn("Automation rules unavailable",e);return DEFAULT_AUTOMATIONS;}
-}
-async function ensureAutomationNotification(rule,ticket,actor,extra={}){
-  const ref=ticket?.ref||"unknown";
-  const uid=auth.currentUser?.uid||"current";
-  const eventKey=extra.key||rule.triggerType;
-  const dedupe=`${rule.id}__${ref}__${uid}__${eventKey}`.replace(/[^a-zA-Z0-9_-]/g,"_").slice(0,150);
-  const severity=rule.severity||"info";
-  const category=extra.category||((severity==="critical"||severity==="warning")?"attention":"workflow");
-  const notification={
-    schemaVersion:2,
-    automationId:rule.id,
-    ticketRef:ref,
-    recipientUid:auth.currentUser?.uid||null,
-    recipientEmail:auth.currentUser?.email||null,
-    title:extra.title||rule.name,
-    message:extra.message||rule.description,
-    severity,
-    category,
-    priority:extra.priority||(severity==="critical"?"urgent":severity==="warning"?"high":"normal"),
-    icon:extra.icon||(severity==="critical"?"🚨":severity==="warning"?"⚠️":severity==="success"?"✅":"🔔"),
-    read:false,
-    readAt:null,
-    readByUid:null,
-    createdAt:ts(),
-    createdAtMs:Date.now(),
-    createdByUid:actor?.actorUid||auth.currentUser?.uid||null,
-    createdBy:actor?.actorEmail||auth.currentUser?.email||"system",
-    source:"automation-engine",
-    sourceVersion:"2.0",
-    dedupeKey:dedupe,
-    route:extra.route||"tickets"
-  };
-  const nref=db.collection("notifications").doc(dedupe);
-  const existing=await nref.get();
-  if(existing.exists)return existing.data();
-  await nref.set(notification);
-  return notification;
-}
-async function runAutomationForTicket(ticket,context={}){
-  if(!ticket||!auth.currentUser) return {ran:0};
-  const rules=await loadAutomationRules();
-  let ran=0;
-  for(const rule of rules.filter(r=>r.active!==false)){
-    let match=false,extra={};
-    const before=context.before||null;
-    const after=ticket;
-    if(rule.triggerType==="ticket_created" && context.eventType==="created") match=true;
-    if(rule.triggerType==="assignment_changed" && context.eventType==="assignment_changed"){
-      match=true; extra.message=`${after.ref} assignment changed to ${after.assignedEngineer||"Unassigned"}.`;
-    }
-    if(rule.triggerType==="client_waiting" && context.eventType==="status_changed" && SLA_PAUSED_STATUSES.includes(after.status)){
-      match=true; extra.message=`${after.ref} is waiting on ${ST[after.status]?.l||after.status}.`;
-    }
-    if(rule.triggerType==="ticket_closed" && context.eventType==="status_changed" && after.status==="closed"){
-      match=true; extra.message=`${after.ref} has been closed and recorded as completed.`;
-    }
-    if(rule.triggerType==="sla_at_risk" && context.eventType==="sla_scan" && context.slaStatus==="warn"){
-      match=true; extra.key="sla_at_risk"; extra.message=`${after.ref} is approaching its SLA target.`;
-    }
-    if(rule.triggerType==="sla_breach" && context.eventType==="sla_scan" && context.slaStatus==="breach"){
-      match=true; extra.key="sla_breach"; extra.message=`${after.ref} has breached its SLA target.`;
-    }
-    if(!match) continue;
-    try{
-      if(rule.actionType==="notification"){
-        await ensureAutomationNotification(rule,after,context.actor||{},extra);
-        ran++;
-      }
-    }catch(e){console.warn("Automation execution failed",rule.id,e);}
-  }
-  return {ran};
-}
-
-function AutomationEngine({tickets,role,showToast}){
-  const allowed=canAny(role,"automation.read");
-  const canWrite=hasPermission(role,"automation.write");
-  const [rules,setRules]=useState(DEFAULT_AUTOMATIONS);
-  const [loading,setLoading]=useState(true);
-  const [saving,setSaving]=useState(false);
-  const [query,setQuery]=useState("");
-  const [filter,setFilter]=useState("all");
-  const [selected,setSelected]=useState(null);
-  const [runBusy,setRunBusy]=useState(false);
-
-  useEffect(()=>{
-    if(!allowed){setLoading(false);return;}
-    const unsub=db.collection("automations").onSnapshot(snap=>{
-      const docs=snap.docs.map(d=>({id:d.id,...d.data()}));
-      setRules(DEFAULT_AUTOMATIONS.map(def=>docs.find(x=>x.id===def.id)||def));
-      setLoading(false);
-    },e=>{console.warn("Automation rules unavailable",e);setRules(DEFAULT_AUTOMATIONS);setLoading(false);});
-    return()=>unsub();
-  },[allowed]);
-
-  const deployDefaults=async()=>{
-    if(!canWrite)return;
-    setSaving(true);
-    try{
-      for(const r of DEFAULT_AUTOMATIONS){await db.collection("automations").doc(r.id).set({...r,updatedAt:ts(),updatedBy:auth.currentUser?.email||null},{merge:true});}
-      showToast("Default automation rules deployed ✓");
-    }catch(e){console.error(e);showToast("Failed to deploy automation rules","error");}
-    setSaving(false);
-  };
-  const saveRule=async(rule)=>{
-    if(!canWrite)return;
-    setSaving(true);
-    try{await db.collection("automations").doc(rule.id).set({...rule,updatedAt:ts(),updatedBy:auth.currentUser?.email||null},{merge:true});showToast("Automation saved ✓");}
-    catch(e){console.error(e);showToast("Automation save failed","error");}
-    setSaving(false);
-  };
-  const runSelected=async()=>{
-    if(!selected)return;
-    const ticket=tickets.find(t=>t.ref===selected);
-    if(!ticket){showToast("Select a valid ticket","error");return;}
-    setRunBusy(true);
-    try{
-      const result=await runAutomationForTicket(ticket,{eventType:"sla_scan",slaStatus:getSLAInfo(ticket)?.status,actor:{actorEmail:auth.currentUser?.email}});
-      showToast(`${result.ran} automation action(s) executed ✓`);
-    }catch(e){console.error(e);showToast("Automation test failed","error");}
-    setRunBusy(false);
-  };
-
-  if(!allowed)return <div className="page-content"><div className="card" style={{padding:32,textAlign:"center"}}><div style={{fontSize:30}}>🔒</div><div style={{fontWeight:700,color:"var(--text)",marginTop:8}}>Automation access restricted</div><div style={{fontSize:12,color:"var(--text3)",marginTop:5}}>Your role does not have automation.read permission.</div></div></div>;
-  const filtered=rules.filter(r=>(filter==="all"|| (filter==="active"?r.active!==false:r.active===false)) && (!query.trim()||`${r.name} ${r.description} ${automationLabel(r.triggerType)}`.toLowerCase().includes(query.trim().toLowerCase())));
-  const activeCount=rules.filter(r=>r.active!==false).length;
-  return <div className="page-content">
-    <div className="section-head"><div className="section-num">AUTO</div><div><div className="section-title">Automation Engine</div><div style={{fontSize:11,color:"var(--text3)",marginTop:2}}>Event → condition → action rules for the MSP workflow</div></div><div style={{marginLeft:"auto",fontSize:10,color:"var(--text4)"}}>MVP · browser-executed</div></div>
-    <div className="analytics-grid" style={{marginBottom:14}}>{[["Rules",rules.length,AC],["Active",activeCount,"#10B981"],["Triggers",new Set(rules.map(r=>r.triggerType)).size,"#0EA5E9"],["Actions",rules.filter(r=>r.actionType).length,"#8B5CF6"]].map(([l,v,c])=><div className="analytics-card" key={l}><div className="analytics-card-title">{l}</div><div className="analytics-big" style={{color:c}}>{v}</div><div className="analytics-sub">Automation engine v1</div></div>)}</div>
-    <div style={{display:"grid",gridTemplateColumns:"minmax(0,1.45fr) minmax(300px,.55fr)",gap:14,alignItems:"start"}}>
-      <div className="card"><div className="card-header"><div><div className="card-title">Automation rules</div><div style={{fontSize:10,color:"var(--text3)",marginTop:3}}>Rules are stored in <span className="mono">automations/{"{automationId}"}</span>.</div></div><div style={{display:"flex",gap:7}}>{canWrite&&<button className="btn btn-primary btn-sm" onClick={deployDefaults} disabled={saving}>⚙ Deploy Defaults</button>}</div></div>
-        <div style={{padding:"10px 12px",borderBottom:"1px solid var(--border)",display:"flex",gap:8,flexWrap:"wrap"}}><input className="field-input" style={{flex:1,minWidth:200}} placeholder="Search automation…" value={query} onChange={e=>setQuery(e.target.value)}/>{[["all","All"],["active","Active"],["inactive","Inactive"]].map(([k,l])=><button key={k} className={`analytics-pill${filter===k?" active":""}`} onClick={()=>setFilter(k)}>{l}</button>)}</div>
-        <div style={{overflowX:"auto"}}><table className="data-table"><thead><tr><th>Rule</th><th>Trigger</th><th>Action</th><th>Severity</th><th>Status</th>{canWrite&&<th></th>}</tr></thead><tbody>{filtered.length===0?<tr><td colSpan="6" style={{padding:28,textAlign:"center",color:"var(--text3)"}}>No automation rules found.</td></tr>:filtered.map(r=>{const meta=automationSeverityMeta(r.severity);return <tr key={r.id}><td><div style={{fontWeight:700,color:"var(--text)"}}>{r.name}</div><div style={{fontSize:10,color:"var(--text3)",marginTop:3}}>{r.description}</div></td><td><span className="rbac-permission">{automationLabel(r.triggerType)}</span></td><td>🔔 Internal notification</td><td><span style={{padding:"4px 7px",borderRadius:6,background:meta.bg,color:meta.color,fontSize:9,fontWeight:800}}>{meta.label}</span></td><td><button onClick={()=>canWrite&&setRules(prev=>prev.map(x=>x.id===r.id?{...x,active:x.active===false}:x))} style={{border:0,background:"transparent",cursor:canWrite?"pointer":"default",color:r.active!==false?"#10B981":"var(--text4)",fontWeight:800,fontSize:10}}>{r.active!==false?"ACTIVE":"INACTIVE"}</button></td>{canWrite&&<td><button className="btn btn-secondary btn-sm" onClick={()=>saveRule(r)} disabled={saving}>Save</button></td>}</tr>})}</tbody></table></div>
-      </div>
-      <div className="card"><div className="card-header"><div><div className="card-title">Test automation</div><div style={{fontSize:10,color:"var(--text3)",marginTop:3}}>Run an SLA trigger against one ticket.</div></div></div><div className="card-body"><select className="field-input" value={selected||""} onChange={e=>setSelected(e.target.value||null)}><option value="">Select ticket…</option>{tickets.map(t=><option key={t.ref} value={t.ref}>{t.ref} · {t.clientName||t.name||"Customer"}</option>)}</select><button className="btn btn-primary" style={{width:"100%",marginTop:9}} onClick={runSelected} disabled={!selected||runBusy}>{runBusy?"Running…":"▶ Run SLA Automation Test"}</button><div style={{marginTop:12,padding:10,borderRadius:8,background:"var(--bg3)",border:"1px solid var(--border)",fontSize:10,color:"var(--text3)",lineHeight:1.5}}>MVP action: creates an internal notification for the signed-in operator. It does not send email or WhatsApp yet.</div></div></div>
-    </div>
-    <div className="card" style={{marginTop:14}}><div className="card-header"><div><div className="card-title">How CIMOP automation works</div></div></div><div className="card-body" style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:10}}>{[["⚡","Trigger","Ticket created, assignment changed, client waiting, SLA at risk/breach or ticket closed."],["🔎","Condition","The engine checks the event and current ticket/SLA state."],["🔔","Action","MVP writes a notification record and can later add email, WhatsApp, workflows and backend jobs."]].map(([i,l,d])=><div key={l} style={{padding:12,border:"1px solid var(--border)",borderRadius:8,background:"var(--bg)"}}><div style={{fontSize:18}}>{i}</div><div style={{fontWeight:700,fontSize:11,color:"var(--text)",marginTop:6}}>{l}</div><div style={{fontSize:10,color:"var(--text3)",marginTop:4,lineHeight:1.5}}>{d}</div></div>)}</div></div>
-    <div style={{marginTop:12,padding:10,borderRadius:8,border:"1px solid var(--border)",background:"var(--bg3)",fontSize:10,color:"var(--text4)"}}>MVP note: automation runs while the Admin Portal is open. The next production step is a backend worker/Cloud Function so automations continue even when nobody has CIMOP open.</div>
-  </div>;
-}
-
-function SLAEngine({tickets,role,showToast}){
-  const allowed=canAny(role,"sla.read");
-  const canWrite=hasPermission(role,"sla.write");
-  const [policies,setPolicies]=useState(DEFAULT_SLA_POLICIES);
-  const [loading,setLoading]=useState(true);
-  const [saving,setSaving]=useState(false);
-  const [tick,setTick]=useState(Date.now());
-  const [filter,setFilter]=useState("all");
-  const [query,setQuery]=useState("");
-
-  useEffect(()=>{
-    if(!allowed){setLoading(false);return;}
-    const unsub=db.collection("slaPolicies").onSnapshot(snap=>{
-      const docs=snap.docs.map(d=>({id:d.id,...d.data()}));
-      const merged=DEFAULT_SLA_POLICIES.map(def=>docs.find(x=>x.priority===def.priority)||def);
-      setPolicies(merged); applySlaPolicies(merged); setLoading(false);
-    },e=>{console.warn("SLA policies unavailable",e);applySlaPolicies(DEFAULT_SLA_POLICIES);setLoading(false);});
-    return()=>unsub();
-  },[allowed]);
-
-  useEffect(()=>{
-    const id=setInterval(()=>setTick(Date.now()),30000);
-    return()=>clearInterval(id);
-  },[]);
-
-  const savePolicy=async(policy)=>{
-    if(!canWrite)return;
-    setSaving(true);
-    try{
-      await db.collection("slaPolicies").doc(policy.priority.toLowerCase()).set({
-        priority:policy.priority,targetHours:Number(policy.targetHours)||1,active:policy.active!==false,
-        businessHours:{start:"08:00",end:"17:00"},workDays:[1,2,3,4,5],updatedAt:ts(),updatedBy:auth.currentUser?.email||null
-      },{merge:true});
-      showToast(`${policy.priority} SLA saved ✓`);
-    }catch(e){console.error(e);showToast("SLA policy save failed","error");}
-    setSaving(false);
-  };
-
-  const seedPolicies=async()=>{
-    if(!canWrite)return;
-    setSaving(true);
-    try{
-      for(const p of DEFAULT_SLA_POLICIES){
-        await db.collection("slaPolicies").doc(p.priority.toLowerCase()).set({...p,businessHours:{start:"08:00",end:"17:00"},workDays:[1,2,3,4,5],updatedAt:ts(),updatedBy:auth.currentUser?.email||null},{merge:true});
-      }
-      showToast("Default SLA policies deployed ✓");
-    }catch(e){console.error(e);showToast("Failed to deploy SLA policies","error");}
-    setSaving(false);
-  };
-
-  if(!allowed)return <div className="page-content"><div className="card" style={{padding:32,textAlign:"center"}}><div style={{fontSize:30}}>🔒</div><div style={{fontWeight:700,color:"var(--text)",marginTop:8}}>SLA access restricted</div><div style={{fontSize:12,color:"var(--text3)",marginTop:5}}>Your role does not have sla.read permission.</div></div></div>;
-
-  const rows=tickets.filter(t=>getSLAInfo(t)).map(t=>({ticket:t,info:getSLAInfo(t)}));
-  const active=rows.filter(x=>!['resolved','closed'].includes(x.ticket.status));
-  const breaches=active.filter(x=>x.info.status==="breach").length;
-  const atRisk=active.filter(x=>x.info.status==="warn").length;
-  const paused=active.filter(x=>x.info.status==="paused").length;
-  const completed=rows.filter(x=>x.info.status==="done").length;
-  const filtered=active.filter(x=>{
-    const ok=filter==="all"||x.info.status===filter;
-    const q=query.trim().toLowerCase();
-    return ok&&(!q||[x.ticket.ref,x.ticket.clientName,x.ticket.company,x.ticket.issueTitle,x.ticket.assignedEngineer].join(" ").toLowerCase().includes(q));
-  }).sort((a,b)=>{
-    const rank={breach:0,warn:1,paused:2,ok:3};
-    return (rank[a.info.status]??9)-(rank[b.info.status]??9) || (a.info.remainingMinutes-b.info.remainingMinutes);
-  });
-
-  return <div className="page-content" key={tick}>
-    <div className="section-head"><div className="section-num">SLA</div><div><div className="section-title">SLA Engine</div><div style={{fontSize:11,color:"var(--text3)",marginTop:2}}>Priority targets, business-hour clock, pause states and live breach monitoring</div></div><div style={{marginLeft:"auto",fontSize:10,color:"var(--text4)"}}>Updates every 30 seconds</div></div>
-
-    <div className="analytics-grid" style={{marginBottom:14}}>
-      {[['Active',active.length,'#0EA5E9'],['Breaches',breaches,'#EF4444'],['At Risk',atRisk,'#F59E0B'],['Paused',paused,'#8B5CF6'],['Completed',completed,'#10B981']].map(([l,v,c])=><div className="analytics-card" key={l}><div className="analytics-card-title">{l}</div><div className="analytics-big" style={{color:c}}>{v}</div><div className="analytics-sub">{l==='Breaches'?'Needs immediate attention':l==='At Risk'?'Within 2 business hours':'Current SLA state'}</div></div>)}
-    </div>
-
-    <div style={{display:"grid",gridTemplateColumns:"minmax(0,1.35fr) minmax(300px,.65fr)",gap:14,alignItems:"start"}}>
-      <div className="card">
-        <div className="card-header"><div><div className="card-title">SLA Policies</div><div style={{fontSize:10,color:"var(--text3)",marginTop:3}}>Default MVP targets are measured in business hours.</div></div>{canWrite&&<button className="btn btn-primary btn-sm" onClick={seedPolicies} disabled={saving}>⚙ Deploy Defaults</button>}</div>
-        <div className="card-body" style={{padding:0,overflowX:"auto"}}>
-          <table className="data-table"><thead><tr><th>Priority</th><th>Target</th><th>Clock</th><th>Status</th>{canWrite&&<th></th>}</tr></thead><tbody>{policies.map(p=><tr key={p.priority}><td><strong>{p.priority}</strong></td><td>{canWrite?<input className="field-input" style={{width:90}} type="number" min="1" value={p.targetHours} onChange={e=>setPolicies(prev=>prev.map(x=>x.priority===p.priority?{...x,targetHours:e.target.value}:x))}/>:`${p.targetHours}h`}</td><td>Mon–Fri · 08:00–17:00</td><td><span style={{fontSize:10,fontWeight:800,color:p.active!==false?"#10B981":"var(--text4)"}}>{p.active!==false?"ACTIVE":"INACTIVE"}</span></td>{canWrite&&<td><button className="btn btn-secondary btn-sm" onClick={()=>savePolicy(p)} disabled={saving}>Save</button></td>}</tr>)}</tbody></table>
-        </div>
-      </div>
-
-      <div className="card"><div className="card-header"><div><div className="card-title">How the MVP clock works</div></div></div><div className="card-body">
-        {[['🕘','Starts','When the ticket is created.'],['⏸️','Pauses','Authorisation, payment, parts and client sign-off.'],['▶️','Resumes','When the ticket leaves a paused status.'],['🚨','Breach','When business-hour elapsed time exceeds the priority target.']].map(([i,l,d])=><div key={l} style={{display:"flex",gap:9,padding:"9px 0",borderBottom:"1px solid var(--border)"}}><span>{i}</span><div><div style={{fontSize:11,fontWeight:700,color:"var(--text)"}}>{l}</div><div style={{fontSize:10,color:"var(--text3)",marginTop:2}}>{d}</div></div></div>)}
-        <div style={{marginTop:12,padding:10,borderRadius:8,background:"var(--bg3)",border:"1px solid var(--border)",fontSize:10,color:"var(--text3)"}}>Business calendar: <strong style={{color:"var(--text)"}}>Monday–Friday, 08:00–17:00</strong>. Public holidays are not excluded in MVP v1.</div>
-      </div></div>
-    </div>
-
-    <div className="card" style={{marginTop:14}}>
-      <div className="card-header"><div><div className="card-title">Live SLA Monitor</div><div style={{fontSize:10,color:"var(--text3)",marginTop:3}}>{active.length} active ticket(s)</div></div><div style={{display:"flex",gap:7,flexWrap:"wrap"}}><input className="field-input" style={{width:220}} placeholder="Search ticket / customer / engineer…" value={query} onChange={e=>setQuery(e.target.value)}/>{[['all','All'],['breach','Breaches'],['warn','At Risk'],['paused','Paused'],['ok','On Track']].map(([k,l])=><button key={k} className={`analytics-pill${filter===k?" active":""}`} onClick={()=>setFilter(k)}>{l}</button>)}</div></div>
-      <div style={{overflowX:"auto"}}><table className="data-table"><thead><tr><th>Ticket</th><th>Customer</th><th>Priority</th><th>Status</th><th>SLA</th><th>Elapsed</th><th>Remaining</th><th>Engineer</th></tr></thead><tbody>{filtered.length===0?<tr><td colSpan="8" style={{padding:28,textAlign:"center",color:"var(--text3)"}}>No tickets match this SLA view.</td></tr>:filtered.map(({ticket,info})=>{const meta=slaStatusMeta(info);return <tr key={ticket.ref}><td className="mono" style={{color:AC,fontWeight:700}}>{ticket.ref}</td><td>{ticket.clientName||ticket.name||ticket.company||"—"}</td><td>{ticket.priority}</td><td><StatusBadge status={ticket.status}/></td><td><span style={{display:"inline-flex",padding:"4px 7px",borderRadius:6,background:meta.bg,color:meta.color,fontSize:9,fontWeight:800}}>{meta.label}</span></td><td className="mono">{formatSlaMinutes(info.elapsedMinutes)}</td><td className="mono" style={{color:info.status==='breach'?"#EF4444":info.status==='warn'?"#F59E0B":"var(--text)"}}>{info.status==='breach'?formatSlaMinutes(info.remainingMinutes)+" overdue":info.status==='paused'?"Paused":formatSlaMinutes(info.remainingMinutes)}</td><td>{ticket.assignedEngineer||"Unassigned"}</td></tr>})}</tbody></table></div>
-    </div>
-
-    <div style={{marginTop:12,padding:10,borderRadius:8,border:"1px solid var(--border)",background:"var(--bg3)",fontSize:10,color:"var(--text4)"}}>MVP note: the SLA clock is currently calculated client-side from ticket timestamps and embedded pause fields. A later backend worker can enforce breach actions and notifications independently of an open browser session.</div>
-  </div>;
-}
-
-function notificationSeverityMeta(sev){
-  return ({
-    critical:{label:"Critical",color:"#EF4444",bg:"rgba(239,68,68,.10)"},
-    warning:{label:"Warning",color:"#F59E0B",bg:"rgba(245,158,11,.10)"},
-    success:{label:"Success",color:"#10B981",bg:"rgba(16,185,129,.10)"},
-    info:{label:"Info",color:"#0EA5E9",bg:"rgba(14,165,233,.10)"}
-  })[sev]||{label:"Info",color:"#0EA5E9",bg:"rgba(14,165,233,.10)"};
-}
-function relativeTime(value){
-  const ms=new Date(value||0).getTime();
-  if(!ms)return "—";
-  const d=Math.max(0,Date.now()-ms),m=Math.floor(d/60000),h=Math.floor(m/60),day=Math.floor(h/24);
-  if(m<1)return "just now";
-  if(m<60)return `${m}m ago`;
-  if(h<24)return `${h}h ago`;
-  if(day<7)return `${day}d ago`;
-  return new Date(ms).toLocaleDateString("en-ZA");
-}
-function NotificationCenter({role,adminUser,tickets,onOpenTicket,showToast}){
-  const allowed=hasPermission(role,"notifications.read");
-  const [items,setItems]=useState([]);
-  const [loading,setLoading]=useState(true);
-  const [filter,setFilter]=useState("all");
-  const [query,setQuery]=useState("");
-  const [error,setError]=useState("");
-  const uid=adminUser?.uid;
-
-  useEffect(()=>{
-    if(!allowed||!uid){setItems([]);setLoading(false);return;}
-    setLoading(true);setError("");
-    const unsub=db.collection("notifications").where("recipientUid","==",uid).limit(100).onSnapshot(
-      snap=>{
-        const rows=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
-        setItems(rows);setLoading(false);
-      },
-      err=>{console.error("Notification centre listener failed",err);setError(err.message||"Notification centre unavailable");setLoading(false);}
-    );
-    return()=>unsub();
-  },[allowed,uid]);
-
-  const unread=items.filter(n=>!n.read);
-  const filtered=items.filter(n=>{
-    if(filter==="unread"&&n.read)return false;
-    if(filter!=="all"&&filter!=="unread"&&n.severity!==filter)return false;
-    const q=query.trim().toLowerCase();
-    return !q||[n.title,n.message,n.ticketRef,n.category,n.automationId].join(" ").toLowerCase().includes(q);
-  });
-
-  const markRead=async(n)=>{
-    if(n.read)return;
-    try{await db.collection("notifications").doc(n.id).update({read:true,readAt:ts(),readByUid:uid});}
-    catch(e){showToast("Could not mark notification as read","error");}
-  };
-  const markAllRead=async()=>{
-    const pending=unread.slice(0,450);
-    if(!pending.length)return;
-    try{
-      const batch=db.batch();
-      pending.forEach(n=>batch.update(db.collection("notifications").doc(n.id),{read:true,readAt:ts(),readByUid:uid}));
-      await batch.commit();showToast(`${pending.length} notification${pending.length===1?"":"s"} marked as read ✓`);
-    }catch(e){console.error(e);showToast("Failed to mark notifications as read","error");}
-  };
-  const open=async(n)=>{await markRead(n);if(n.ticketRef)onOpenTicket?.(n.ticketRef);};
-
-  if(!allowed)return <div className="page-content"><div className="card" style={{padding:32,textAlign:"center"}}><div style={{fontSize:30}}>🔒</div><div style={{fontWeight:700,color:"var(--text)",marginTop:8}}>Notification access restricted</div><div style={{fontSize:12,color:"var(--text3)",marginTop:5}}>Your role does not have notifications.read permission.</div></div></div>;
-
-  return <div className="page-content">
-    <div className="section-head"><div className="section-num">🔔</div><div><div className="section-title">Notification Centre</div><div style={{fontSize:11,color:"var(--text3)",marginTop:2}}>One operational inbox for SLA, ticket, assignment and automation events</div></div><div style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:8}}>{unread.length>0&&<span style={{fontSize:10,fontWeight:800,color:"#EF4444"}}>{unread.length} unread</span>}<button className="btn btn-secondary btn-sm" onClick={markAllRead} disabled={!unread.length}>✓ Mark all read</button></div></div>
-    {error&&<div style={{marginBottom:12,padding:11,borderRadius:8,border:"1px solid rgba(239,68,68,.25)",background:"rgba(239,68,68,.06)",color:"#F87171",fontSize:11}}>⚠️ {error}</div>}
-    <div className="notification-panel-grid" style={{display:"grid",gridTemplateColumns:"minmax(0,1.65fr) minmax(260px,.55fr)",gap:14,alignItems:"start"}}>
-      <div className="card">
-        <div className="card-header" style={{gap:10,flexWrap:"wrap"}}>
-          <div style={{flex:1,minWidth:220}}><div className="card-title">Operational inbox</div><div style={{fontSize:10,color:"var(--text3)",marginTop:3}}>Live Firestore stream · last 100 notifications</div></div>
-          <input className="field-input" style={{width:230}} placeholder="Search notifications…" value={query} onChange={e=>setQuery(e.target.value)}/>
-        </div>
-        <div style={{padding:"9px 12px",borderBottom:"1px solid var(--border)",display:"flex",gap:6,flexWrap:"wrap"}}>{[["all","All"],["unread","Unread"],["critical","Critical"],["warning","Warning"],["success","Success"],["info","Info"]].map(([k,l])=><button key={k} className={`notification-filter${filter===k?" active":""}`} onClick={()=>setFilter(k)}>{l}{k==="unread"&&unread.length?` · ${unread.length}`:""}</button>)}</div>
-        {loading?<div className="notification-empty">Loading notification stream…</div>:filtered.length===0?<div className="notification-empty"><div style={{fontSize:28,marginBottom:8}}>🫡</div>{items.length?"No notifications match the current filter.":"You're all clear. No operational notifications yet."}</div>:<div>{filtered.map(n=>{const meta=notificationSeverityMeta(n.severity);return <div key={n.id} className={`notification-item${n.read?"":" unread"}`} onClick={()=>open(n)}>
-          <div className="notification-icon" style={{background:meta.bg,color:meta.color,border:`1px solid ${meta.color}30`}}>{n.icon||"🔔"}</div>
-          <div style={{flex:1,minWidth:0}}><div style={{display:"flex",alignItems:"center",gap:7}}>{!n.read&&<span className="notification-unread-dot"/>}<div className="notification-title">{n.title}</div><span style={{marginLeft:"auto",fontSize:8,fontWeight:800,textTransform:"uppercase",letterSpacing:".06em",padding:"3px 6px",borderRadius:5,background:meta.bg,color:meta.color}}>{meta.label}</span></div><div className="notification-message">{n.message}</div><div className="notification-meta"><span>{relativeTime(n.createdAt)}</span>{n.ticketRef&&<span style={{color:AC}}>• {n.ticketRef}</span>}{n.category&&<span>• {n.category}</span>}{n.read&&<span>• read</span>}</div></div>
-        </div>})}</div>}
-      </div>
-      <div className="notification-side">
-        <div className="card" style={{marginBottom:14}}><div className="card-header"><div><div className="card-title">Inbox health</div><div style={{fontSize:10,color:"var(--text3)",marginTop:3}}>Current operational signal</div></div></div><div className="card-body">{[["Unread",unread.length,"#EF4444"],["Critical",items.filter(n=>n.severity==="critical"&&!n.read).length,"#EF4444"],["Warnings",items.filter(n=>n.severity==="warning"&&!n.read).length,"#F59E0B"],["Automation",items.filter(n=>n.automationId).length,"#8B5CF6"]].map(([l,v,c])=><div key={l} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"9px 0",borderBottom:"1px solid var(--border)"}}><span style={{fontSize:11,color:"var(--text3)"}}>{l}</span><strong style={{fontSize:15,color:c}}>{v}</strong></div>)}</div></div>
-        <div className="card"><div className="card-header"><div><div className="card-title">Notification contract</div><div style={{fontSize:10,color:"var(--text3)",marginTop:3}}>Designed for the next backend stage</div></div></div><div className="card-body" style={{fontSize:10,color:"var(--text3)",lineHeight:1.6}}><div>✓ recipient-scoped records</div><div>✓ idempotent automation dedupe</div><div>✓ severity + priority</div><div>✓ read receipts</div><div>✓ ticket deep links</div><div>✓ backend-worker ready schema</div></div></div>
-      </div>
-    </div>
-  </div>;
-}
-
-function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError,onAuth,onUpdate,onAddNote,onBack,onNewTicket,theme,toggleTheme,showToast}){
-  const role=normaliseRole(userProfile?.role || "support_agent");
-  const isSuperAdmin=role==="super_admin";
+{tickets,loading,authed,adminUser,onAuth,onUpdate,onAddNote,onBack,onNewTicket,theme,toggleTheme,showToast}){
   const [pw,setPw]=useState(""); const [pwErr,setPwErr]=useState("");
   const [sel,setSel]=useState(null);
   const [fSt,setFSt]=useState("all"); const [fTy,setFTy]=useState("all"); const [fEng,setFEng]=useState("all");
@@ -3079,15 +2351,13 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
   const [note,setNote]=useState(""); const [eqRef,setEqRef]=useState("");
   const [saving,setSaving]=useState(false);
   const [activeTab,setActiveTab]=useState("tickets");
-  const [slaTick,setSlaTick]=useState(Date.now());
-  useEffect(()=>{const id=setInterval(()=>setSlaTick(Date.now()),30000);return()=>clearInterval(id);},[]);
+  const [teamEngineers,setTeamEngineers]=useState(["Unassigned"]);
   const [detailTab,setDetailTab]=useState("overview");
 
   const [activeEngineer,setActiveEngineer]=useState("Unassigned");
   const [onlineEngineers,setOnlineEngineers]=useState({});
   const [chatCounts,setChatCounts]=useState({});
   const [lastRead,setLastRead]=useState({});
-  const [notificationCount,setNotificationCount]=useState(0);
 
   const [visibleCount,setVisibleCount]=useState(50);
   const [statusModal,setStatusModal]=useState(null);
@@ -3101,38 +2371,20 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
   const [timeEntryModal,setTimeEntryModal]=useState(null);
 
   useEffect(()=>{
+    if(!authed||adminUser?.email!==CFG.adminEmails[0]) return;
+    teamApi("list").then(d=>{
+      const names=(d.users||[]).filter(u=>u.status==="active"&&u.role==="engineer").map(u=>u.displayName).filter(Boolean);
+      setTeamEngineers(["Unassigned",...names.filter(n=>n!=="Unassigned")]);
+    }).catch(e=>console.warn("Team directory preload skipped:",e.message));
+  },[authed,adminUser?.email]);
+
+  useEffect(()=>{
     if(!authed) return;
     const ref=rtdb.ref("presence");
     const handler=snap=>setOnlineEngineers(snap.val()||{});
     ref.on("value",handler);
     return()=>ref.off("value",handler);
   },[authed]);
-
-  useEffect(()=>{
-    if(!authed||!adminUser||!hasPermission(role,"notifications.read")) { setNotificationCount(0); return; }
-    const unsub=db.collection("notifications").where("recipientUid","==",adminUser.uid).limit(100).onSnapshot(
-      snap=>setNotificationCount(snap.docs.reduce((n,d)=>n+(d.data()?.read?0:1),0)),
-      err=>{console.warn("Notification count unavailable",err);setNotificationCount(0);}
-    );
-    return()=>unsub();
-  },[authed,adminUser,role]);
-
-  useEffect(()=>{
-    if(!authed||!tickets.length) return;
-    let cancelled=false;
-    const scan=async()=>{
-      if(cancelled)return;
-      for(const ticket of tickets){
-        if(["closed","resolved"].includes(ticket.status))continue;
-        const info=getSLAInfo(ticket);
-        if(!info||!['warn','breach'].includes(info.status))continue;
-        try{await runAutomationForTicket(ticket,{eventType:"sla_scan",slaStatus:info.status,actor:{actorEmail:adminUser?.email||auth.currentUser?.email||"system"}});}catch(e){console.warn("SLA automation scan failed",ticket.ref,e);}
-      }
-    };
-    scan();
-    const id=setInterval(scan,30000);
-    return()=>{cancelled=true;clearInterval(id);};
-  },[authed,tickets.length]);
 
   useEffect(()=>{
     if(!authed||!tickets.length) return;
@@ -3247,14 +2499,6 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
         timeByEngineer:byEngineer,
         updatedAt:ts()
       });
-      await fsAppendTimeline(ticket.ref,{
-        type:"time",
-        title:"Time logged",
-        detail:`${Math.floor(mins/60)}h ${mins%60}m · ${entry.billable?"Billable":"Non-billable"} · ${entry.description}`,
-        actorUid:adminUser?.uid||null,
-        actorEmail:adminUser?.email||null,
-        actorName:eng
-      });
       try{await sendSysMsg(ticket.ref,`Time logged: ${Math.floor(mins/60)}h ${mins%60}m by ${eng} — ${entry.description.slice(0,80)}`);}catch(e){}
       showToast(`Time logged: ${Math.floor(mins/60)}h ${mins%60}m ✓`);
       setTimeEntryModal(null);
@@ -3270,14 +2514,10 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
       const cred=await auth.signInWithEmailAndPassword(loginEmail,pw);
       const token=await cred.user.getIdTokenResult(true);
       if(token.claims.admin||CFG.adminEmails.includes(cred.user.email)){
-        const profile=await getOrCreateUserProfile(cred.user);
-        onAuth(cred.user,profile);
+        onAuth(cred.user);
       } else {
-        try{
-          const profile=await getOrCreateUserProfile(cred.user);
-          if(profile&&profile.active!==false&&profile.role!=="customer"){ onAuth(cred.user,profile); }
-          else { await auth.signOut(); setPwErr("Access denied. This account does not have staff access."); }
-        }catch(e){ await auth.signOut(); setPwErr(e.message||"Access denied."); }
+        await auth.signOut();
+        setPwErr("Access denied. This account is not an admin.");
       }
     }catch(e){ setPwErr(e.message); }
     setLoginBusy(false);
@@ -3326,8 +2566,6 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
   const totalChatActivity=Object.values(chatCounts).reduce((a,c)=>a+c,0);
 
   const doStatusClick=(ticket,newStatus)=>{
-    if(!canAny(role,"tickets.write","tickets.write_assigned")){showToast("Your role cannot change ticket status","error");return;}
-    if(role==="engineer" && ticket.assignedEngineer && ticket.assignedEngineer!==activeEngineer && ticket.assignedUid!==adminUser?.uid){showToast("This ticket is not assigned to you","error");return;}
     if(newStatus==="closed"&&!ticket.clientSignoff?.signed){
       alert("A client sign-off is required before closing this ticket. Please use the ✍ Client Sign-Off button in the Actions tab.");
       return;
@@ -3349,14 +2587,14 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
     setStatusModal(null);
   };
 
-  const doNote=async()=>{if(!note.trim())return;if(!canAny(role,"tickets.notes","tickets.write","tickets.write_assigned")){showToast("Your role cannot add ticket notes","error");return;}setSaving(true);await onAddNote(sel,note.trim());setNote("");setSaving(false);};
-  const doQuote=async()=>{if(!canAny(role,"tickets.write","tickets.write_assigned")){showToast("Your role cannot update quotations","error");return;}setSaving(true);await onUpdate(sel,{quotationRef:eqRef});setSaving(false);};
+  const doNote=async()=>{if(!note.trim())return;setSaving(true);await onAddNote(sel,note.trim());setNote("");setSaving(false);};
+  const doQuote=async()=>{setSaving(true);await onUpdate(sel,{quotationRef:eqRef});setSaving(false);};
   const doAssign=async(eng)=>{
     await onUpdate(tk.ref,{assignedEngineer:eng});
     if(eng!=="Unassigned") setActiveEngineer(eng);
     try{await sendSysMsg(tk.ref,`Assigned to ${eng}`)}catch(e){}
   };
-  const doSaveParts=async(parts)=>{if(!canAny(role,"tickets.write","tickets.write_assigned")){showToast("Your role cannot update parts","error");return;}setSaving(true);await onUpdate(partsModal.ref,{parts});setPartsModal(null);setSaving(false);};
+  const doSaveParts=async(parts)=>{setSaving(true);await onUpdate(partsModal.ref,{parts});setPartsModal(null);setSaving(false);};
 
   const handleWaForward=(ticket,msgText)=>{
     const url=waUrl(ticket.phone,
@@ -3391,14 +2629,9 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
           <div className="nav-section">
             <div className="nav-label">Tickets</div>
             <button className={`nav-item${activeTab==="tickets"?" active":""}`} onClick={()=>setActiveTab("tickets")}><span className="ni">🎫</span>All Tickets{tickets.length>0&&<span className="badge">{tickets.length}</span>}</button>
-            {canAny(role,"customers.read")&&<button className={`nav-item${activeTab==="customers"?" active":""}`} onClick={()=>setActiveTab("customers")}><span className="ni">👤</span>Customers</button>}
-            {canAny(role,"assets.read")&&<button className={`nav-item${activeTab==="assets"?" active":""}`} onClick={()=>setActiveTab("assets")}><span className="ni">🖥️</span>Assets / CMDB</button>}
-            {canAny(role,"sla.read")&&<button className={`nav-item${activeTab==="sla"?" active":""}`} onClick={()=>setActiveTab("sla")}><span className="ni">⏱️</span>SLA Engine</button>}
-            {canAny(role,"automation.read")&&<button className={`nav-item${activeTab==="automation"?" active":""}`} onClick={()=>setActiveTab("automation")}><span className="ni">⚙️</span>Automation Engine</button>}
-            {canAny(role,"notifications.read")&&<button className={`nav-item${activeTab==="notifications"?" active":""}`} onClick={()=>setActiveTab("notifications")}><span className="ni">🔔</span>Notifications{notificationCount>0&&<span className="badge">{notificationCount>99?"99+":notificationCount}</span>}</button>}
-            {canAny(role,"tickets.write","tickets.write_assigned")&&<button className={`nav-item${activeTab==="new"?" active":""}`} onClick={()=>setActiveTab("new")}><span className="ni">✏️</span>Log New Ticket</button>}
+            <button className={`nav-item${activeTab==="new"?" active":""}`} onClick={()=>setActiveTab("new")}><span className="ni">✏️</span>Log New Ticket</button>
             <button className={`nav-item${activeTab==="analytics"?" active":""}`} onClick={()=>setActiveTab("analytics")}><span className="ni">📊</span>Analytics</button>
-             {isSuperAdmin&&<button className={`nav-item${activeTab==="team"?" active":""}`} onClick={()=>setActiveTab("team")}><span className="ni">👥</span>Team & Access</button>}
+            {adminUser?.email===CFG.adminEmails[0]&&<button className={`nav-item${activeTab==="team"?" active":""}`} onClick={()=>setActiveTab("team")}><span className="ni">👥</span>Team & Access</button>
           </div>
           <div className="nav-section">
             <div className="nav-label">Live Chat</div>
@@ -3422,9 +2655,8 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
             </div>
             <div style={{padding:"4px 10px 2px"}}>
               <div style={{fontSize:9,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>Your Identity</div>
-               <div style={{marginBottom:7}}><RbacRoleBadge role={role}/></div>
               <select className="field-input" style={{fontSize:11,padding:"5px 8px"}} value={activeEngineer} onChange={e=>setActiveEngineer(e.target.value)}>
-                {ENGINEERS.map(eng=><option key={eng}>{eng}</option>)}
+                {teamEngineers.map(eng=><option key={eng}>{eng}</option>)}
               </select>
             </div>
           </div>
@@ -3465,12 +2697,11 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
       <div className="content-area">
         <div className="topbar">
           <div className="topbar-left">
-            <div className="topbar-title">{activeTab==="tickets"?"Ticket Manager":activeTab==="customers"?"Customer 360":activeTab==="assets"?"Asset / CMDB":activeTab==="sla"?"SLA Engine":activeTab==="automation"?"Automation Engine":activeTab==="notifications"?"Notification Centre":activeTab==="analytics"?"Service Analytics":"Log New Ticket"}</div>
-            <div className="topbar-sub">{activeTab==="tickets"?`${filtered.length} result${filtered.length!==1?"s":""}`:activeTab==="customers"?"Customer master · Assets · Service history":activeTab==="assets"?`${assets?.length||0} managed asset${(assets?.length||0)!==1?"s":""}`:activeTab==="sla"?"Priority targets · business clock · breach monitoring":activeTab==="automation"?"Triggers · conditions · actions":activeTab==="notifications"?`${notificationCount} unread operational notification${notificationCount===1?"":"s"}`:activeTab==="analytics"?"CSAT · SLA · Time · Service Quality":""}</div>
+            <div className="topbar-title">{activeTab==="tickets"?"Ticket Manager":activeTab==="analytics"?"Service Analytics":activeTab==="team"?"Team & Access":"Log New Ticket"}</div>
+            <div className="topbar-sub">{activeTab==="tickets"?`${filtered.length} result${filtered.length!==1?"s":""}`:activeTab==="analytics"?"CSAT · SLA · Time · Service Quality":activeTab==="team"?"Identity · RBAC · Account Lifecycle":""}</div>
           </div>
           <div className="topbar-right">
             {overdueCount>0&&<span style={{background:"rgba(239,68,68,0.1)",border:"1px solid rgba(239,68,68,0.3)",color:"#F87171",fontSize:11,fontWeight:700,padding:"4px 10px",borderRadius:6,animation:"blink 1.5s infinite"}}>⚠️ {overdueCount} SLA Breach{overdueCount>1?"es":""}</span>}
-            {canAny(role,"notifications.read")&&<button className="notification-bell" title="Open Notification Centre" onClick={()=>setActiveTab("notifications")}>🔔{notificationCount>0&&<span className="notification-count">{notificationCount>99?"99+":notificationCount}</span>}</button>}
             {onlineList.length>0&&(
               <div style={{display:"flex",alignItems:"center",gap:5,background:"rgba(0,200,150,0.08)",border:"1px solid rgba(0,200,150,0.2)",borderRadius:20,padding:"4px 10px"}}>
                 <div className="presence-online-dot" style={{width:6,height:6}}/>
@@ -3482,17 +2713,13 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
           </div>
         </div>
 
+        {activeTab==="team"&&<TeamAccess adminUser={adminUser} showToast={showToast} onEngineersChanged={names=>setTeamEngineers(["Unassigned",...names.filter(n=>n!=="Unassigned")])}/>}
+
         {activeTab==="new"&&(
           <div style={{overflow:"auto",flex:1}}>
-            <TicketForm mode="engineer" onSubmit={async(form)=>{setSaving(true);await onNewTicket(form);setActiveTab("tickets");setSaving(false);}} saving={saving} theme={theme} toggleTheme={toggleTheme}/>
+            <TicketForm mode="engineer" engineerOptions={teamEngineers} onSubmit={async(form)=>{setSaving(true);await onNewTicket(form);setActiveTab("tickets");setSaving(false);}} saving={saving} theme={theme} toggleTheme={toggleTheme}/>
           </div>
         )}
-
-        {activeTab==="sla"&&<SLAEngine tickets={tickets} role={role} showToast={showToast}/>}
-
-        {activeTab==="automation"&&<AutomationEngine tickets={tickets} role={role} showToast={showToast}/>}
-
-        {activeTab==="notifications"&&<NotificationCenter role={role} adminUser={adminUser} tickets={tickets} onOpenTicket={(ref)=>{setActiveTab("tickets");setSel(ref);setDetailTab("overview");}} showToast={showToast}/>}
 
         {activeTab==="analytics"&&(
           <AnalyticsDashboard tickets={tickets} onExport={(rows)=>{
@@ -3510,10 +2737,7 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
           }}/>
         )}
 
-        {activeTab==="customers"&&<Customer360 tickets={tickets} role={role} showToast={showToast}/>}
-        {activeTab==="assets"&&<AssetCMDB assets={assets||[]} tickets={tickets} role={role} adminUser={adminUser} customers={buildCustomer360(tickets)} showToast={showToast} assetDbError={assetDbError}/>} 
-       {activeTab==="team"&&isSuperAdmin&&<TeamAccess adminUser={adminUser} role={role} showToast={showToast}/>}
-       {activeTab==="tickets"&&(
+        {activeTab==="tickets"&&(
           <div style={{flex:1,display:"flex",minHeight:0,overflow:"hidden"}} className="admin-body">
             <div style={{flex:1,overflow:"hidden",display:"flex",flexDirection:"column"}}>
               <div style={{padding:"16px 20px 0"}}>
@@ -3536,7 +2760,7 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
                   </select>
                   <select className="field-input" style={{width:"auto"}} value={fEng} onChange={e=>setFEng(e.target.value)}>
                     <option value="all">All Engineers</option>
-                    {ENGINEERS.map(e=><option key={e}>{e}</option>)}
+                    {teamEngineers.map(e=><option key={e}>{e}</option>)}
                   </select>
                 </div>
               </div>
@@ -3575,7 +2799,7 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
                               <td style={{maxWidth:200,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t.issueTitle||t.problemDescription||"—"}</td>
                               <td><SLABadge ticket={t}/></td>
                               <td><span style={{fontSize:11,fontWeight:600,color:t.priority==="Urgent"?"#EF4444":t.priority==="High"?"#F59E0B":"var(--text3)"}}>{t.priority}</span></td>
-                              <td><StatusBadge status={t.status}/></td>
+                              <td><StatusBadge s={t.status}/></td>
                               <td><span style={{fontSize:11,color:t.assignedEngineer&&t.assignedEngineer!=="Unassigned"?AC:"var(--text3)"}}>{t.assignedEngineer||"Unassigned"}</span></td>
                               <td>
                                 {msgCount>0?(
@@ -3625,10 +2849,6 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
                     <button className={`detail-tab${detailTab==="overview"?" active":""}`} onClick={()=>setDetailTab("overview")}>
                       📋 Overview
                     </button>
-                    <button className={`detail-tab${detailTab==="timeline"?" active":""}`} onClick={()=>setDetailTab("timeline")}>
-                      🕘 Timeline
-                      {Array.isArray(tk.timeline)&&tk.timeline.length>0&&<span style={{fontSize:9,color:"var(--text4)",marginLeft:3}}>({tk.timeline.length})</span>}
-                    </button>
                     <button className={`detail-tab${detailTab==="chat"?" active":""}`} onClick={openChatTab}>
                       💬 Chat
                       {(chatCounts[tk.ref]||0)>0&&<span className="detail-tab-new">{chatCounts[tk.ref]}</span>}
@@ -3664,7 +2884,7 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
                       <div style={{marginBottom:16}}>
                         <div style={{fontSize:10,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6}}>Assigned Engineer</div>
                         <select className="field-input" style={{fontSize:12}} value={tk.assignedEngineer||"Unassigned"} onChange={e=>doAssign(e.target.value)}>
-                          {ENGINEERS.map(eng=><option key={eng}>{eng}</option>)}
+                          {teamEngineers.map(eng=><option key={eng}>{eng}</option>)}
                         </select>
                       </div>
                       <div className="divider"/>
@@ -3722,8 +2942,6 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
                       {tk.quotationRef&&<div style={{fontSize:11,color:AC,marginBottom:8}}>✓ {tk.quotationRef}</div>}
                     </div>
                   )}
-
-                  {detailTab==="timeline"&&<TicketTimeline ticket={tk} showToast={showToast}/>}
 
                   {detailTab==="chat"&&(
                     <div style={{flex:1,display:"flex",flexDirection:"column",minHeight:0,height:"calc(100vh - 200px)"}}>
@@ -3896,12 +3114,9 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
 function Root(){
   const [view,setView]=useState("portal");
   const [tickets,setTickets]=useState([]);
-  const [assets,setAssets]=useState([]);
-  const [assetDbError,setAssetDbError]=useState("");
   const [dbLoading,setDbLoading]=useState(true);
   const [lastTicket,setLastTicket]=useState(null);
   const [adminUser,setAdminUser]=useState(null);
-  const [userProfile,setUserProfile]=useState(null);
   const [saving,setSaving]=useState(false);
   const [toast,setToast]=useState({msg:"",type:"ok"});
   const [theme,setTheme]=useState("dark");
@@ -3929,29 +3144,14 @@ function Root(){
   },[adminUser]);
 
   useEffect(()=>{
-    if(!adminUser){setAssets([]);setAssetDbError("");return;}
-    const role=normaliseRole(userProfile?.role||"support_agent");
-    if(!hasPermission(role,"assets.read")){setAssets([]);setAssetDbError("");return;}
-    setAssetDbError("");
-    const unsub=db.collection("assets").orderBy("updatedAt","desc").limit(1000)
-      .onSnapshot(snap=>{setAssets(snap.docs.map(d=>({id:d.id,...d.data()})));},
-      err=>{console.error("Asset CMDB read failed",err);setAssets([]);setAssetDbError(err.message||"Asset CMDB read failed");});
-    return()=>unsub();
-  },[adminUser,userProfile]);
-
-  useEffect(()=>{
     const unsub=auth.onAuthStateChanged(async(u)=>{
       if(u){
         const token=await u.getIdTokenResult();
         if(token.claims.admin||CFG.adminEmails.includes(u.email)){
-          const profile=await getOrCreateUserProfile(u);
-          if(profile&&profile.active!==false){setAdminUser(u);setUserProfile(profile);}
-          else {await auth.signOut();setAdminUser(null);setUserProfile(null);}
+          setAdminUser(u);
         } else {
-          /* Preserve the original CIMOP admin gate until RBAC rules/claims are deployed. */
-          setAdminUser(null);
-          setUserProfile(null);
           await auth.signOut();
+          setAdminUser(null);
         }
       } else {
         setAdminUser(null);
@@ -3976,16 +3176,7 @@ function Root(){
   ref,
   ticketNumber:num,
   status:"open",
-   schemaVersion:3,
-   // Customer 360 identity keys; canonical records can be migrated later.
-   customerId:form.customerId||makeCustomerId(form),
-   contactId:form.contactId||makeContactId(form),
-   siteId:form.siteId||makeSiteId(form),
-   assetId:form.assetId||makeAssetId(form),
-   contractId:form.contractId||"",
-   createdByUid:adminUser?.uid||null,
-   createdByEmail:adminUser?.email||null,
-   createdAt:ts(),
+  createdAt:ts(),
   updatedAt:ts(),
   notes:[],
   quotationRef:"",
@@ -4006,20 +3197,9 @@ function Root(){
   authorisationName: "",
   authorisationPosition: "",
   authorisationSignature: "",
-  authorisationSignedAt: null,
-  timeline:[{
-    id:`tl_created_${Date.now()}`,
-    type:"created",
-    title:"Ticket created",
-    detail:`${ref} logged for ${form.clientName||form.name||"customer"}`,
-    at:ts(),
-    actorUid:adminUser?.uid||null,
-    actorEmail:adminUser?.email||null,
-    actorName:adminUser?.email||"Customer Portal"
-  }]
+  authorisationSignedAt: null
 };
       await db.collection("tickets").doc(ref).set(ticket);
-      try{await runAutomationForTicket(ticket,{eventType:"created",actor:{actorEmail:adminUser?.email||auth.currentUser?.email||"Customer Portal"}});}catch(e){console.warn("Create automation failed",e);}
       if(photos&&photos.length){
         const result=await savePhotosForTicket(ref,photos);
         if(result.saved) await fsUpdate(ref,{photoCount:result.saved});
@@ -4037,8 +3217,6 @@ function Root(){
     try{
       const current=tickets.find(t=>t.ref===ref);
       const next={...changes};
-      const events=[];
-      const actor={actorUid:adminUser?.uid||null,actorEmail:adminUser?.email||null,actorName:adminUser?.email||userProfile?.displayName||"Team member"};
       if(current&&Object.prototype.hasOwnProperty.call(changes,"status")&&changes.status!==current.status){
         const wasPaused=SLA_PAUSED_STATUSES.includes(current.status);
         const willPause=SLA_PAUSED_STATUSES.includes(changes.status);
@@ -4053,28 +3231,12 @@ function Root(){
         }
         if(changes.status==="resolved"&&!current.resolvedAt) next.resolvedAt=ts();
         if(changes.status==="closed"&&!current.closedAt) next.closedAt=ts();
-        events.push({...actor,type:"status",title:`Status changed to ${ST[changes.status]?.l||changes.status}`,detail:`${ST[current.status]?.l||current.status} → ${ST[changes.status]?.l||changes.status}`});
-      }
-      if(current&&Object.prototype.hasOwnProperty.call(changes,"assignedEngineer")&&changes.assignedEngineer!==current.assignedEngineer){
-        events.push({...actor,type:"assignment",title:"Engineer assignment changed",detail:`${current.assignedEngineer||"Unassigned"} → ${changes.assignedEngineer||"Unassigned"}`});
-      }
-      if(current&&Object.prototype.hasOwnProperty.call(changes,"parts")){
-        events.push({...actor,type:"parts",title:"Parts / inventory updated",detail:`${(changes.parts||[]).length} part${(changes.parts||[]).length===1?"":"s"} currently linked to the ticket`});
-      }
-      if(current&&Object.prototype.hasOwnProperty.call(changes,"quotationRef")&&changes.quotationRef!==current.quotationRef){
-        events.push({...actor,type:"quote",title:changes.quotationRef?"Quotation linked":"Quotation link removed",detail:changes.quotationRef||current.quotationRef||"No quotation reference"});
-      }
-      if(current&&Object.prototype.hasOwnProperty.call(changes,"clientSignoff")&&changes.clientSignoff?.signed&&!current.clientSignoff?.signed){
-        events.push({...actor,type:"signoff",title:"Client sign-off captured",detail:changes.clientSignoff.clientName||"Client sign-off recorded"});
       }
       await fsUpdate(ref,next);
-      for(const event of events) await fsAppendTimeline(ref,event);
-      if(events.some(e=>e.type==="status")) await runAutomationForTicket({...current,...next},{before:current,eventType:"status_changed",actor});
-      if(events.some(e=>e.type==="assignment")) await runAutomationForTicket({...current,...next},{before:current,eventType:"assignment_changed",actor});
       showToast("Updated ✓");
     }catch(e){console.error(e);showToast("Update failed","error");}
   };
-  const addNote=async(ref,txt,type="note",engineer="")=>{try{await fsNote(ref,txt,type,engineer,{uid:adminUser?.uid,email:adminUser?.email,name:userProfile?.displayName||adminUser?.email||engineer||"Team member"});showToast("Note added ✓");}catch(e){console.error(e);showToast("Note failed","error");}};
+  const addNote=async(ref,txt,type="note",engineer="")=>{try{await fsNote(ref,txt,type,engineer);showToast("Note added ✓");}catch(e){console.error(e);showToast("Note failed","error");}};
 
   if(dbLoading)return<Spinner/>;
 
@@ -4090,7 +3252,7 @@ function Root(){
         </div>
       )}
       {view==="success"&&lastTicket&&<SuccessScreen ticket={lastTicket} onBack={()=>setView("portal")}/>}
-      {view==="admin"&&<Admin tickets={tickets} assets={assets} assetDbError={assetDbError} loading={dbLoading} authed={!!adminUser} adminUser={adminUser} userProfile={userProfile} onAuth={(u,p)=>{setAdminUser(u);setUserProfile(p);}} onUpdate={updateTicket} onAddNote={addNote} onBack={()=>{setView("portal");auth.signOut();setUserProfile(null);setAdminUser(null);}} onNewTicket={addTicket} theme={theme} toggleTheme={toggleTheme} showToast={showToast}/>}
+      {view==="admin"&&<Admin tickets={tickets} loading={dbLoading} authed={!!adminUser} adminUser={adminUser} onAuth={(u)=>setAdminUser(u)} onUpdate={updateTicket} onAddNote={addNote} onBack={()=>{setView("portal");auth.signOut();}} onNewTicket={addTicket} theme={theme} toggleTheme={toggleTheme} showToast={showToast}/>}
       <Toast msg={toast.msg} type={toast.type}/>
     </>
   );
