@@ -2631,7 +2631,7 @@ function Admin({tickets,loading,authed,adminUser,onAuth,onUpdate,onAddNote,onBac
             <button className={`nav-item${activeTab==="tickets"?" active":""}`} onClick={()=>setActiveTab("tickets")}><span className="ni">🎫</span>All Tickets{tickets.length>0&&<span className="badge">{tickets.length}</span>}</button>
             <button className={`nav-item${activeTab==="new"?" active":""}`} onClick={()=>setActiveTab("new")}><span className="ni">✏️</span>Log New Ticket</button>
             <button className={`nav-item${activeTab==="analytics"?" active":""}`} onClick={()=>setActiveTab("analytics")}><span className="ni">📊</span>Analytics</button>
-            {adminUser?.email===CFG.adminEmails[0]&&<button className={`nav-item${activeTab==="team"?" active":""}`} onClick={()=>setActiveTab("team")}><span className="ni">👥</span>Team & Access</button>
+            {adminUser?.email===CFG.adminEmails[0]&&<button className={`nav-item${activeTab==="team"?" active":""}`} onClick={()=>setActiveTab("team")}><span className="ni">👥</span>Team & Access</button>}
           </div>
           <div className="nav-section">
             <div className="nav-label">Live Chat</div>
