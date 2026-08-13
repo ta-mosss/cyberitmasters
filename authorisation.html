@@ -63,26 +63,16 @@
 <body>
 <div id="root"></div>
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyBpoDnbWKvWQdvcZnhUZwFr24iox2fWJto",
-  authDomain: "test-bot-49f99.firebaseapp.com",
-  projectId: "test-bot-49f99",
-  storageBucket: "test-bot-49f99.firebasestorage.app",
-  messagingSenderId: "522231357803",
-  appId: "1:522231357803:web:bf65a73d1df7269615ac2e",
-  databaseURL: "https://test-bot-49f99-default-rtdb.firebaseio.com"
+const CFG = {
+  bizName: "Cyber I.T Masters",
+  tagline: "Professional I.T Solutions",
+  bridgeEndpoint: "https://cimop-portal-auth.mosesanza.workers.dev/"
 };
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-const functions = firebase.functions();
 </script>
 <script type="text/babel">
 const { useState, useEffect, useRef, forwardRef, useImperativeHandle } = React;
 
-const CFG = {
-  bizName: "Cyber I.T Masters",
-  tagline: "Professional I.T Solutions",
-};
+
 
 // ── SIGNATURE PAD COMPONENT ──
 const SignaturePad = forwardRef((props, ref) => {
@@ -224,31 +214,40 @@ function App() {
   
   const padRef = useRef(null);
 
-  // Fetch ticket
+  // Fetch ticket through the shared Cloudflare bridge.
+  // This page never reads Firestore directly.
   useEffect(() => {
-    if (!ticketRef) {
-      setError("No ticket reference provided. Please use ?ticketId=CIM-XXXX");
-      setLoading(false);
-      return;
-    }
-    const unsub = db.collection("tickets").doc(ticketRef)
-      .onSnapshot((doc) => {
-        if (!doc.exists) {
-          setError(`Ticket ${ticketRef} not found.`);
-          setLoading(false);
-          return;
+    let cancelled = false;
+    const loadTicket = async () => {
+      if (!ticketRef) {
+        setError("No ticket reference provided. Please use ?ticketId=CIM-XXXX");
+        setLoading(false);
+        return;
+      }
+      try {
+        const response = await fetch(CFG.bridgeEndpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ bridgeAction: "authorisation.get", ticketId: ticketRef })
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok || !result.success || !result.ticket) {
+          throw new Error(result.message || `Authorisation bridge returned ${response.status}`);
         }
-        const data = doc.data();
+        if (cancelled) return;
+        const data = result.ticket;
         setTicket(data);
-        setClientName(data.clientName || data.name || "");
-        setClientPosition(data.clientPosition || "");
-        setLoading(false);
-      }, (err) => {
-        console.error(err);
-        setError("Error fetching ticket. Please try again.");
-        setLoading(false);
-      });
-    return () => unsub();
+        setClientName(data.clientName || "");
+        setClientPosition(data.authorisationPosition || "");
+      } catch (err) {
+        console.error("❌ Authorisation ticket load failed:", err);
+        if (!cancelled) setError(err.message || "Error fetching ticket. Please try again.");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    loadTicket();
+    return () => { cancelled = true; };
   }, [ticketRef]);
 
   const handleSubmit = async () => {
@@ -264,31 +263,29 @@ function App() {
   try {
     const imgData = padRef.current.getImageData();
     
-    console.log('📤 Sending authorisation request for ticket:', ticketRef);
-    
-    const response = await fetch('/.netlify/functions/authorise', {
+    console.log('📤 Sending authorisation through CIMOP Cloudflare bridge:', ticketRef);
+
+    const response = await fetch(CFG.bridgeEndpoint, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        bridgeAction: 'authorisation.submit',
         ticketId: ticketRef,
-        name: clientName,
-        position: clientPosition || '',
+        name: clientName.trim(),
+        position: (clientPosition || '').trim(),
         signature: imgData
       })
     });
 
-    // ✅ First check if response is ok before trying to parse JSON
-    if (!response.ok) {
-      const text = await response.text();
-      console.error('❌ Server error response:', text);
-      throw new Error(`Server error: ${response.status} - ${text || 'No details'}`);
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok || !result.success) {
+      if (result.alreadyAuthorised) {
+        setTicket(prev => prev ? {...prev, authorized:true, authorisationName:result.authorisationName || prev.authorisationName} : prev);
+      }
+      throw new Error(result.message || `Authorisation bridge returned ${response.status}`);
     }
 
-    // ✅ Now safely parse JSON
-    const result = await response.json();
-    console.log('✅ Authorisation saved:', result);
+    console.log('✅ Authorisation saved through Cloudflare:', result);
     setSuccess(true);
     
   } catch (err) {
