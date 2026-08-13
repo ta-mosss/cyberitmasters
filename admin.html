@@ -407,6 +407,16 @@ const CFG={
     swift: "CABLZAJJ"
   }
 };
+
+/* Team & Access is intentionally restricted to Super Admins. The Worker
+   performs the authoritative check; these helpers only control the UI. */
+function isCimopSuperAdmin(user){
+  return !!user && (
+    String(user.email||"").trim().toLowerCase()===String(CFG.adminEmails[0]||"").trim().toLowerCase() ||
+    user.cimopClaims?.role==="super_admin"
+  );
+}
+
 const AC="#00C896",AC2="#0EA5E9";
 
 /* ── SLA HOURS by priority ── */
@@ -2000,7 +2010,6 @@ function TeamAccess({adminUser,showToast,onEngineersChanged}){
   const [inviteLink,setInviteLink]=useState("");
   const [freshStart,setFreshStart]=useState(false);
   const [confirmPhrase,setConfirmPhrase]=useState("");
-  const [reconciling,setReconciling]=useState(false);
   const [form,setForm]=useState({displayName:"",email:"",phone:"",jobTitle:"",department:"Technical Services",role:"engineer"});
 
   const load=async()=>{
@@ -2021,8 +2030,8 @@ function TeamAccess({adminUser,showToast,onEngineersChanged}){
       setShowCreate(false);
       setForm({displayName:"",email:"",phone:"",jobTitle:"",department:"Technical Services",role:"engineer"});
       await load();
-      if(d.email){
-        try{await auth.sendPasswordResetEmail(d.email);showToast("Account created + password setup email sent ✓");}catch(e){console.warn("Password email failed",e);}
+      if(d.passwordResetLink){
+        showToast("Account created + setup link generated ✓");
       }
     }catch(e){console.error(e);showToast(e.message||"Failed to create account","error");}
     finally{setSaving(false);}
@@ -2049,23 +2058,13 @@ function TeamAccess({adminUser,showToast,onEngineersChanged}){
   const resetPassword=async(u)=>{
     try{
       const d=await teamApi("resetPassword",{uid:u.uid});
-      if(d.passwordResetLink) setInviteLink(d.passwordResetLink);
-      showToast("Password reset email sent ✓");
-    }catch(e){showToast(e.message||"Could not send reset email","error");}
-  };
-
-  const cleanupOrphan=async(u)=>{
-    if(u.reconciliationStatus!=="TEAM_AUTH_MISSING_PROFILE"||u.protected){return;}
-    if(!confirm(`Delete the Firebase Auth account for ${u.displayName||u.email}? This cannot be undone.`))return;
-    if(prompt('Type DELETE ACCOUNT to confirm')!=="DELETE ACCOUNT")return;
-    setSaving(true);
-    try{
-      await teamApi("cleanupDelete",{uid:u.uid,confirm:"DELETE ACCOUNT",deleteProfile:true});
-      showToast("Orphan Firebase account deleted ✓");
-      setSelected(null);
-      await load();
-    }catch(e){showToast(e.message||"Cleanup failed","error");}
-    finally{setSaving(false);}
+      if(d.passwordResetLink){
+        setInviteLink(d.passwordResetLink);
+        showToast("Password reset link generated ✓");
+      }else{
+        showToast("Password reset requested ✓");
+      }
+    }catch(e){showToast(e.message||"Could not generate password reset","error");}
   };
 
   const filtered=users.filter(u=>{
@@ -2075,17 +2074,6 @@ function TeamAccess({adminUser,showToast,onEngineersChanged}){
   const active=users.filter(u=>u.status==="active").length;
   const engineers=users.filter(u=>u.status==="active"&&u.role==="engineer").length;
   const disabled=users.filter(u=>u.status==="disabled").length;
-
-  const reconcile=async()=>{
-    setReconciling(true);
-    try{
-      const d=await teamApi("reconcile");
-      const x=d.summary||{};
-      showToast(`Reconciliation: ${x.healthy||0} healthy · ${x.teamMissingProfile||0} missing profiles · ${x.profileMissingAuth||0} missing Auth`);
-      await load();
-    }catch(e){showToast(e.message||"Reconciliation failed","error");}
-    finally{setReconciling(false);}
-  };
 
   const doFreshStart=async()=>{
     if(confirmPhrase!=="RESET TEAM"){showToast("Type RESET TEAM exactly to continue","error");return;}
@@ -2149,7 +2137,7 @@ function TeamAccess({adminUser,showToast,onEngineersChanged}){
       </div>
     </div>
 
-    {inviteLink&&<div className="invite-box"><div style={{fontSize:12,fontWeight:700,color:AC}}>✓ Account created — setup link available</div><div style={{fontSize:10,color:"var(--text3)",marginTop:3}}>A password setup email was requested by the secure Team & Access Worker. Keep this link as a secure fallback.</div><div className="invite-link">{inviteLink}</div><div style={{display:"flex",gap:8,marginTop:8}}><button className="btn btn-secondary btn-sm" onClick={()=>navigator.clipboard?.writeText(inviteLink)}>Copy setup link</button><button className="btn btn-ghost btn-sm" onClick={()=>setInviteLink("")}>Dismiss</button></div></div>}
+    {inviteLink&&<div className="invite-box"><div style={{fontSize:12,fontWeight:700,color:AC}}>✓ Account created — setup link available</div><div style={{fontSize:10,color:"var(--text3)",marginTop:3}}>The system also attempted to send the password setup email. Keep this link as a secure fallback.</div><div className="invite-link">{inviteLink}</div><div style={{display:"flex",gap:8,marginTop:8}}><button className="btn btn-secondary btn-sm" onClick={()=>navigator.clipboard?.writeText(inviteLink)}>Copy setup link</button><button className="btn btn-ghost btn-sm" onClick={()=>setInviteLink("")}>Dismiss</button></div></div>}
 
     {showCreate&&<div className="modal-overlay" onClick={e=>{if(e.target===e.currentTarget&&!saving)setShowCreate(false);}}><div className="modal-box fu" style={{maxWidth:620}}>
       <div className="modal-header"><div><div className="card-title">+ Create Team Member</div><div style={{fontSize:10,color:"var(--text4)",marginTop:3}}>Creates Firebase Auth + CIMOP profile + RBAC claims.</div></div><button className="btn btn-ghost btn-sm" onClick={()=>setShowCreate(false)}>✕</button></div>
@@ -2159,14 +2147,14 @@ function TeamAccess({adminUser,showToast,onEngineersChanged}){
         <Field l="Mobile"><input {...fi} value={form.phone} onChange={e=>setForm(f=>({...f,phone:e.target.value}))} placeholder="+27 72 000 0000"/></Field>
         <Field l="Job Title"><input {...fi} value={form.jobTitle} onChange={e=>setForm(f=>({...f,jobTitle:e.target.value}))} placeholder="Senior IT Engineer"/></Field>
         <Field l="Department"><input {...fi} value={form.department} onChange={e=>setForm(f=>({...f,department:e.target.value}))} placeholder="Technical Services"/></Field>
-        <Field l="Role"><select {...fi} value={form.role} onChange={e=>setForm(f=>({...f,role:e.target.value}))}>{Object.entries(TEAM_ROLES).filter(([k])=>k!=="super_admin"||adminUser?.email===CFG.adminEmails[0]||adminUser?.cimopClaims?.role==="super_admin").map(([k,v])=><option key={k} value={k}>{v.label}</option>)}</select></Field>
+        <Field l="Role"><select {...fi} value={form.role} onChange={e=>setForm(f=>({...f,role:e.target.value}))}>{Object.entries(TEAM_ROLES).filter(([k])=>k!=="super_admin"||isCimopSuperAdmin(adminUser)).map(([k,v])=><option key={k} value={k}>{v.label}</option>)}</select></Field>
       </div><div style={{marginTop:14,padding:12,background:"var(--bg3)",borderRadius:8,fontSize:11,color:"var(--text3)"}}>The new user will receive a Firebase password setup email. No password is stored or displayed by CIMOP.</div><div style={{display:"flex",justifyContent:"flex-end",gap:8,marginTop:18}}><button className="btn btn-secondary" onClick={()=>setShowCreate(false)}>Cancel</button><button className="btn btn-primary" onClick={create} disabled={saving}>{saving?"Creating…":"Create Account"}</button></div></div>
     </div></div>}
 
     {selected&&<div className="modal-overlay" onClick={e=>{if(e.target===e.currentTarget&&!saving)setSelected(null);}}><div className="modal-box fu" style={{maxWidth:650}}>
       <div className="modal-header"><div><div className="card-title">Manage Account</div><div style={{fontSize:10,color:"var(--text4)",marginTop:3}}>{selected.email}</div></div><button className="btn btn-ghost btn-sm" onClick={()=>setSelected(null)}>✕</button></div>
       <div className="modal-body">
-        <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:18}}><div className="team-avatar" style={{width:46,height:46}}>{(selected.displayName||selected.email||"?").slice(0,1).toUpperCase()}</div><div><div style={{fontSize:15,fontWeight:800,color:"var(--text)"}}>{selected.displayName}</div><div style={{fontSize:11,color:"var(--text3)"}}>{selected.email} · {selected.status}</div>{selected.reconciliationStatus&&<div style={{fontSize:9,color:selected.reconciliationStatus==="HEALTHY"?AC:"#F59E0B",marginTop:3,fontFamily:"'IBM Plex Mono',monospace"}}>{selected.reconciliationStatus}</div>}</div></div>
+        <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:18}}><div className="team-avatar" style={{width:46,height:46}}>{(selected.displayName||selected.email||"?").slice(0,1).toUpperCase()}</div><div><div style={{fontSize:15,fontWeight:800,color:"var(--text)"}}>{selected.displayName}</div><div style={{fontSize:11,color:"var(--text3)"}}>{selected.email} · {selected.status}</div></div></div>
         <div className="form-grid">
           <Field l="Display Name"><input {...fi} value={selected.displayName||""} onChange={e=>setSelected(u=>({...u,displayName:e.target.value}))}/></Field>
           <Field l="Role"><select {...fi} value={selected.role||"engineer"} onChange={e=>setSelected(u=>({...u,role:e.target.value}))}>{Object.entries(TEAM_ROLES).map(([k,v])=><option key={k} value={k}>{v.label}</option>)}</select></Field>
@@ -2175,7 +2163,7 @@ function TeamAccess({adminUser,showToast,onEngineersChanged}){
           <Field l="Department"><input {...fi} value={selected.department||""} onChange={e=>setSelected(u=>({...u,department:e.target.value}))}/></Field>
           <Field l="Account UID"><input {...fi} value={selected.uid||""} readOnly/></Field>
         </div>
-        <div style={{marginTop:16,padding:12,background:"var(--bg3)",borderRadius:9}}><div style={{fontSize:10,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",letterSpacing:".08em",marginBottom:8}}>Account Security</div><div style={{display:"flex",gap:8,flexWrap:"wrap"}}><button className="btn btn-secondary btn-sm" onClick={()=>resetPassword(selected)}>🔑 Send Password Reset</button><button className={selected.status==="active"?"btn btn-danger btn-sm":"btn btn-primary btn-sm"} onClick={()=>toggleStatus(selected)}>{selected.status==="active"?"⛔ Disable Account":"✓ Reactivate Account"}</button>{selected.reconciliationStatus==="TEAM_AUTH_MISSING_PROFILE"&&!selected.protected&&<button className="btn btn-danger btn-sm" onClick={()=>cleanupOrphan(selected)}>🗑 Cleanup Orphan</button>}</div></div>
+        <div style={{marginTop:16,padding:12,background:"var(--bg3)",borderRadius:9}}><div style={{fontSize:10,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",letterSpacing:".08em",marginBottom:8}}>Account Security</div><div style={{display:"flex",gap:8,flexWrap:"wrap"}}><button className="btn btn-secondary btn-sm" onClick={()=>resetPassword(selected)}>🔑 Send Password Reset</button><button className={selected.status==="active"?"btn btn-danger btn-sm":"btn btn-primary btn-sm"} onClick={()=>toggleStatus(selected)}>{selected.status==="active"?"⛔ Disable Account":"✓ Reactivate Account"}</button></div></div>
         <div style={{display:"flex",justifyContent:"flex-end",gap:8,marginTop:18}}><button className="btn btn-secondary" onClick={()=>setSelected(null)}>Cancel</button><button className="btn btn-primary" onClick={()=>patch({displayName:selected.displayName||"",phone:selected.phone||"",jobTitle:selected.jobTitle||"",department:selected.department||"",role:selected.role||"engineer"})} disabled={saving}>{saving?"Saving…":"Save Changes"}</button></div>
       </div>
     </div></div>}
@@ -2400,12 +2388,12 @@ function SignoffModal({ticket,clientName,setClientName,clientPosition,setClientP
   const [timeEntryModal,setTimeEntryModal]=useState(null);
 
   useEffect(()=>{
-    if(!authed||adminUser?.email!==CFG.adminEmails[0]) return;
+    if(!authed||!isCimopSuperAdmin(adminUser)) return;
     teamApi("list").then(d=>{
       const names=(d.users||[]).filter(u=>u.status==="active"&&u.role==="engineer").map(u=>u.displayName).filter(Boolean);
       setTeamEngineers(["Unassigned",...names.filter(n=>n!=="Unassigned")]);
     }).catch(e=>console.warn("Team directory preload skipped:",e.message));
-  },[authed,adminUser?.email]);
+  },[authed,adminUser?.email,adminUser?.cimopClaims?.role]);
 
   useEffect(()=>{
     if(!authed) return;
@@ -2542,8 +2530,8 @@ function SignoffModal({ticket,clientName,setClientName,clientPosition,setClientP
     try{
       const cred=await auth.signInWithEmailAndPassword(loginEmail,pw);
       const token=await cred.user.getIdTokenResult(true);
-      if(token.claims.admin||CFG.adminEmails.includes(cred.user.email)){
-        cred.user.cimopClaims=token.claims||{};
+      if(token.claims.admin||CFG.adminEmails.includes(cred.user.email)||token.claims.role==="super_admin"){
+        cred.user.cimopClaims=token.claims;
         onAuth(cred.user);
       } else {
         await auth.signOut();
@@ -2661,7 +2649,7 @@ function SignoffModal({ticket,clientName,setClientName,clientPosition,setClientP
             <button className={`nav-item${activeTab==="tickets"?" active":""}`} onClick={()=>setActiveTab("tickets")}><span className="ni">🎫</span>All Tickets{tickets.length>0&&<span className="badge">{tickets.length}</span>}</button>
             <button className={`nav-item${activeTab==="new"?" active":""}`} onClick={()=>setActiveTab("new")}><span className="ni">✏️</span>Log New Ticket</button>
             <button className={`nav-item${activeTab==="analytics"?" active":""}`} onClick={()=>setActiveTab("analytics")}><span className="ni">📊</span>Analytics</button>
-            {adminUser?.email===CFG.adminEmails[0]&&<button className={`nav-item${activeTab==="team"?" active":""}`} onClick={()=>setActiveTab("team")}><span className="ni">👥</span>Team & Access</button>
+            {isCimopSuperAdmin(adminUser)&&<button className={`nav-item${activeTab==="team"?" active":""}`} onClick={()=>setActiveTab("team")}><span className="ni">👥</span>Team & Access</button>
           </div>
           <div className="nav-section">
             <div className="nav-label">Live Chat</div>
@@ -3177,8 +3165,8 @@ function Root(){
     const unsub=auth.onAuthStateChanged(async(u)=>{
       if(u){
         const token=await u.getIdTokenResult();
-        if(token.claims.admin||CFG.adminEmails.includes(u.email)){
-          u.cimopClaims=token.claims||{};
+        if(token.claims.admin||CFG.adminEmails.includes(u.email)||token.claims.role==="super_admin"){
+          u.cimopClaims=token.claims;
           setAdminUser(u);
         } else {
           await auth.signOut();
