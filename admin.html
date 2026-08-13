@@ -648,7 +648,16 @@ function PhotoStrip({ticketRef}){
 ════════════════════════════════════════════════════ */
 function chatRef(ticketRef){return rtdb.ref(`chats/${ticketRef}`);}
 function typingRef(ticketRef){return rtdb.ref(`typing/${ticketRef}`);}
-function presenceRef(name){return rtdb.ref(`presence/${name.replace(/\s+/g,"_")}`);}
+function presenceKey(name){
+  const raw=String(name||"").trim();
+  // Firebase Realtime Database child keys cannot contain . # $ [ ] or /.
+  // Keep the key human-readable while making email-based identities safe.
+  return raw.replace(/\s+/g,"_").replace(/[.#$\[\]\/]/g,"_");
+}
+function presenceRef(name){
+  const key=presenceKey(name);
+  return rtdb.ref(`presence/${key||"unknown"}`);
+}
 
 async function sendChatMsg(ticketRef,from,text,type="text"){
   await chatRef(ticketRef).push({from,text,at:Date.now(),type});
@@ -1485,7 +1494,7 @@ function TeamAccess({adminUser,showToast,onEngineersChanged}){
   },[]);
 
   const presenceFor=(u)=>{
-    const key=String(u?.displayName||u?.email||"").trim().replace(/\s+/g,"_");
+    const key=presenceKey(u?.displayName||u?.email||"");
     return key ? (presence[key]||null) : null;
   };
   const isOnline=(u)=>{
@@ -3319,8 +3328,8 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
   useEffect(()=>{
     if(!authed||!adminUser?.uid) return;
     const name=String(adminUser.displayName||adminUser.email||adminUser.uid).trim();
-    const key=name.replace(/\s+/g,"_");
-    const pr=rtdb.ref(`presence/${key}`);
+    const key=presenceKey(name);
+    const pr=rtdb.ref(`presence/${key||adminUser.uid}`);
     const write=()=>pr.update({
       uid:adminUser.uid,
       email:adminUser.email||"",
