@@ -1148,7 +1148,7 @@ function makeContactId(form){const key=[form.email,form.phone,form.clientName||f
 function makeSiteId(form){const key=[form.company,form.address].map(normaliseIdentity).filter(Boolean).join("|");return key?`site_${cimopHash(key)}`:"";}
 function makeAssetId(form){const key=[form.serialNumber,form.manufacturer,form.modelNumber,form.deviceType].map(normaliseIdentity).filter(Boolean).join("|");return key?`ast_${cimopHash(key)}`:"";}
 function buildCustomer360(tickets){const map={};(tickets||[]).forEach(t=>{const customerId=t.customerId||makeCustomerId(t)||`legacy_${cimopHash([t.company,t.clientName||t.name,t.email,t.phone].join("|"))}`;if(!map[customerId])map[customerId]={id:customerId,name:t.clientName||t.name||"Unknown customer",company:t.company||"",email:t.email||"",phone:t.phone||"",address:t.address||"",tickets:[],contacts:{},sites:{},assets:{},contracts:{},services:{},quotes:[],satisfaction:[],timeTrackedMinutes:0,lastActivity:t.createdAt||null};const c=map[customerId];if(t.clientName||t.name)c.name=t.clientName||t.name;["company","email","phone","address"].forEach(k=>{if(!c[k]&&t[k])c[k]=t[k];});c.tickets.push(t);const contactId=t.contactId||makeContactId(t);if(contactId)c.contacts[contactId]={id:contactId,name:t.clientName||t.name||"Contact",email:t.email||"",phone:t.phone||""};const siteId=t.siteId||makeSiteId(t);if(siteId)c.sites[siteId]={id:siteId,address:t.address||""};const assetId=t.assetId||makeAssetId(t);if(assetId)c.assets[assetId]={id:assetId,deviceType:t.deviceType||"",manufacturer:t.manufacturer||"",modelNumber:t.modelNumber||"",serialNumber:t.serialNumber||"",warrantyStatus:t.warrantyStatus||""};if(t.contractId)c.contracts[t.contractId]={id:t.contractId};if(t.serviceType)c.services[t.serviceType]=(c.services[t.serviceType]||0)+1;if(t.quotationRef)c.quotes.push({ref:t.quotationRef,status:t.status||""});if(t.serviceRating)c.satisfaction.push(Number(t.serviceRating));c.timeTrackedMinutes+=Number(t.timeTrackedMinutes||0);if(!c.lastActivity||new Date(t.updatedAt||t.createdAt||0)>new Date(c.lastActivity))c.lastActivity=t.updatedAt||t.createdAt;});return Object.values(map).sort((a,b)=>new Date(b.lastActivity||0)-new Date(a.lastActivity||0));}
-function Customer360({tickets,role,showToast}){const [query,setQuery]=useState("");const [selectedId,setSelectedId]=useState(null);const customers=useMemo(()=>buildCustomer360(tickets),[tickets]);const allowed=canAny(role,"customers.read");const filtered=useMemo(()=>{const q=query.trim().toLowerCase();if(!q)return customers;return customers.filter(c=>[c.id,c.name,c.company,c.email,c.phone,c.address].join(" ").toLowerCase().includes(q));},[customers,query]);const selected=customers.find(c=>c.id===selectedId)||filtered[0]||null;useEffect(()=>{if(selected&&!selectedId)setSelectedId(selected.id);},[selected,selectedId]);if(!allowed)return <div className="page-content"><div className="card" style={{padding:28,textAlign:"center"}}><div style={{fontSize:32}}>🔒</div><div style={{fontWeight:700,color:"var(--text)",marginTop:8}}>Customer access restricted</div><div style={{fontSize:12,color:"var(--text3)",marginTop:5}}>Your role does not have customers.read permission.</div></div></div>;const openCount=c=>c.tickets.filter(t=>!['closed','resolved'].includes(t.status)).length;const avgRating=c=>c.satisfaction.length?(c.satisfaction.reduce((a,b)=>a+b,0)/c.satisfaction.length).toFixed(1):"—";return <div className="page-content"><div className="section-head"><div className="section-num">360</div><div><div className="section-title">Customer 360</div><div style={{fontSize:11,color:"var(--text3)",marginTop:2}}>One customer view across tickets, contacts, sites, assets and service history</div></div><div style={{marginLeft:"auto",fontSize:11,color:"var(--text3)"}}>{customers.length} customer(s)</div></div><div className="card" style={{marginBottom:14}}><div className="card-header"><div><div className="card-title">Customer master view</div><div style={{fontSize:11,color:"var(--text3)",marginTop:3}}>Stage 2 v1 derives the master record from ticket-linked identity fields. No new customer collection is required yet.</div></div></div><div className="card-body" style={{display:"flex",gap:8,flexWrap:"wrap"}}>{[["customers/{customerId}","Customer identity"],["contacts/{contactId}","People / contacts"],["sites/{siteId}","Locations"],["assets/{assetId}","Managed assets"],["contracts/{contractId}","Contracts"],["tickets/{ticketId}","Service history"]].map(([k,v])=><div key={k} className="rbac-permission"><strong className="mono">{k}</strong><span>· {v}</span></div>)}</div></div><div style={{display:"grid",gridTemplateColumns:"minmax(260px,0.85fr) minmax(0,1.7fr)",gap:14,alignItems:"start"}}><div className="card"><div className="card-header"><div className="card-title">Customers</div><div style={{fontSize:10,color:"var(--text4)"}}>{filtered.length}</div></div><div style={{padding:"10px 12px",borderBottom:"1px solid var(--border)"}}><input className="field-input" placeholder="Search customer, company, email, phone…" value={query} onChange={e=>setQuery(e.target.value)}/></div><div style={{maxHeight:560,overflowY:"auto"}}>{filtered.length===0?<div style={{padding:24,color:"var(--text3)",fontSize:12}}>No customer records found from the current ticket dataset.</div>:filtered.map(c=><button key={c.id} onClick={()=>setSelectedId(c.id)} style={{display:"block",width:"100%",textAlign:"left",border:0,borderBottom:"1px solid var(--border)",background:selected?.id===c.id?"var(--bg3)":"transparent",padding:"12px 14px",cursor:"pointer",fontFamily:"inherit"}}><div style={{fontWeight:700,color:"var(--text)",fontSize:13}}>{c.name}</div><div style={{fontSize:11,color:"var(--text3)",marginTop:2}}>{c.company||c.email||c.phone||"—"}</div><div style={{display:"flex",gap:8,marginTop:7,fontSize:10}}><span style={{color:AC}}>{c.tickets.length} tickets</span><span style={{color:openCount(c)>0?"#F59E0B":"var(--text4)"}}>{openCount(c)} open</span></div></button>)}</div></div>{selected?<div className="card"><div className="card-header"><div><div className="card-title">{selected.name}</div><div style={{fontSize:11,color:"var(--text3)",marginTop:3}}>{selected.company||"Individual customer"} · <span className="mono">{selected.id}</span></div></div><button className="btn btn-secondary btn-sm" onClick={()=>showToast("Customer 360 is live from ticket-linked data ✓")}>↻ Refresh</button></div><div className="card-body"><div style={{display:"grid",gridTemplateColumns:"repeat(4,minmax(0,1fr))",gap:8,marginBottom:16}}>{[["Tickets",selected.tickets.length],["Open",openCount(selected)],["Assets",Object.keys(selected.assets).length],["CSAT",avgRating(selected)]].map(([l,v])=><div key={l} style={{background:"var(--bg)",border:"1px solid var(--border)",borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:9,color:"var(--text4)",textTransform:"uppercase",fontWeight:700}}>{l}</div><div style={{fontSize:18,fontWeight:800,color:"var(--text)",marginTop:3}}>{v}</div></div>)}</div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}><div><div className="mini-section-title">Contact</div>{[["Name",selected.name],["Company",selected.company],["Email",selected.email],["Phone",selected.phone]].map(([l,v])=><div className="detail-row" key={l}><div className="detail-key">{l}</div><div className="detail-val">{v||"—"}</div></div>)}</div><div><div className="mini-section-title">Relationship</div>{[["Customer ID",selected.id],["Sites",Object.keys(selected.sites).length],["Contacts",Object.keys(selected.contacts).length],["Tracked time",`${Math.floor(selected.timeTrackedMinutes/60)}h ${selected.timeTrackedMinutes%60}m`]].map(([l,v])=><div className="detail-row" key={l}><div className="detail-key">{l}</div><div className="detail-val">{v}</div></div>)}</div></div><div className="divider"/><div className="mini-section-title">Managed assets</div>{Object.values(selected.assets).length===0?<div style={{fontSize:11,color:"var(--text3)",padding:"8px 0"}}>No asset identity captured yet.</div>:<div style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:8}}>{Object.values(selected.assets).map(a=><div key={a.id} style={{border:"1px solid var(--border)",borderRadius:8,padding:10,background:"var(--bg)"}}><div style={{fontWeight:700,fontSize:12,color:"var(--text)"}}>{[a.manufacturer,a.modelNumber].filter(Boolean).join(" ")||a.deviceType||"Asset"}</div><div style={{fontSize:10,color:"var(--text3)",marginTop:3}}>{a.serialNumber?`S/N ${a.serialNumber}`:"No serial captured"}{a.warrantyStatus?` · ${a.warrantyStatus}`:""}</div><div className="mono" style={{fontSize:9,color:"var(--text4)",marginTop:5}}>{a.id}</div></div>)}</div>}<div className="divider"/><div className="mini-section-title">Ticket history</div><div style={{overflowX:"auto"}}><table className="data-table"><thead><tr><th>Ref</th><th>Issue</th><th>Status</th><th>Priority</th><th>Engineer</th><th>Date</th></tr></thead><tbody>{[...selected.tickets].sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0)).map(t=><tr key={t.ref}><td className="mono" style={{color:AC}}>{t.ref}</td><td>{t.issueTitle||t.problemDescription||"—"}</td><td><StatusBadge status={t.status}/></td><td>{t.priority||"—"}</td><td>{t.assignedEngineer||"Unassigned"}</td><td className="mono">{t.createdAt?new Date(t.createdAt).toLocaleDateString("en-ZA"):"—"}</td></tr>)}</tbody></table></div></div></div>:<div className="card" style={{padding:40,textAlign:"center",color:"var(--text3)"}}>Select a customer to open the 360 view.</div>}</div></div>;
+function Customer360({tickets,role,showToast}){const [query,setQuery]=useState("");const [selectedId,setSelectedId]=useState(null);const customers=useMemo(()=>buildCustomer360(tickets),[tickets]);const allowed=canAny(role,"customers.read");const filtered=useMemo(()=>{const q=query.trim().toLowerCase();if(!q)return customers;return customers.filter(c=>[c.id,c.name,c.company,c.email,c.phone,c.address].join(" ").toLowerCase().includes(q));},[customers,query]);const selected=customers.find(c=>c.id===selectedId)||filtered[0]||null;useEffect(()=>{if(selected&&!selectedId)setSelectedId(selected.id);},[selected,selectedId]);if(!allowed)return <div className="page-content"><div className="card" style={{padding:28,textAlign:"center"}}><div style={{fontSize:32}}>🔒</div><div style={{fontWeight:700,color:"var(--text)",marginTop:8}}>Customer access restricted</div><div style={{fontSize:12,color:"var(--text3)",marginTop:5}}>Your role does not have customers.read permission.</div></div></div>;const openCount=c=>c.tickets.filter(t=>!['closed','resolved'].includes(t.status)).length;const avgRating=c=>c.satisfaction.length?(c.satisfaction.reduce((a,b)=>a+b,0)/c.satisfaction.length).toFixed(1):"—";return <div className="page-content"><div className="section-head"><div className="section-num">360</div><div><div className="section-title">Customer 360</div><div style={{fontSize:11,color:"var(--text3)",marginTop:2}}>One customer view across tickets, contacts, sites, assets and service history</div></div><div style={{marginLeft:"auto",fontSize:11,color:"var(--text3)"}}>{customers.length} customer(s)</div></div><div className="card" style={{marginBottom:14}}><div className="card-header"><div><div className="card-title">Customer master view</div><div style={{fontSize:11,color:"var(--text3)",marginTop:3}}>Stage 2 v1 derives the master record from ticket-linked identity fields. No new customer collection is required yet.</div></div></div><div className="card-body" style={{display:"flex",gap:8,flexWrap:"wrap"}}>{[["customers/{customerId}","Customer identity"],["contacts/{contactId}","People / contacts"],["sites/{siteId}","Locations"],["assets/{assetId}","Managed assets"],["contracts/{contractId}","Contracts"],["tickets/{ticketId}","Service history"]].map(([k,v])=><div key={k} className="rbac-permission"><strong className="mono">{k}</strong><span>· {v}</span></div>)}</div></div><div style={{display:"grid",gridTemplateColumns:"minmax(260px,0.85fr) minmax(0,1.7fr)",gap:14,alignItems:"start"}}><div className="card"><div className="card-header"><div className="card-title">Customers</div><div style={{fontSize:10,color:"var(--text4)"}}>{filtered.length}</div></div><div style={{padding:"10px 12px",borderBottom:"1px solid var(--border)"}}><input className="field-input" placeholder="Search customer, company, email, phone…" value={query} onChange={e=>setQuery(e.target.value)}/></div><div style={{maxHeight:560,overflowY:"auto"}}>{filtered.length===0?<div style={{padding:24,color:"var(--text3)",fontSize:12}}>No customer records found from the current ticket dataset.</div>:filtered.map(c=><button key={c.id} onClick={()=>setSelectedId(c.id)} style={{display:"block",width:"100%",textAlign:"left",border:0,borderBottom:"1px solid var(--border)",background:selected?.id===c.id?"var(--bg3)":"transparent",padding:"12px 14px",cursor:"pointer",fontFamily:"inherit"}}><div style={{fontWeight:700,color:"var(--text)",fontSize:13}}>{c.name}</div><div style={{fontSize:11,color:"var(--text3)",marginTop:2}}>{c.company||c.email||c.phone||"—"}</div><div style={{display:"flex",gap:8,marginTop:7,fontSize:10}}><span style={{color:AC}}>{c.tickets.length} tickets</span><span style={{color:openCount(c)>0?"#F59E0B":"var(--text4)"}}>{openCount(c)} open</span></div></button>)}</div></div>{selected?<div className="card"><div className="card-header"><div><div className="card-title">{selected.name}</div><div style={{fontSize:11,color:"var(--text3)",marginTop:3}}>{selected.company||"Individual customer"} · <span className="mono">{selected.id}</span></div></div><button className="btn btn-secondary btn-sm" onClick={()=>showToast("Customer 360 is live from ticket-linked data ✓")}>↻ Refresh</button></div><div className="card-body"><div style={{display:"grid",gridTemplateColumns:"repeat(4,minmax(0,1fr))",gap:8,marginBottom:16}}>{[["Tickets",selected.tickets.length],["Open",openCount(selected)],["Assets",Object.keys(selected.assets).length],["CSAT",avgRating(selected)]].map(([l,v])=><div key={l} style={{background:"var(--bg)",border:"1px solid var(--border)",borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:9,color:"var(--text4)",textTransform:"uppercase",fontWeight:700}}>{l}</div><div style={{fontSize:18,fontWeight:800,color:"var(--text)",marginTop:3}}>{v}</div></div>)}</div><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}><div><div className="mini-section-title">Contact</div>{[["Name",selected.name],["Company",selected.company],["Email",selected.email],["Phone",selected.phone]].map(([l,v])=><div className="detail-row" key={l}><div className="detail-key">{l}</div><div className="detail-val">{v||"—"}</div></div>)}</div><div><div className="mini-section-title">Relationship</div>{[["Customer ID",selected.id],["Sites",Object.keys(selected.sites).length],["Contacts",Object.keys(selected.contacts).length],["Tracked time",`${Math.floor(selected.timeTrackedMinutes/60)}h ${selected.timeTrackedMinutes%60}m`]].map(([l,v])=><div className="detail-row" key={l}><div className="detail-key">{l}</div><div className="detail-val">{v}</div></div>)}</div></div><div className="divider"/><div className="mini-section-title">Managed assets</div>{Object.values(selected.assets).length===0?<div style={{fontSize:11,color:"var(--text3)",padding:"8px 0"}}>No asset identity captured yet.</div>:<div style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:8}}>{Object.values(selected.assets).map(a=><div key={a.id} style={{border:"1px solid var(--border)",borderRadius:8,padding:10,background:"var(--bg)"}}><div style={{fontWeight:700,fontSize:12,color:"var(--text)"}}>{[a.manufacturer,a.modelNumber].filter(Boolean).join(" ")||a.deviceType||"Asset"}</div><div style={{fontSize:10,color:"var(--text3)",marginTop:3}}>{a.serialNumber?`S/N ${a.serialNumber}`:"No serial captured"}{a.warrantyStatus?` · ${a.warrantyStatus}`:""}</div><div className="mono" style={{fontSize:9,color:"var(--text4)",marginTop:5}}>{a.id}</div></div>)}</div>}<div className="divider"/><div className="mini-section-title">Ticket history</div><div style={{overflowX:"auto"}}><table className="data-table"><thead><tr><th>Ref</th><th>Issue</th><th>Status</th><th>Priority</th><th>Engineer</th><th>Date</th></tr></thead><tbody>{[...selected.tickets].sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0)).map(t=><tr key={t.ref}><td className="mono" style={{color:AC}}>{t.ref}</td><td>{t.issueTitle||t.problemDescription||"—"}</td><td><StatusBadge s={t.status}/></td><td>{t.priority||"—"}</td><td>{t.assignedEngineer||"Unassigned"}</td><td className="mono">{t.createdAt?new Date(t.createdAt).toLocaleDateString("en-ZA"):"—"}</td></tr>)}</tbody></table></div></div></div>:<div className="card" style={{padding:40,textAlign:"center",color:"var(--text3)"}}>Select a customer to open the 360 view.</div>}</div></div>;
 }
 
 /* ════════════════════════════════════════════════════
@@ -1173,7 +1173,7 @@ function cmdbCriticalityMeta(level){
   return map[level]||map.medium;
 }
 function CMDBChip({status}){const m=cmdbStatusMeta(status);return <span className="cmdb-chip"><span className="cmdb-dot" style={{background:m.color}}/>{m.label}</span>;}
-function AssetModal({asset,customers,role,adminUser,onClose,onSaved,showToast}){
+function AssetModal({asset,customers,engineers=ENGINEERS,role,adminUser,onClose,onSaved,showToast}){
   const editing=!!asset;
   const [form,setForm]=useState({...CMDB_EMPTY_ASSET,...(asset||{})});
   const [saving,setSaving]=useState(false);
@@ -1226,7 +1226,7 @@ function AssetModal({asset,customers,role,adminUser,onClose,onSaved,showToast}){
           <div className="form-field"><Lbl c="Serial Number"/><input className="field-input" value={form.serialNumber} onChange={e=>set("serialNumber",e.target.value)} placeholder="Serial / service tag"/></div>
           <div className="form-field"><Lbl c="Hostname"/><input className="field-input" value={form.hostname} onChange={e=>set("hostname",e.target.value)} placeholder="e.g. RECEPTION-PC01"/></div>
           <div className="form-field"><Lbl c="Operating System"/><input className="field-input" value={form.operatingSystem} onChange={e=>set("operatingSystem",e.target.value)} placeholder="Windows 11 Pro, Ubuntu…"/></div>
-          <div className="form-field"><Lbl c="Assigned Engineer"/><select className="field-input" value={form.assignedEngineer} onChange={e=>set("assignedEngineer",e.target.value)}>{ENGINEERS.map(e=><option key={e}>{e}</option>)}</select></div>
+          <div className="form-field"><Lbl c="Assigned Engineer"/><select className="field-input" value={form.assignedEngineer} onChange={e=>set("assignedEngineer",e.target.value)}>{engineers.map(e=><option key={e}>{e}</option>)}</select></div>
           <div className="form-field"><Lbl c="Customer"/><select className="field-input" value={form.customerId} onChange={e=>set("customerId",e.target.value)}><option value="">— Select customer —</option>{customers.map(c=><option key={c.id} value={c.id}>{c.name}{c.company?` · ${c.company}`:""}</option>)}</select></div>
           <div className="form-field"><Lbl c="Site / Location"/><input className="field-input" value={form.location} onChange={e=>set("location",e.target.value)} placeholder="Branch, office, server room…"/></div>
           <div className="form-field"><Lbl c="IP Address"/><input className="field-input" value={form.ipAddress} onChange={e=>set("ipAddress",e.target.value)} placeholder="192.168.1.20"/></div>
@@ -1243,7 +1243,7 @@ function AssetModal({asset,customers,role,adminUser,onClose,onSaved,showToast}){
   </div>;
 }
 
-function AssetCMDB({assets,tickets,role,adminUser,showToast,customers,onAssetSaved,assetDbError}){
+function AssetCMDB({assets,tickets,role,adminUser,showToast,customers,engineers=ENGINEERS,onAssetSaved,assetDbError}){
   const allowed=canAny(role,"assets.read");
   const canWrite=canAny(role,"assets.write");
   const [query,setQuery]=useState("");
@@ -1290,7 +1290,7 @@ function AssetCMDB({assets,tickets,role,adminUser,showToast,customers,onAssetSav
     setImporting(false);
   };
   return <div className="page-content">
-    {modal&&<AssetModal asset={modal.asset} customers={customers} role={role} adminUser={adminUser} onClose={()=>setModal(null)} onSaved={id=>{setSelectedId(id);onAssetSaved&&onAssetSaved();}} showToast={showToast}/>} 
+    {modal&&<AssetModal asset={modal.asset} customers={customers} engineers={engineers} role={role} adminUser={adminUser} onClose={()=>setModal(null)} onSaved={id=>{setSelectedId(id);onAssetSaved&&onAssetSaved();}} showToast={showToast}/>} 
     <div className="section-head"><div className="section-num">CM</div><div><div className="section-title">Asset / CMDB</div><div style={{fontSize:11,color:"var(--text3)",marginTop:2}}>Canonical managed assets, ownership, lifecycle and technical identity</div></div><div style={{marginLeft:"auto"}}><RbacRoleBadge role={role}/></div></div>
     {assetDbError&&<div className="card" style={{marginBottom:14,borderColor:"rgba(245,158,11,.35)",background:"rgba(245,158,11,.05)"}}><div style={{padding:"12px 14px",display:"flex",gap:10,alignItems:"flex-start"}}><div style={{fontSize:18}}>⚠️</div><div><div style={{fontSize:12,fontWeight:700,color:"var(--text)"}}>CMDB is waiting for Firestore permissions</div><div style={{fontSize:11,color:"var(--text3)",marginTop:3}}>The admin UI is ready, but the <span className="mono">assets</span> collection is not readable for this role yet. Deploy the Stage 2 asset rules, then refresh.</div><div className="mono" style={{fontSize:9,color:"var(--text4)",marginTop:5}}>{assetDbError}</div></div></div></div>}
     <div className="cmdb-stats">
@@ -1508,8 +1508,16 @@ function TeamAccess({adminUser,showToast,onEngineersChanged}){
   };
 
   const resetPassword=async(u)=>{
-    try{await auth.sendPasswordResetEmail(u.email);showToast("Password reset email sent ✓");}
-    catch(e){showToast(e.message||"Could not send reset email","error");}
+    try{
+      const d=await teamApi("resetPassword",{uid:u.uid});
+      const link=d.passwordResetLink||"";
+      if(link){
+        try{await navigator.clipboard.writeText(link);showToast("Password setup link generated and copied ✓");}
+        catch(_){window.prompt("Copy the password setup link:",link);}
+      }else{
+        showToast("Password setup link generated ✓");
+      }
+    }catch(e){showToast(e.message||"Could not generate password reset link","error");}
   };
 
   const filtered=users.filter(u=>{
@@ -1870,7 +1878,7 @@ function ClientHistoryModal({ticket,allTickets,onClose}){
             <div key={t.ref} className="history-ticket">
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
                 <span className="history-ref">{t.ref}</span>
-                <StatusBadge status={t.status}/>
+                <StatusBadge s={t.status}/>
               </div>
               <div className="history-issue">{t.issueTitle||t.problemDescription||"—"}</div>
               <div style={{fontSize:10,color:"var(--text3)",marginTop:3,fontFamily:"'IBM Plex Mono',monospace"}}>{new Date(t.createdAt).toLocaleDateString("en-ZA")} · {SVCS.find(s=>s.id===t.serviceType)?.label||t.serviceType}</div>
@@ -1948,7 +1956,7 @@ function FollowUpModal({tickets,onClose}){
               <div style={{flex:1}}>
                 <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3}}>
                   <span style={{fontFamily:"'IBM Plex Mono',monospace",fontSize:11,color:AC}}>{t.ref}</span>
-                  <StatusBadge status={t.status}/>
+                  <StatusBadge s={t.status}/>
                 </div>
                 <div style={{fontSize:12,color:"var(--text2)"}}>{t.clientName||t.name} · {t.phone}</div>
               </div>
@@ -2132,7 +2140,7 @@ function TicketChat({ticket, activeEngineer, onWaForward}){
 /* ════════════════════════════════════════════════════
    TICKET FORM
 ════════════════════════════════════════════════════ */
-function TicketForm({mode,onSubmit,saving,theme,toggleTheme}){
+function TicketForm({mode,onSubmit,saving,theme,toggleTheme,engineers=ENGINEERS}){
   const isEng=mode==="engineer";
   const [svc,setSvc]=useState("");
   const [f,setF]=useState({
@@ -2294,7 +2302,7 @@ function TicketForm({mode,onSubmit,saving,theme,toggleTheme}){
                     <Field l="Engineer Name *" e={err.engineerName}><input {...fi} value={f.engineerName} onChange={e=>set("engineerName",e.target.value)} placeholder="Your name"/></Field>
                     <Field l="Assign To">
                       <select {...fi} value={f.assignedEngineer} onChange={e=>set("assignedEngineer",e.target.value)}>
-                        {ENGINEERS.map(eng=><option key={eng}>{eng}</option>)}
+                        {engineers.map(eng=><option key={eng}>{eng}</option>)}
                       </select>
                     </Field>
                     <Field l="Internal Note (optional)" span><input {...fi} value={f.engineerNote} onChange={e=>set("engineerNote",e.target.value)} placeholder="Context for the team"/></Field>
@@ -3142,7 +3150,7 @@ function SLAEngine({tickets,role,showToast}){
 
     <div className="card" style={{marginTop:14}}>
       <div className="card-header"><div><div className="card-title">Live SLA Monitor</div><div style={{fontSize:10,color:"var(--text3)",marginTop:3}}>{active.length} active ticket(s)</div></div><div style={{display:"flex",gap:7,flexWrap:"wrap"}}><input className="field-input" style={{width:220}} placeholder="Search ticket / customer / engineer…" value={query} onChange={e=>setQuery(e.target.value)}/>{[['all','All'],['breach','Breaches'],['warn','At Risk'],['paused','Paused'],['ok','On Track']].map(([k,l])=><button key={k} className={`analytics-pill${filter===k?" active":""}`} onClick={()=>setFilter(k)}>{l}</button>)}</div></div>
-      <div style={{overflowX:"auto"}}><table className="data-table"><thead><tr><th>Ticket</th><th>Customer</th><th>Priority</th><th>Status</th><th>SLA</th><th>Elapsed</th><th>Remaining</th><th>Engineer</th></tr></thead><tbody>{filtered.length===0?<tr><td colSpan="8" style={{padding:28,textAlign:"center",color:"var(--text3)"}}>No tickets match this SLA view.</td></tr>:filtered.map(({ticket,info})=>{const meta=slaStatusMeta(info);return <tr key={ticket.ref}><td className="mono" style={{color:AC,fontWeight:700}}>{ticket.ref}</td><td>{ticket.clientName||ticket.name||ticket.company||"—"}</td><td>{ticket.priority}</td><td><StatusBadge status={ticket.status}/></td><td><span style={{display:"inline-flex",padding:"4px 7px",borderRadius:6,background:meta.bg,color:meta.color,fontSize:9,fontWeight:800}}>{meta.label}</span></td><td className="mono">{formatSlaMinutes(info.elapsedMinutes)}</td><td className="mono" style={{color:info.status==='breach'?"#EF4444":info.status==='warn'?"#F59E0B":"var(--text)"}}>{info.status==='breach'?formatSlaMinutes(info.remainingMinutes)+" overdue":info.status==='paused'?"Paused":formatSlaMinutes(info.remainingMinutes)}</td><td>{ticket.assignedEngineer||"Unassigned"}</td></tr>})}</tbody></table></div>
+      <div style={{overflowX:"auto"}}><table className="data-table"><thead><tr><th>Ticket</th><th>Customer</th><th>Priority</th><th>Status</th><th>SLA</th><th>Elapsed</th><th>Remaining</th><th>Engineer</th></tr></thead><tbody>{filtered.length===0?<tr><td colSpan="8" style={{padding:28,textAlign:"center",color:"var(--text3)"}}>No tickets match this SLA view.</td></tr>:filtered.map(({ticket,info})=>{const meta=slaStatusMeta(info);return <tr key={ticket.ref}><td className="mono" style={{color:AC,fontWeight:700}}>{ticket.ref}</td><td>{ticket.clientName||ticket.name||ticket.company||"—"}</td><td>{ticket.priority}</td><td><StatusBadge s={ticket.status}/></td><td><span style={{display:"inline-flex",padding:"4px 7px",borderRadius:6,background:meta.bg,color:meta.color,fontSize:9,fontWeight:800}}>{meta.label}</span></td><td className="mono">{formatSlaMinutes(info.elapsedMinutes)}</td><td className="mono" style={{color:info.status==='breach'?"#EF4444":info.status==='warn'?"#F59E0B":"var(--text)"}}>{info.status==='breach'?formatSlaMinutes(info.remainingMinutes)+" overdue":info.status==='paused'?"Paused":formatSlaMinutes(info.remainingMinutes)}</td><td>{ticket.assignedEngineer||"Unassigned"}</td></tr>})}</tbody></table></div>
     </div>
 
     <div style={{marginTop:12,padding:10,borderRadius:8,border:"1px solid var(--border)",background:"var(--bg3)",fontSize:10,color:"var(--text4)"}}>MVP note: the SLA clock is currently calculated client-side from ticket timestamps and embedded pause fields. A later backend worker can enforce breach actions and notifications independently of an open browser session.</div>
@@ -3238,7 +3246,7 @@ function NotificationCenter({role,adminUser,tickets,onOpenTicket,showToast}){
   </div>;
 }
 
-function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError,onAuth,onUpdate,onAddNote,onBack,onNewTicket,theme,toggleTheme,showToast}){
+function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError,engineers=ENGINEERS,onAuth,onUpdate,onAddNote,onBack,onNewTicket,onSignOut,onEngineersChanged,theme,toggleTheme,showToast}){
   const role=normaliseRole(userProfile?.role || "support_agent");
   const isSuperAdmin=role==="super_admin";
   const [pw,setPw]=useState(""); const [pwErr,setPwErr]=useState("");
@@ -3593,7 +3601,7 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
               <div style={{fontSize:9,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>Your Identity</div>
                <div style={{marginBottom:7}}><RbacRoleBadge role={role}/></div>
               <select className="field-input" style={{fontSize:11,padding:"5px 8px"}} value={activeEngineer} onChange={e=>setActiveEngineer(e.target.value)}>
-                {ENGINEERS.map(eng=><option key={eng}>{eng}</option>)}
+                {engineers.map(eng=><option key={eng}>{eng}</option>)}
               </select>
             </div>
           </div>
@@ -3648,12 +3656,13 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
             )}
             <a href={CFG.zoho} target="_blank" rel="noreferrer" className="btn btn-secondary btn-sm">📊 Zoho</a>
             <button className="btn btn-primary btn-sm" onClick={()=>setActiveTab("new")}>+ New Ticket</button>
+            <button className="btn btn-danger btn-sm" onClick={onSignOut} title="Sign out of CIMOP">↪ Sign out</button>
           </div>
         </div>
 
         {activeTab==="new"&&(
           <div style={{overflow:"auto",flex:1}}>
-            <TicketForm mode="engineer" onSubmit={async(form)=>{setSaving(true);await onNewTicket(form);setActiveTab("tickets");setSaving(false);}} saving={saving} theme={theme} toggleTheme={toggleTheme}/>
+            <TicketForm mode="engineer" engineers={engineers} onSubmit={async(form)=>{setSaving(true);await onNewTicket(form);setActiveTab("tickets");setSaving(false);}} saving={saving} theme={theme} toggleTheme={toggleTheme}/>
           </div>
         )}
 
@@ -3680,8 +3689,8 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
         )}
 
         {activeTab==="customers"&&<Customer360 tickets={tickets} role={role} showToast={showToast}/>}
-        {activeTab==="assets"&&<AssetCMDB assets={assets||[]} tickets={tickets} role={role} adminUser={adminUser} customers={buildCustomer360(tickets)} showToast={showToast} assetDbError={assetDbError}/>} 
-       {activeTab==="team"&&isSuperAdmin&&<TeamAccess adminUser={adminUser} showToast={showToast}/>}
+        {activeTab==="assets"&&<AssetCMDB assets={assets||[]} tickets={tickets} engineers={engineers} role={role} adminUser={adminUser} customers={buildCustomer360(tickets)} showToast={showToast} assetDbError={assetDbError}/>} 
+       {activeTab==="team"&&isSuperAdmin&&<TeamAccess adminUser={adminUser} showToast={showToast} onEngineersChanged={onEngineersChanged}/>}
        {activeTab==="tickets"&&(
           <div style={{flex:1,display:"flex",minHeight:0,overflow:"hidden"}} className="admin-body">
             <div style={{flex:1,overflow:"hidden",display:"flex",flexDirection:"column"}}>
@@ -3705,7 +3714,7 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
                   </select>
                   <select className="field-input" style={{width:"auto"}} value={fEng} onChange={e=>setFEng(e.target.value)}>
                     <option value="all">All Engineers</option>
-                    {ENGINEERS.map(e=><option key={e}>{e}</option>)}
+                    {engineers.map(e=><option key={e}>{e}</option>)}
                   </select>
                 </div>
               </div>
@@ -3744,7 +3753,7 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
                               <td style={{maxWidth:200,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t.issueTitle||t.problemDescription||"—"}</td>
                               <td><SLABadge ticket={t}/></td>
                               <td><span style={{fontSize:11,fontWeight:600,color:t.priority==="Urgent"?"#EF4444":t.priority==="High"?"#F59E0B":"var(--text3)"}}>{t.priority}</span></td>
-                              <td><StatusBadge status={t.status}/></td>
+                              <td><StatusBadge s={t.status}/></td>
                               <td><span style={{fontSize:11,color:t.assignedEngineer&&t.assignedEngineer!=="Unassigned"?AC:"var(--text3)"}}>{t.assignedEngineer||"Unassigned"}</span></td>
                               <td>
                                 {msgCount>0?(
@@ -3833,7 +3842,7 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
                       <div style={{marginBottom:16}}>
                         <div style={{fontSize:10,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6}}>Assigned Engineer</div>
                         <select className="field-input" style={{fontSize:12}} value={tk.assignedEngineer||"Unassigned"} onChange={e=>doAssign(e.target.value)}>
-                          {ENGINEERS.map(eng=><option key={eng}>{eng}</option>)}
+                          {engineers.map(eng=><option key={eng}>{eng}</option>)}
                         </select>
                       </div>
                       <div className="divider"/>
@@ -4066,6 +4075,7 @@ function Root(){
   const [view,setView]=useState("portal");
   const [tickets,setTickets]=useState([]);
   const [assets,setAssets]=useState([]);
+  const [engineers,setEngineers]=useState(ENGINEERS);
   const [assetDbError,setAssetDbError]=useState("");
   const [dbLoading,setDbLoading]=useState(true);
   const [lastTicket,setLastTicket]=useState(null);
@@ -4245,6 +4255,8 @@ function Root(){
   };
   const addNote=async(ref,txt,type="note",engineer="")=>{try{await fsNote(ref,txt,type,engineer,{uid:adminUser?.uid,email:adminUser?.email,name:userProfile?.displayName||adminUser?.email||engineer||"Team member"});showToast("Note added ✓");}catch(e){console.error(e);showToast("Note failed","error");}};
 
+  const handleSignOut=async()=>{try{await auth.signOut();}catch(e){console.error(e);}finally{setAdminUser(null);setUserProfile(null);setView("portal");showToast("Signed out ✓","info");}};
+
   if(dbLoading)return<Spinner/>;
 
   return(
@@ -4259,7 +4271,7 @@ function Root(){
         </div>
       )}
       {view==="success"&&lastTicket&&<SuccessScreen ticket={lastTicket} onBack={()=>setView("portal")}/>}
-      {view==="admin"&&<Admin tickets={tickets} assets={assets} assetDbError={assetDbError} loading={dbLoading} authed={!!adminUser} adminUser={adminUser} userProfile={userProfile} onAuth={(u,p)=>{setAdminUser(u);setUserProfile(p);}} onUpdate={updateTicket} onAddNote={addNote} onBack={()=>{setView("portal");auth.signOut();setUserProfile(null);setAdminUser(null);}} onNewTicket={addTicket} theme={theme} toggleTheme={toggleTheme} showToast={showToast}/>}
+      {view==="admin"&&<Admin tickets={tickets} assets={assets} assetDbError={assetDbError} loading={dbLoading} authed={!!adminUser} adminUser={adminUser} userProfile={userProfile} onAuth={(u,p)=>{setAdminUser(u);setUserProfile(p);}} onEngineersChanged={list=>setEngineers(["Unassigned",...(list||[]).filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i)])} engineers={engineers} onUpdate={updateTicket} onAddNote={addNote} onBack={()=>{setView("portal");auth.signOut();setUserProfile(null);setAdminUser(null);}} onSignOut={handleSignOut} onNewTicket={addTicket} theme={theme} toggleTheme={toggleTheme} showToast={showToast}/>}
       <Toast msg={toast.msg} type={toast.type}/>
     </>
   );
