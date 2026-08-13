@@ -1182,7 +1182,7 @@ function cmdbCriticalityMeta(level){
   return map[level]||map.medium;
 }
 function CMDBChip({status}){const m=cmdbStatusMeta(status);return <span className="cmdb-chip"><span className="cmdb-dot" style={{background:m.color}}/>{m.label}</span>;}
-function AssetModal({asset,customers,role,adminUser,onClose,onSaved,showToast}){
+function AssetModal({asset,customers,role,adminUser,onClose,onSaved,showToast,engineerOptions=["Unassigned"]}){
   const editing=!!asset;
   const [form,setForm]=useState({...CMDB_EMPTY_ASSET,...(asset||{})});
   const [saving,setSaving]=useState(false);
@@ -1235,7 +1235,7 @@ function AssetModal({asset,customers,role,adminUser,onClose,onSaved,showToast}){
           <div className="form-field"><Lbl c="Serial Number"/><input className="field-input" value={form.serialNumber} onChange={e=>set("serialNumber",e.target.value)} placeholder="Serial / service tag"/></div>
           <div className="form-field"><Lbl c="Hostname"/><input className="field-input" value={form.hostname} onChange={e=>set("hostname",e.target.value)} placeholder="e.g. RECEPTION-PC01"/></div>
           <div className="form-field"><Lbl c="Operating System"/><input className="field-input" value={form.operatingSystem} onChange={e=>set("operatingSystem",e.target.value)} placeholder="Windows 11 Pro, Ubuntu…"/></div>
-          <div className="form-field"><Lbl c="Assigned Engineer"/><select className="field-input" value={form.assignedEngineer} onChange={e=>set("assignedEngineer",e.target.value)}>{ENGINEERS.map(e=><option key={e}>{e}</option>)}</select></div>
+          <div className="form-field"><Lbl c="Assigned Engineer"/><select className="field-input" value={form.assignedEngineer} onChange={e=>set("assignedEngineer",e.target.value)}>{engineerOptions.map(e=><option key={e}>{e}</option>)}</select></div>
           <div className="form-field"><Lbl c="Customer"/><select className="field-input" value={form.customerId} onChange={e=>set("customerId",e.target.value)}><option value="">— Select customer —</option>{customers.map(c=><option key={c.id} value={c.id}>{c.name}{c.company?` · ${c.company}`:""}</option>)}</select></div>
           <div className="form-field"><Lbl c="Site / Location"/><input className="field-input" value={form.location} onChange={e=>set("location",e.target.value)} placeholder="Branch, office, server room…"/></div>
           <div className="form-field"><Lbl c="IP Address"/><input className="field-input" value={form.ipAddress} onChange={e=>set("ipAddress",e.target.value)} placeholder="192.168.1.20"/></div>
@@ -1252,7 +1252,7 @@ function AssetModal({asset,customers,role,adminUser,onClose,onSaved,showToast}){
   </div>;
 }
 
-function AssetCMDB({assets,tickets,role,adminUser,showToast,customers,onAssetSaved,assetDbError}){
+function AssetCMDB({assets,tickets,role,adminUser,showToast,customers,onAssetSaved,assetDbError,engineerOptions=["Unassigned"]}){
   const allowed=canAny(role,"assets.read");
   const canWrite=canAny(role,"assets.write");
   const [query,setQuery]=useState("");
@@ -1299,7 +1299,7 @@ function AssetCMDB({assets,tickets,role,adminUser,showToast,customers,onAssetSav
     setImporting(false);
   };
   return <div className="page-content">
-    {modal&&<AssetModal asset={modal.asset} customers={customers} role={role} adminUser={adminUser} onClose={()=>setModal(null)} onSaved={id=>{setSelectedId(id);onAssetSaved&&onAssetSaved();}} showToast={showToast}/>} 
+    {modal&&<AssetModal asset={modal.asset} customers={customers} role={role} adminUser={adminUser} engineerOptions={engineerOptions} onClose={()=>setModal(null)} onSaved={id=>{setSelectedId(id);onAssetSaved&&onAssetSaved();}} showToast={showToast}/>} 
     <div className="section-head"><div className="section-num">CM</div><div><div className="section-title">Asset / CMDB</div><div style={{fontSize:11,color:"var(--text3)",marginTop:2}}>Canonical managed assets, ownership, lifecycle and technical identity</div></div><div style={{marginLeft:"auto"}}><RbacRoleBadge role={role}/></div></div>
     {assetDbError&&<div className="card" style={{marginBottom:14,borderColor:"rgba(245,158,11,.35)",background:"rgba(245,158,11,.05)"}}><div style={{padding:"12px 14px",display:"flex",gap:10,alignItems:"flex-start"}}><div style={{fontSize:18}}>⚠️</div><div><div style={{fontSize:12,fontWeight:700,color:"var(--text)"}}>CMDB is waiting for Firestore permissions</div><div style={{fontSize:11,color:"var(--text3)",marginTop:3}}>The admin UI is ready, but the <span className="mono">assets</span> collection is not readable for this role yet. Deploy the Stage 2 asset rules, then refresh.</div><div className="mono" style={{fontSize:9,color:"var(--text4)",marginTop:5}}>{assetDbError}</div></div></div></div>}
     <div className="cmdb-stats">
@@ -1477,7 +1477,7 @@ function TeamAccess({adminUser,showToast,onEngineersChanged}){
 
   const load=async()=>{
     setLoading(true);
-    try{const d=await teamApi("list");setUsers(d.users||[]);onEngineersChanged&&onEngineersChanged((d.users||[]).filter(u=>u.status==="active"&&u.role==="engineer").map(u=>u.displayName).filter(Boolean));}
+    try{const d=await teamApi("list");setUsers(d.users||[]);onEngineersChanged&&onEngineersChanged([{name:"Unassigned",uid:"",email:""},...(d.users||[]).filter(u=>u.status==="active"&&u.role==="engineer").map(u=>({name:(u.displayName||u.email||"Unnamed Engineer").trim(),uid:u.uid||"",email:u.email||""})).filter(u=>u.name)]);}
     catch(e){console.error(e);showToast(e.message||"Failed to load team","error");}
     finally{setLoading(false);}
   };
@@ -2185,7 +2185,7 @@ function TicketChat({ticket, activeEngineer, onWaForward}){
 /* ════════════════════════════════════════════════════
    TICKET FORM
 ════════════════════════════════════════════════════ */
-function TicketForm({mode,onSubmit,saving,theme,toggleTheme}){
+function TicketForm({mode,onSubmit,saving,theme,toggleTheme,engineerOptions=["Unassigned"]}){
   const isEng=mode==="engineer";
   const [svc,setSvc]=useState("");
   const [f,setF]=useState({
@@ -2347,7 +2347,7 @@ function TicketForm({mode,onSubmit,saving,theme,toggleTheme}){
                     <Field l="Engineer Name *" e={err.engineerName}><input {...fi} value={f.engineerName} onChange={e=>set("engineerName",e.target.value)} placeholder="Your name"/></Field>
                     <Field l="Assign To">
                       <select {...fi} value={f.assignedEngineer} onChange={e=>set("assignedEngineer",e.target.value)}>
-                        {ENGINEERS.map(eng=><option key={eng}>{eng}</option>)}
+                        {engineerOptions.map(eng=><option key={eng}>{eng}</option>)}
                       </select>
                     </Field>
                     <Field l="Internal Note (optional)" span><input {...fi} value={f.engineerNote} onChange={e=>set("engineerNote",e.target.value)} placeholder="Context for the team"/></Field>
@@ -2953,6 +2953,14 @@ const DEFAULT_AUTOMATIONS=[
   {id:"ticket-closed",name:"Ticket closed → record completion",description:"Record an internal completion notification when a ticket closes.",active:true,triggerType:"ticket_closed",actionType:"notification",severity:"success"}
 ];
 
+const DEFAULT_ESCALATION_MATRIX=[
+  {id:"ticket_created",name:"New Ticket",triggerType:"ticket_created",enabled:false,recipientEmail:"admin@mbulahenigroup.co.za",subject:"[CIMOP] New ticket {{ticketRef}}",severity:"info"},
+  {id:"assignment_changed",name:"Assignment Changed",triggerType:"assignment_changed",enabled:false,recipientEmail:"admin@mbulahenigroup.co.za",subject:"[CIMOP] Assignment changed: {{ticketRef}}",severity:"info"},
+  {id:"sla_at_risk",name:"SLA At Risk",triggerType:"sla_at_risk",enabled:false,recipientEmail:"admin@mbulahenigroup.co.za",subject:"[CIMOP] SLA at risk: {{ticketRef}}",severity:"warning"},
+  {id:"sla_breach",name:"SLA Breach",triggerType:"sla_breach",enabled:true,recipientEmail:"admin@mbulahenigroup.co.za",subject:"[CIMOP] SLA BREACH: {{ticketRef}}",severity:"critical"},
+  {id:"ticket_closed",name:"Ticket Closed",triggerType:"ticket_closed",enabled:false,recipientEmail:"admin@mbulahenigroup.co.za",subject:"[CIMOP] Ticket closed: {{ticketRef}}",severity:"success"}
+];
+
 function automationLabel(type){
   return ({ticket_created:"Ticket created",assignment_changed:"Assignment changed",client_waiting:"Client waiting",sla_at_risk:"SLA at risk",sla_breach:"SLA breach",ticket_closed:"Ticket closed"})[type]||type;
 }
@@ -3003,6 +3011,39 @@ async function ensureAutomationNotification(rule,ticket,actor,extra={}){
   await nref.set(notification);
   return notification;
 }
+async function loadEscalationMatrix(){
+  try{
+    const snap=await db.collection("automationEscalations").get();
+    const docs=snap.docs.map(d=>({id:d.id,...d.data()}));
+    return DEFAULT_ESCALATION_MATRIX.map(def=>docs.find(x=>x.id===def.id)||def);
+  }catch(e){console.warn("Escalation matrix unavailable",e);return DEFAULT_ESCALATION_MATRIX;}
+}
+async function queueEscalationEmail(triggerType,ticket,extra={},actor={}){
+  const matrix=await loadEscalationMatrix();
+  const cfg=matrix.find(x=>x.triggerType===triggerType);
+  if(!cfg||cfg.enabled===false||!String(cfg.recipientEmail||"").trim()) return false;
+  const ref=String(ticket?.ref||"unknown");
+  const dedupe=`escalation__${cfg.id}__${ref}`.replace(/[^a-zA-Z0-9_-]/g,"_").slice(0,150);
+  const recipient=String(cfg.recipientEmail).trim().toLowerCase();
+  const subject=String(cfg.subject||`[CIMOP] Escalation: ${ref}`).replace(/\{\{ticketRef\}\}/g,ref);
+  const body=`<div style="font-family:Arial,sans-serif;line-height:1.6;color:#172033"><h2>CIMOP Escalation</h2><p><strong>Ticket:</strong> ${escapeHtml(ref)}</p><p><strong>Client:</strong> ${escapeHtml(ticket?.clientName||ticket?.name||"Customer")}</p><p><strong>Status:</strong> ${escapeHtml(ST[ticket?.status]?.l||ticket?.status||"Unknown")}</p><p><strong>Priority:</strong> ${escapeHtml(ticket?.priority||"Unknown")}</p><p><strong>Engineer:</strong> ${escapeHtml(ticket?.assignedEngineer||"Unassigned")}</p><p><strong>Trigger:</strong> ${escapeHtml(automationLabel(triggerType))}</p><p>${escapeHtml(extra.message||`CIMOP escalation triggered for ${ref}.`)}</p><p style="color:#64748B;font-size:12px">Generated by CIMOP Automation Engine.</p></div>`;
+  const mailRef=db.collection("mail").doc(dedupe);
+  const existing=await mailRef.get();
+  if(existing.exists) return false;
+  await mailRef.set({
+    to:[recipient],
+    message:{subject,html:body},
+    ticketRef:ref,
+    triggerType,
+    severity:cfg.severity||"info",
+    source:"cimop-automation",
+    createdAt:ts(),
+    createdBy:actor?.actorEmail||auth.currentUser?.email||"system",
+    status:"queued"
+  });
+  return true;
+}
+
 async function runAutomationForTicket(ticket,context={}){
   if(!ticket||!auth.currentUser) return {ran:0};
   const rules=await loadAutomationRules();
@@ -3033,6 +3074,8 @@ async function runAutomationForTicket(ticket,context={}){
         await ensureAutomationNotification(rule,after,context.actor||{},extra);
         ran++;
       }
+      const emailed=await queueEscalationEmail(rule.triggerType,after,extra,context.actor||{});
+      if(emailed) ran++;
     }catch(e){console.warn("Automation execution failed",rule.id,e);}
   }
   return {ran};
@@ -3048,6 +3091,8 @@ function AutomationEngine({tickets,role,showToast}){
   const [filter,setFilter]=useState("all");
   const [selected,setSelected]=useState(null);
   const [runBusy,setRunBusy]=useState(false);
+  const [escalations,setEscalations]=useState(DEFAULT_ESCALATION_MATRIX);
+  const [escLoading,setEscLoading]=useState(true);
 
   useEffect(()=>{
     if(!allowed){setLoading(false);return;}
@@ -3058,6 +3103,32 @@ function AutomationEngine({tickets,role,showToast}){
     },e=>{console.warn("Automation rules unavailable",e);setRules(DEFAULT_AUTOMATIONS);setLoading(false);});
     return()=>unsub();
   },[allowed]);
+
+  useEffect(()=>{
+    if(!allowed){setEscLoading(false);return;}
+    const unsub=db.collection("automationEscalations").onSnapshot(snap=>{
+      const docs=snap.docs.map(d=>({id:d.id,...d.data()}));
+      setEscalations(DEFAULT_ESCALATION_MATRIX.map(def=>docs.find(x=>x.id===def.id)||def));
+      setEscLoading(false);
+    },e=>{console.warn("Escalation matrix unavailable",e);setEscalations(DEFAULT_ESCALATION_MATRIX);setEscLoading(false);});
+    return()=>unsub();
+  },[allowed]);
+
+  const saveEscalation=async(rule)=>{
+    if(!canWrite)return;
+    setSaving(true);
+    try{await db.collection("automationEscalations").doc(rule.id).set({...rule,updatedAt:ts(),updatedBy:auth.currentUser?.email||null},{merge:true});showToast("Escalation rule saved ✓");}
+    catch(e){console.error(e);showToast("Escalation save failed","error");}
+    setSaving(false);
+  };
+
+  const deployEscalationDefaults=async()=>{
+    if(!canWrite)return;
+    setSaving(true);
+    try{for(const r of DEFAULT_ESCALATION_MATRIX){await db.collection("automationEscalations").doc(r.id).set({...r,updatedAt:ts(),updatedBy:auth.currentUser?.email||null},{merge:true});}showToast("Escalation matrix deployed ✓");}
+    catch(e){console.error(e);showToast("Failed to deploy escalation matrix","error");}
+    setSaving(false);
+  };
 
   const deployDefaults=async()=>{
     if(!canWrite)return;
@@ -3098,9 +3169,13 @@ function AutomationEngine({tickets,role,showToast}){
         <div style={{padding:"10px 12px",borderBottom:"1px solid var(--border)",display:"flex",gap:8,flexWrap:"wrap"}}><input className="field-input" style={{flex:1,minWidth:200}} placeholder="Search automation…" value={query} onChange={e=>setQuery(e.target.value)}/>{[["all","All"],["active","Active"],["inactive","Inactive"]].map(([k,l])=><button key={k} className={`analytics-pill${filter===k?" active":""}`} onClick={()=>setFilter(k)}>{l}</button>)}</div>
         <div style={{overflowX:"auto"}}><table className="data-table"><thead><tr><th>Rule</th><th>Trigger</th><th>Action</th><th>Severity</th><th>Status</th>{canWrite&&<th></th>}</tr></thead><tbody>{filtered.length===0?<tr><td colSpan="6" style={{padding:28,textAlign:"center",color:"var(--text3)"}}>No automation rules found.</td></tr>:filtered.map(r=>{const meta=automationSeverityMeta(r.severity);return <tr key={r.id}><td><div style={{fontWeight:700,color:"var(--text)"}}>{r.name}</div><div style={{fontSize:10,color:"var(--text3)",marginTop:3}}>{r.description}</div></td><td><span className="rbac-permission">{automationLabel(r.triggerType)}</span></td><td>🔔 Internal notification</td><td><span style={{padding:"4px 7px",borderRadius:6,background:meta.bg,color:meta.color,fontSize:9,fontWeight:800}}>{meta.label}</span></td><td><button onClick={()=>canWrite&&setRules(prev=>prev.map(x=>x.id===r.id?{...x,active:x.active===false}:x))} style={{border:0,background:"transparent",cursor:canWrite?"pointer":"default",color:r.active!==false?"#10B981":"var(--text4)",fontWeight:800,fontSize:10}}>{r.active!==false?"ACTIVE":"INACTIVE"}</button></td>{canWrite&&<td><button className="btn btn-secondary btn-sm" onClick={()=>saveRule(r)} disabled={saving}>Save</button></td>}</tr>})}</tbody></table></div>
       </div>
-      <div className="card"><div className="card-header"><div><div className="card-title">Test automation</div><div style={{fontSize:10,color:"var(--text3)",marginTop:3}}>Run an SLA trigger against one ticket.</div></div></div><div className="card-body"><select className="field-input" value={selected||""} onChange={e=>setSelected(e.target.value||null)}><option value="">Select ticket…</option>{tickets.map(t=><option key={t.ref} value={t.ref}>{t.ref} · {t.clientName||t.name||"Customer"}</option>)}</select><button className="btn btn-primary" style={{width:"100%",marginTop:9}} onClick={runSelected} disabled={!selected||runBusy}>{runBusy?"Running…":"▶ Run SLA Automation Test"}</button><div style={{marginTop:12,padding:10,borderRadius:8,background:"var(--bg3)",border:"1px solid var(--border)",fontSize:10,color:"var(--text3)",lineHeight:1.5}}>MVP action: creates an internal notification for the signed-in operator. It does not send email or WhatsApp yet.</div></div></div>
+      <div className="card" style={{marginTop:14}}><div className="card-header"><div><div className="card-title">🚨 Escalation Matrix</div><div style={{fontSize:10,color:"var(--text3)",marginTop:3}}>Manually control which automation events queue an email escalation.</div></div><div>{canWrite&&<button className="btn btn-primary btn-sm" onClick={deployEscalationDefaults} disabled={saving}>📧 Deploy Email Defaults</button>}</div></div>
+        <div style={{padding:12,fontSize:10,color:"var(--text3)",background:"var(--bg3)",borderBottom:"1px solid var(--border)",lineHeight:1.55}}>Default: <strong>SLA Breach → admin@mbulahenigroup.co.za</strong>. CIMOP writes a single deduplicated email job to <span className="mono">mail/</span>. To deliver it, connect Firebase Trigger Email (or another mail worker) to the <span className="mono">mail</span> collection.</div>
+        <div style={{overflowX:"auto"}}><table className="data-table"><thead><tr><th>Trigger</th><th>Enabled</th><th>Recipient</th><th>Subject</th><th></th></tr></thead><tbody>{escalations.map(r=><tr key={r.id}><td><span className="rbac-permission">{automationLabel(r.triggerType)}</span></td><td><button onClick={()=>canWrite&&setEscalations(prev=>prev.map(x=>x.id===r.id?{...x,enabled:!x.enabled}:x))} style={{border:0,background:"transparent",color:r.enabled?"#10B981":"var(--text4)",fontWeight:800,fontSize:10,cursor:canWrite?"pointer":"default"}}>{r.enabled?"ON":"OFF"}</button></td><td><input className="field-input" style={{minWidth:190,fontSize:10}} disabled={!canWrite} value={r.recipientEmail||""} onChange={e=>setEscalations(prev=>prev.map(x=>x.id===r.id?{...x,recipientEmail:e.target.value}:x))}/></td><td><input className="field-input" style={{minWidth:260,fontSize:10}} disabled={!canWrite} value={r.subject||""} onChange={e=>setEscalations(prev=>prev.map(x=>x.id===r.id?{...x,subject:e.target.value}:x))}/></td><td>{canWrite&&<button className="btn btn-secondary btn-sm" onClick={()=>saveEscalation(r)} disabled={saving}>Save</button>}</td></tr>)}</tbody></table></div>
+      </div>
+      <div className="card" style={{marginTop:14}}><div className="card-header"><div><div className="card-title">Test automation</div><div style={{fontSize:10,color:"var(--text3)",marginTop:3}}>Run an SLA trigger against one ticket.</div></div></div><div className="card-body"><select className="field-input" value={selected||""} onChange={e=>setSelected(e.target.value||null)}><option value="">Select ticket…</option>{tickets.map(t=><option key={t.ref} value={t.ref}>{t.ref} · {t.clientName||t.name||"Customer"}</option>)}</select><button className="btn btn-primary" style={{width:"100%",marginTop:9}} onClick={runSelected} disabled={!selected||runBusy}>{runBusy?"Running…":"▶ Run SLA Automation Test"}</button><div style={{marginTop:12,padding:10,borderRadius:8,background:"var(--bg3)",border:"1px solid var(--border)",fontSize:10,color:"var(--text3)",lineHeight:1.5}}>Test mode creates the internal notification and, when enabled in the Escalation Matrix, queues one email job for delivery by your configured mail service.</div></div></div>
     </div>
-    <div className="card" style={{marginTop:14}}><div className="card-header"><div><div className="card-title">How CIMOP automation works</div></div></div><div className="card-body" style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:10}}>{[["⚡","Trigger","Ticket created, assignment changed, client waiting, SLA at risk/breach or ticket closed."],["🔎","Condition","The engine checks the event and current ticket/SLA state."],["🔔","Action","MVP writes a notification record and can later add email, WhatsApp, workflows and backend jobs."]].map(([i,l,d])=><div key={l} style={{padding:12,border:"1px solid var(--border)",borderRadius:8,background:"var(--bg)"}}><div style={{fontSize:18}}>{i}</div><div style={{fontWeight:700,fontSize:11,color:"var(--text)",marginTop:6}}>{l}</div><div style={{fontSize:10,color:"var(--text3)",marginTop:4,lineHeight:1.5}}>{d}</div></div>)}</div></div>
+    <div className="card" style={{marginTop:14}}><div className="card-header"><div><div className="card-title">How CIMOP automation works</div></div></div><div className="card-body" style={{display:"grid",gridTemplateColumns:"repeat(3,minmax(0,1fr))",gap:10}}>{[["⚡","Trigger","Ticket created, assignment changed, client waiting, SLA at risk/breach or ticket closed."],["🔎","Condition","The engine checks the event and current ticket/SLA state."],["🔔","Action","Writes an internal notification and can queue a configured email escalation for delivery by the mail service."]].map(([i,l,d])=><div key={l} style={{padding:12,border:"1px solid var(--border)",borderRadius:8,background:"var(--bg)"}}><div style={{fontSize:18}}>{i}</div><div style={{fontWeight:700,fontSize:11,color:"var(--text)",marginTop:6}}>{l}</div><div style={{fontSize:10,color:"var(--text3)",marginTop:4,lineHeight:1.5}}>{d}</div></div>)}</div></div>
     <div style={{marginTop:12,padding:10,borderRadius:8,border:"1px solid var(--border)",background:"var(--bg3)",fontSize:10,color:"var(--text4)"}}>MVP note: automation runs while the Admin Portal is open. The next production step is a backend worker/Cloud Function so automations continue even when nobody has CIMOP open.</div>
   </div>;
 }
@@ -3291,7 +3366,7 @@ function NotificationCenter({role,adminUser,tickets,onOpenTicket,showToast}){
   </div>;
 }
 
-function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError,onAuth,onUpdate,onAddNote,onBack,onNewTicket,theme,toggleTheme,showToast}){
+function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError,onAuth,onUpdate,onAddNote,onBack,onNewTicket,onSignOut,theme,toggleTheme,showToast}){
   const role=normaliseRole(userProfile?.role || "support_agent");
   const isSuperAdmin=role==="super_admin";
   const [pw,setPw]=useState(""); const [pwErr,setPwErr]=useState("");
@@ -3306,10 +3381,25 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
   const [detailTab,setDetailTab]=useState("overview");
 
   const [activeEngineer,setActiveEngineer]=useState("Unassigned");
+  const [teamEngineers,setTeamEngineers]=useState([{name:"Unassigned",uid:"",email:""}]);
   const [onlineEngineers,setOnlineEngineers]=useState({});
   const [chatCounts,setChatCounts]=useState({});
   const [lastRead,setLastRead]=useState({});
   const [notificationCount,setNotificationCount]=useState(0);
+  useEffect(()=>{
+    const names=teamEngineers.map(e=>e.name);
+    if(!names.includes(activeEngineer)) setActiveEngineer(names[0]||"Unassigned");
+  },[teamEngineers]);
+  useEffect(()=>{
+    if(!authed||!isSuperAdmin) return;
+    teamApi("list").then(d=>{
+      const engineers=[{name:"Unassigned",uid:"",email:""},...(d.users||[])
+        .filter(u=>u.status==="active"&&u.role==="engineer")
+        .map(u=>({name:(u.displayName||u.email||"Unnamed Engineer").trim(),uid:u.uid||"",email:u.email||""}))
+        .filter(u=>u.name)];
+      setTeamEngineers(engineers);
+    }).catch(e=>console.warn("Team engineer list unavailable",e));
+  },[authed,isSuperAdmin]);
 
   const [visibleCount,setVisibleCount]=useState(50);
   const [statusModal,setStatusModal]=useState(null);
@@ -3599,9 +3689,11 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
   const doNote=async()=>{if(!note.trim())return;if(!canAny(role,"tickets.notes","tickets.write","tickets.write_assigned")){showToast("Your role cannot add ticket notes","error");return;}setSaving(true);await onAddNote(sel,note.trim());setNote("");setSaving(false);};
   const doQuote=async()=>{if(!canAny(role,"tickets.write","tickets.write_assigned")){showToast("Your role cannot update quotations","error");return;}setSaving(true);await onUpdate(sel,{quotationRef:eqRef});setSaving(false);};
   const doAssign=async(eng)=>{
-    await onUpdate(tk.ref,{assignedEngineer:eng});
-    if(eng!=="Unassigned") setActiveEngineer(eng);
-    try{await sendSysMsg(tk.ref,`Assigned to ${eng}`)}catch(e){}
+    if(!canAny(role,"tickets.assign","tickets.write")){showToast("Your role cannot assign tickets","error");return;}
+    const target=teamEngineers.find(x=>x.name===eng)||{name:eng,uid:""};
+    await onUpdate(tk.ref,{assignedEngineer:target.name,assignedUid:target.uid||null});
+    if(target.name!=="Unassigned") setActiveEngineer(target.name);
+    try{await sendSysMsg(tk.ref,`Assigned to ${target.name}`)}catch(e){}
   };
   const doSaveParts=async(parts)=>{if(!canAny(role,"tickets.write","tickets.write_assigned")){showToast("Your role cannot update parts","error");return;}setSaving(true);await onUpdate(partsModal.ref,{parts});setPartsModal(null);setSaving(false);};
 
@@ -3671,7 +3763,7 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
               <div style={{fontSize:9,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:4}}>Your Identity</div>
                <div style={{marginBottom:7}}><RbacRoleBadge role={role}/></div>
               <select className="field-input" style={{fontSize:11,padding:"5px 8px"}} value={activeEngineer} onChange={e=>setActiveEngineer(e.target.value)}>
-                {ENGINEERS.map(eng=><option key={eng}>{eng}</option>)}
+                {teamEngineers.map(eng=><option key={eng.uid||eng.name}>{eng.name}</option>)}
               </select>
             </div>
           </div>
@@ -3691,6 +3783,9 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
             <button className="nav-item" onClick={()=>setFixesModal(true)}><span className="ni">💡</span>Known Fixes Library</button>
             <a href={CFG.zoho} target="_blank" rel="noreferrer" className="nav-item"><span className="ni">📊</span>Zoho Books</a>
             <button className="nav-item" onClick={onBack}><span className="ni">🌐</span>Customer Portal</button>
+          </div>
+          <div className="nav-section">
+            <button className="nav-item" onClick={onSignOut} style={{color:"#EF4444"}}><span className="ni">↪</span>Sign out</button>
           </div>
           <div className="nav-section">
             <div className="nav-label">Appearance</div>
@@ -3726,12 +3821,13 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
             )}
             <a href={CFG.zoho} target="_blank" rel="noreferrer" className="btn btn-secondary btn-sm">📊 Zoho</a>
             <button className="btn btn-primary btn-sm" onClick={()=>setActiveTab("new")}>+ New Ticket</button>
+            <button className="btn btn-danger btn-sm" onClick={onSignOut}>↪ Sign out</button>
           </div>
         </div>
 
         {activeTab==="new"&&(
           <div style={{overflow:"auto",flex:1}}>
-            <TicketForm mode="engineer" onSubmit={async(form)=>{setSaving(true);await onNewTicket(form);setActiveTab("tickets");setSaving(false);}} saving={saving} theme={theme} toggleTheme={toggleTheme}/>
+            <TicketForm mode="engineer" engineerOptions={teamEngineers.map(e=>e.name)} onSubmit={async(form)=>{setSaving(true);await onNewTicket(form);setActiveTab("tickets");setSaving(false);}} saving={saving} theme={theme} toggleTheme={toggleTheme}/>
           </div>
         )}
 
@@ -3758,8 +3854,8 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
         )}
 
         {activeTab==="customers"&&<Customer360 tickets={tickets} role={role} showToast={showToast}/>}
-        {activeTab==="assets"&&<AssetCMDB assets={assets||[]} tickets={tickets} role={role} adminUser={adminUser} customers={buildCustomer360(tickets)} showToast={showToast} assetDbError={assetDbError}/>} 
-       {activeTab==="team"&&isSuperAdmin&&<TeamAccess adminUser={adminUser} showToast={showToast}/>}
+        {activeTab==="assets"&&<AssetCMDB assets={assets||[]} tickets={tickets} role={role} adminUser={adminUser} customers={buildCustomer360(tickets)} engineerOptions={teamEngineers.map(e=>e.name)} showToast={showToast} assetDbError={assetDbError}/>} 
+       {activeTab==="team"&&isSuperAdmin&&<TeamAccess adminUser={adminUser} showToast={showToast} onEngineersChanged={setTeamEngineers}/>}
        {activeTab==="tickets"&&(
           <div style={{flex:1,display:"flex",minHeight:0,overflow:"hidden"}} className="admin-body">
             <div style={{flex:1,overflow:"hidden",display:"flex",flexDirection:"column"}}>
@@ -3783,7 +3879,7 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
                   </select>
                   <select className="field-input" style={{width:"auto"}} value={fEng} onChange={e=>setFEng(e.target.value)}>
                     <option value="all">All Engineers</option>
-                    {ENGINEERS.map(e=><option key={e}>{e}</option>)}
+                    {teamEngineers.map(e=><option key={e.uid||e.name}>{e.name}</option>)}
                   </select>
                 </div>
               </div>
@@ -3910,7 +4006,7 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
                       <div className="divider"/>
                       <div style={{marginBottom:16}}>
                         <div style={{fontSize:10,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6}}>Assigned Engineer</div>
-                        <select className="field-input" style={{fontSize:12}} value={tk.assignedEngineer||"Unassigned"} onChange={e=>doAssign(e.target.value)}>
+                        <select className="field-input" style={{fontSize:12}} value={tk.assignedEngineer||"Unassigned"} disabled={!canAny(role,"tickets.assign","tickets.write")} onChange={e=>doAssign(e.target.value)}>
                           {ENGINEERS.map(eng=><option key={eng}>{eng}</option>)}
                         </select>
                       </div>
@@ -4162,6 +4258,7 @@ function Root(){
   };
 
   const showToast=(msg,type="ok")=>{setToast({msg,type});setTimeout(()=>setToast({msg:"",type:"ok"}),3000);};
+  const signOut=async()=>{try{await auth.signOut();}finally{setAdminUser(null);setUserProfile(null);setView("portal");}};
 
   useEffect(()=>{
     // The ticket list is admin-only data. Only subscribe once we have a signed-in
@@ -4337,7 +4434,7 @@ function Root(){
         </div>
       )}
       {view==="success"&&lastTicket&&<SuccessScreen ticket={lastTicket} onBack={()=>setView("portal")}/>}
-      {view==="admin"&&<Admin tickets={tickets} assets={assets} assetDbError={assetDbError} loading={dbLoading} authed={!!adminUser} adminUser={adminUser} userProfile={userProfile} onAuth={(u,p)=>{setAdminUser(u);setUserProfile(p);}} onUpdate={updateTicket} onAddNote={addNote} onBack={()=>{setView("portal");auth.signOut();setUserProfile(null);setAdminUser(null);}} onNewTicket={addTicket} theme={theme} toggleTheme={toggleTheme} showToast={showToast}/>}
+      {view==="admin"&&<Admin tickets={tickets} assets={assets} assetDbError={assetDbError} loading={dbLoading} authed={!!adminUser} adminUser={adminUser} userProfile={userProfile} onAuth={(u,p)=>{setAdminUser(u);setUserProfile(p);}} onUpdate={updateTicket} onAddNote={addNote} onBack={()=>{setView("portal");}} onSignOut={signOut} onNewTicket={addTicket} theme={theme} toggleTheme={toggleTheme} showToast={showToast}/>}
       <Toast msg={toast.msg} type={toast.type}/>
     </>
   );
