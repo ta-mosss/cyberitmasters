@@ -1494,7 +1494,10 @@ function TeamAccess({adminUser,showToast,onEngineersChanged}){
   },[]);
 
   const presenceFor=(u)=>{
-    const key=presenceKey(u?.displayName||u?.email||"");
+    if(!u) return null;
+    const uidKey=`uid_${String(u.uid||"").replace(/[^A-Za-z0-9_-]/g,"_")}`;
+    if(uidKey&&presence[uidKey]) return presence[uidKey];
+    const key=presenceKey(u.displayName||u.email||"");
     return key ? (presence[key]||null) : null;
   };
   const isOnline=(u)=>{
@@ -3164,7 +3167,7 @@ function AutomationEngine({tickets,role,showToast}){
   return <div className="page-content">
     <div className="section-head"><div className="section-num">AUTO</div><div><div className="section-title">Automation Engine</div><div style={{fontSize:11,color:"var(--text3)",marginTop:2}}>Event → condition → action rules for the MSP workflow</div></div><div style={{marginLeft:"auto",fontSize:10,color:"var(--text4)"}}>MVP · browser-executed</div></div>
     <div className="analytics-grid" style={{marginBottom:14}}>{[["Rules",rules.length,AC],["Active",activeCount,"#10B981"],["Triggers",new Set(rules.map(r=>r.triggerType)).size,"#0EA5E9"],["Actions",rules.filter(r=>r.actionType).length,"#8B5CF6"]].map(([l,v,c])=><div className="analytics-card" key={l}><div className="analytics-card-title">{l}</div><div className="analytics-big" style={{color:c}}>{v}</div><div className="analytics-sub">Automation engine v1</div></div>)}</div>
-    <div style={{display:"grid",gridTemplateColumns:"minmax(0,1.45fr) minmax(300px,.55fr)",gap:14,alignItems:"start"}}>
+    <div style={{display:"grid",gridTemplateColumns:"minmax(0,1fr)",gap:14,alignItems:"start"}}>
       <div className="card"><div className="card-header"><div><div className="card-title">Automation rules</div><div style={{fontSize:10,color:"var(--text3)",marginTop:3}}>Rules are stored in <span className="mono">automations/{"{automationId}"}</span>.</div></div><div style={{display:"flex",gap:7}}>{canWrite&&<button className="btn btn-primary btn-sm" onClick={deployDefaults} disabled={saving}>⚙ Deploy Defaults</button>}</div></div>
         <div style={{padding:"10px 12px",borderBottom:"1px solid var(--border)",display:"flex",gap:8,flexWrap:"wrap"}}><input className="field-input" style={{flex:1,minWidth:200}} placeholder="Search automation…" value={query} onChange={e=>setQuery(e.target.value)}/>{[["all","All"],["active","Active"],["inactive","Inactive"]].map(([k,l])=><button key={k} className={`analytics-pill${filter===k?" active":""}`} onClick={()=>setFilter(k)}>{l}</button>)}</div>
         <div style={{overflowX:"auto"}}><table className="data-table"><thead><tr><th>Rule</th><th>Trigger</th><th>Action</th><th>Severity</th><th>Status</th>{canWrite&&<th></th>}</tr></thead><tbody>{filtered.length===0?<tr><td colSpan="6" style={{padding:28,textAlign:"center",color:"var(--text3)"}}>No automation rules found.</td></tr>:filtered.map(r=>{const meta=automationSeverityMeta(r.severity);return <tr key={r.id}><td><div style={{fontWeight:700,color:"var(--text)"}}>{r.name}</div><div style={{fontSize:10,color:"var(--text3)",marginTop:3}}>{r.description}</div></td><td><span className="rbac-permission">{automationLabel(r.triggerType)}</span></td><td>🔔 Internal notification</td><td><span style={{padding:"4px 7px",borderRadius:6,background:meta.bg,color:meta.color,fontSize:9,fontWeight:800}}>{meta.label}</span></td><td><button onClick={()=>canWrite&&setRules(prev=>prev.map(x=>x.id===r.id?{...x,active:x.active===false}:x))} style={{border:0,background:"transparent",cursor:canWrite?"pointer":"default",color:r.active!==false?"#10B981":"var(--text4)",fontWeight:800,fontSize:10}}>{r.active!==false?"ACTIVE":"INACTIVE"}</button></td>{canWrite&&<td><button className="btn btn-secondary btn-sm" onClick={()=>saveRule(r)} disabled={saving}>Save</button></td>}</tr>})}</tbody></table></div>
@@ -3391,15 +3394,34 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
     if(!names.includes(activeEngineer)) setActiveEngineer(names[0]||"Unassigned");
   },[teamEngineers]);
   useEffect(()=>{
-    if(!authed||!isSuperAdmin) return;
+    // Assignment is not a Super Admin-only feature. Any role with ticket
+    // assignment/write permission must receive the live Team & Access list.
+    if(!authed||!canAny(role,"tickets.assign","tickets.write")) return;
+    let cancelled=false;
     teamApi("list").then(d=>{
+      if(cancelled) return;
       const engineers=[{name:"Unassigned",uid:"",email:""},...(d.users||[])
-        .filter(u=>u.status==="active"&&u.role==="engineer")
-        .map(u=>({name:(u.displayName||u.email||"Unnamed Engineer").trim(),uid:u.uid||"",email:u.email||""}))
-        .filter(u=>u.name)];
-      setTeamEngineers(engineers);
+        .filter(u=>u&&u.status==="active"&&normaliseRole(u.role)==="engineer")
+        .map(u=>({
+          name:(u.displayName||u.email||"Unnamed Engineer").trim(),
+          uid:u.uid||"",
+          email:u.email||""
+        }))
+        .filter(u=>u.name)
+      ];
+      // Avoid duplicate names in the assignment picker while retaining the
+      // UID/email needed for a stable assignment.
+      const seen=new Set();
+      const unique=engineers.filter(e=>{
+        const k=e.uid||e.name.toLowerCase();
+        if(seen.has(k)) return false;
+        seen.add(k);
+        return true;
+      });
+      setTeamEngineers(unique);
     }).catch(e=>console.warn("Team engineer list unavailable",e));
-  },[authed,isSuperAdmin]);
+    return()=>{cancelled=true;};
+  },[authed,role]);
 
   const [visibleCount,setVisibleCount]=useState(50);
   const [statusModal,setStatusModal]=useState(null);
@@ -3418,8 +3440,10 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
   useEffect(()=>{
     if(!authed||!adminUser?.uid) return;
     const name=String(adminUser.displayName||adminUser.email||adminUser.uid).trim();
-    const key=presenceKey(name);
-    const pr=rtdb.ref(`presence/${key||adminUser.uid}`);
+    // Never use an email address as an RTDB child key. Firebase forbids . # $ [ ] / .
+    // UID is safe and stable; displayName/email remain payload fields for lookup.
+    const key=`uid_${String(adminUser.uid||"").replace(/[^A-Za-z0-9_-]/g,"_")}`;
+    const pr=rtdb.ref(`presence/${key||"unknown"}`);
     const write=()=>pr.update({
       uid:adminUser.uid,
       email:adminUser.email||"",
@@ -4007,8 +4031,17 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
                       <div style={{marginBottom:16}}>
                         <div style={{fontSize:10,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6}}>Assigned Engineer</div>
                         <select className="field-input" style={{fontSize:12}} value={tk.assignedEngineer||"Unassigned"} disabled={!canAny(role,"tickets.assign","tickets.write")} onChange={e=>doAssign(e.target.value)}>
-                          {ENGINEERS.map(eng=><option key={eng}>{eng}</option>)}
+                          {teamEngineers.map(eng=>(
+                            <option key={eng.uid||eng.name} value={eng.name}>
+                              {eng.name}{eng.email?` · ${eng.email}`:""}
+                            </option>
+                          ))}
                         </select>
+                        {canAny(role,"tickets.assign","tickets.write")&&teamEngineers.length<=1&&
+                          <div style={{marginTop:6,fontSize:10,color:"#F59E0B"}}>
+                            No active Engineer accounts are available from Team & Access yet. Create/enable an Engineer account, then refresh this page.
+                          </div>
+                        }
                       </div>
                       <div className="divider"/>
                       <div style={{fontSize:10,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Ticket Details</div>
