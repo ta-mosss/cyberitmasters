@@ -2360,7 +2360,7 @@ function SignoffModal({ticket,clientName,setClientName,clientPosition,setClientP
   );
 }
 
-{tickets,loading,authed,adminUser,onAuth,onUpdate,onAddNote,onBack,onNewTicket,theme,toggleTheme,showToast}){
+function Admin({tickets,loading,authed,adminUser,onAuth,onUpdate,onAddNote,onBack,onNewTicket,theme,toggleTheme,showToast}){
   const [pw,setPw]=useState(""); const [pwErr,setPwErr]=useState("");
   const [sel,setSel]=useState(null);
   const [fSt,setFSt]=useState("all"); const [fTy,setFTy]=useState("all"); const [fEng,setFEng]=useState("all");
