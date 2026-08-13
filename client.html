@@ -397,80 +397,6 @@ padding:8px 12px;border-radius:8px;border:1px solid #ccc;cursor:pointer;backgrou
 }
 .logo-img{height:38px;width:auto;border-radius:6px;}
 
-
-/* ===== CIMOP PORTAL V2.1 / PSA DASHBOARD ===== */
-.portal-shell{max-width:1180px;margin:0 auto;padding:28px 24px 90px;position:relative;z-index:1}
-.portal-topbar{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;margin-bottom:24px}
-.eyebrow{font-size:10px;color:var(--ac);font-weight:800;text-transform:uppercase;letter-spacing:.13em;margin-bottom:7px}
-.portal-title{font-size:30px;font-weight:900;letter-spacing:-.035em;line-height:1.1}
-.portal-subtitle{font-size:13px;color:var(--text3);margin-top:7px;line-height:1.5}
-.customer-chip{display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--card);border:1px solid var(--border);border-radius:12px}
-.customer-avatar{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--ac),var(--ac2));display:flex;align-items:center;justify-content:center;color:#02040A;font-weight:900}
-.customer-chip-name{font-size:12px;font-weight:700;color:var(--text)}
-.customer-chip-id{font-size:9px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:2px}
-.psa-nav{display:flex;gap:6px;overflow:auto;padding-bottom:4px;margin-bottom:20px}
-.psa-nav button{white-space:nowrap}
-.nav-active{color:var(--ac)!important;border-color:rgba(0,200,150,.35)!important;background:rgba(0,200,150,.07)!important}
-.kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px}
-.kpi-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;position:relative;overflow:hidden}
-.kpi-card::after{content:'';position:absolute;right:-30px;top:-30px;width:90px;height:90px;border-radius:50%;background:rgba(0,200,150,.04)}
-.kpi-label{font-size:9px;color:var(--text3);font-weight:800;text-transform:uppercase;letter-spacing:.1em}
-.kpi-value{font-family:'IBM Plex Mono',monospace;font-size:26px;font-weight:700;color:var(--text);margin-top:7px}
-.kpi-meta{font-size:10px;color:var(--text3);margin-top:4px}
-.dashboard-grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(300px,.75fr);gap:16px;align-items:start}
-.panel{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:16px}
-.panel-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:17px 20px;border-bottom:1px solid var(--border)}
-.panel-title{font-size:11px;color:var(--text2);font-weight:800;text-transform:uppercase;letter-spacing:.1em}
-.panel-action{font-size:10px;color:var(--ac);font-weight:700;background:none;border:0;cursor:pointer;font-family:inherit}
-.ticket-row{width:100%;text-align:left;background:transparent;border:0;border-bottom:1px solid var(--border);padding:16px 20px;color:inherit;font-family:inherit;cursor:pointer;transition:background .18s}
-.ticket-row:last-child{border-bottom:0}.ticket-row:hover{background:rgba(0,200,150,.035)}
-.ticket-row-main{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
-.ticket-row-title{font-size:13px;font-weight:750;color:var(--text);margin:6px 0 5px;line-height:1.35}
-.ticket-row-meta{font-size:10px;color:var(--text3);display:flex;gap:9px;flex-wrap:wrap}
-.ticket-ref-small{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--ac);font-weight:700}
-.priority-pill{font-size:9px;font-weight:800;padding:3px 7px;border-radius:6px;text-transform:uppercase;letter-spacing:.05em}
-.priority-Urgent{color:#F87171;background:rgba(239,68,68,.1)}.priority-High{color:#FB923C;background:rgba(249,115,22,.1)}.priority-Medium{color:#FBBF24;background:rgba(245,158,11,.1)}.priority-Low{color:#60A5FA;background:rgba(59,130,246,.1)}
-.empty-panel{padding:30px 20px;text-align:center;color:var(--text3);font-size:12px}
-.quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:14px}
-.quick-btn{padding:13px;text-align:left;background:var(--bg3);border:1px solid var(--border2);border-radius:10px;color:var(--text);font-family:inherit;cursor:pointer;transition:.2s}
-.quick-btn:hover{border-color:rgba(0,200,150,.35);transform:translateY(-1px)}
-.quick-icon{font-size:17px}.quick-title{font-size:11px;font-weight:750;margin-top:7px}.quick-sub{font-size:9px;color:var(--text3);margin-top:3px}
-.side-stat{padding:14px 20px;border-bottom:1px solid var(--border)}.side-stat:last-child{border-bottom:0}.side-stat-top{display:flex;justify-content:space-between;gap:10px}.side-stat-label{font-size:11px;color:var(--text2)}.side-stat-value{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text);font-weight:700}.bar{height:5px;background:var(--border2);border-radius:10px;margin-top:8px;overflow:hidden}.bar>span{display:block;height:100%;background:linear-gradient(90deg,var(--ac),var(--ac2));border-radius:10px}
-/* Ticket workspace */
-.workspace{max-width:1180px;margin:0 auto;padding:28px 24px 100px;position:relative;z-index:1}
-.workspace-head{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;margin-bottom:18px}
-.workspace-ref{font-family:'IBM Plex Mono',monospace;color:var(--ac);font-size:12px;font-weight:700}.workspace-title{font-size:28px;font-weight:900;letter-spacing:-.035em;margin-top:7px}.workspace-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.meta-chip{font-size:10px;color:var(--text3);background:var(--card);border:1px solid var(--border);padding:6px 9px;border-radius:8px}
-.workspace-layout{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(280px,.65fr);gap:16px;align-items:start}
-.workspace-card{background:var(--card);border:1px solid var(--border);border-radius:16px;margin-bottom:16px;overflow:hidden}.workspace-card-body{padding:20px}.workspace-card-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;gap:12px;align-items:center}.workspace-card-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--text2)}
-.ticket-summary{font-size:14px;color:var(--text2);line-height:1.75;white-space:pre-wrap}.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px}.field-label{font-size:8px;color:var(--text3);font-weight:800;text-transform:uppercase;letter-spacing:.09em}.field-value{font-size:12px;color:var(--text2);margin-top:4px;word-break:break-word}
-.workspace-timeline{padding:18px 20px}.activity-item{display:grid;grid-template-columns:20px 1fr;gap:11px;position:relative;padding-bottom:18px}.activity-item:last-child{padding-bottom:0}.activity-dot{width:9px;height:9px;border-radius:50%;margin-top:4px;background:var(--ac);box-shadow:0 0 0 4px rgba(0,200,150,.08)}.activity-item:not(:last-child)::after{content:'';position:absolute;left:4px;top:15px;bottom:0;width:1px;background:var(--border2)}.activity-text{font-size:12px;color:var(--text2);line-height:1.55}.activity-meta{font-size:9px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:5px;display:flex;gap:8px;flex-wrap:wrap}.internal-hidden{display:none}
-.side-list{padding:0 20px}.side-list-row{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}.side-list-row:last-child{border-bottom:0}.side-list-label{font-size:10px;color:var(--text3)}.side-list-value{font-size:11px;color:var(--text2);text-align:right;max-width:60%;word-break:break-word}
-.action-stack{display:flex;flex-direction:column;gap:8px;padding:14px 20px}.action-btn{width:100%;padding:11px 13px;border-radius:9px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);font-family:inherit;font-size:11px;font-weight:700;text-align:left;cursor:pointer;text-decoration:none;transition:.2s}.action-btn:hover{border-color:rgba(0,200,150,.35);color:var(--text)}.action-primary{background:linear-gradient(135deg,var(--ac),var(--ac2));color:#02040A;border:0;text-align:center}
-.mobile-bottom{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:40;background:rgba(7,12,24,.94);border:1px solid var(--border2);border-radius:14px;padding:6px;display:flex;gap:5px;box-shadow:0 12px 35px rgba(0,0,0,.5);backdrop-filter:blur(16px)}
-@media(max-width:900px){.kpi-grid{grid-template-columns:repeat(3,1fr)}.dashboard-grid,.workspace-layout{grid-template-columns:1fr}}
-@media(max-width:640px){.portal-shell,.workspace{padding:22px 14px 90px}.portal-topbar,.workspace-head{flex-direction:column}.portal-title{font-size:25px}.kpi-grid{grid-template-columns:1fr 1fr}.kpi-value{font-size:22px}.field-grid{grid-template-columns:1fr}.workspace-title{font-size:23px}.customer-chip{width:100%}.quick-grid{grid-template-columns:1fr 1fr}.panel-head,.workspace-card-head{padding:14px 15px}.ticket-row{padding:14px 15px}.workspace-card-body{padding:15px}.workspace-timeline,.side-list,.action-stack{padding-left:15px;padding-right:15px}}
-/* ACCESSIBLE LIGHT MODE */
-body.light-mode{background:#F4F7FB;color:#172033;}
-body.light-mode .grid-bg{opacity:.25;background-image:linear-gradient(rgba(15,23,42,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(15,23,42,.04) 1px,transparent 1px);}
-body.light-mode{--bg:#F4F7FB;--bg2:#FFFFFF;--bg3:#F8FAFC;--border:#DCE3EC;--border2:#C7D1DE;--text:#172033;--text2:#526174;--text3:#64748B;--text4:#94A3B8;--card:#FFFFFF;}
-body.light-mode .portal-header{background:rgba(255,255,255,.94);border-bottom-color:#DCE3EC;}
-body.light-mode .brand-text-name,body.light-mode .portal-title,body.light-mode .workspace-title,body.light-mode .login-title,body.light-mode .panel-title,body.light-mode .workspace-card-title,body.light-mode .ticket-row-title,body.light-mode .kpi-value,body.light-mode .side-stat-value,body.light-mode .customer-chip-name,body.light-mode .field-value,body.light-mode .ticket-summary,body.light-mode .activity-text{color:var(--text);}
-body.light-mode .login-card,body.light-mode .panel,body.light-mode .kpi-card,body.light-mode .workspace-card,body.light-mode .customer-chip{background:#FFFFFF;border-color:#DCE3EC;box-shadow:0 8px 28px rgba(15,23,42,.06);}
-body.light-mode .form-input{background:#F8FAFC;color:#172033;border-color:#C7D1DE;}
-body.light-mode .form-input:focus{background:#FFFFFF;}
-body.light-mode .form-input::placeholder{color:#94A3B8;}
-body.light-mode .btn-logout{color:#526174;background:#FFFFFF;border-color:#C7D1DE;}
-body.light-mode .btn-logout:hover{color:#172033;background:#F8FAFC;}
-body.light-mode .mobile-bottom{background:rgba(255,255,255,.96);border-color:#C7D1DE;box-shadow:0 12px 35px rgba(15,23,42,.12);}
-body.light-mode .timeline,body.light-mode .quick-btn,body.light-mode .ticket-row{background:#FFFFFF;}
-body.light-mode .panel-head,body.light-mode .workspace-card-head{border-bottom-color:#E2E8F0;}
-body.light-mode .side-list-row{border-bottom-color:#E2E8F0;}
-body.light-mode .meta-chip{background:#F1F5F9;border-color:#DCE3EC;color:#526174;}
-body.light-mode .login-sub,body.light-mode .help-text,body.light-mode .form-label,body.light-mode .panel-subtitle,body.light-mode .ticket-row-meta,body.light-mode .activity-meta{color:#64748B;}
-body.light-mode .dark-toggle{background:#FFFFFF;color:#172033;border-color:#C7D1DE;}
-body.light-mode .spinner-page p{color:#64748B;}
-
-
 </style>
 
 <!-- PHASE 1 & 2 ENTERPRISE PORTAL EXTENSIONS -->
@@ -634,152 +560,21 @@ function TicketList({tickets,selected,onSelect}){return <div className="timeline
 
 function ProgressTrack({status}){const steps=[{l:"Logged",i:"📋"},{l:"In Progress",i:"🔧"},{l:"Resolved",i:"✅"},{l:"Closed",i:"🔒"}],active=STATUS_STEP[status]??0;return <div className="progress-track"><div className="progress-title">Ticket Progress</div><div className="steps">{steps.map((s,i)=><div key={s.l} className={`step${i<active?" done":i===active?" active":""}`}><div className="step-circle">{i<active?"✓":i===active?s.i:i+1}</div><div className="step-label">{s.l}</div></div>)}</div></div>}
 
-function ActivityTimeline({notes=[] , createdAt}){
-  const items=[{txt:"Ticket created and logged in our system.",at:createdAt,type:"system"},...notes.filter(n=>n.type!=="internal-only")]
-    .sort((a,b)=>new Date(a.at||0)-new Date(b.at||0));
-  return <div className="workspace-timeline">
-    {items.length===0?<div className="empty-panel">No customer-visible activity yet.</div>:items.map((n,i)=><div className="activity-item" key={i}>
-      <div className="activity-dot" style={{background:n.type==="status-change"?"#3B82F6":n.type==="engineer-note"?"var(--ac)":"var(--text3)"}}/>
-      <div><div className="activity-text">{n.txt}</div><div className="activity-meta"><span>{n.at?fmtDateTime(n.at):"Created"}</span>{n.engineer&&<span>👷 {n.engineer}</span>}{n.type&&n.type!=="system"&&<span>{String(n.type).replaceAll("-"," ")}</span>}</div></div>
-    </div>)}
-  </div>;
-}
+function Timeline({notes=[]}){const items=[{txt:"Ticket created and logged in our system.",at:null,type:"system"},...notes.filter(n=>n.type!=="internal-only")].sort((a,b)=>new Date(b.at||0)-new Date(a.at||0));return <div className="timeline"><div className="timeline-title">Activity & Updates</div><div className="timeline-list">{items.map((n,i)=><div className="tl-item" key={i}><div className="tl-dot-wrap"><div className="tl-dot" style={{borderColor:n.type==="engineer-note"?"var(--ac)":n.type==="status-change"?"#3B82F6":"var(--text3)",background:n.type==="engineer-note"?"var(--ac)":"transparent"}}/><div className="tl-line"/></div><div className="tl-content"><div className="tl-note">{n.txt}</div><div className="tl-meta"><span>{n.at?fmtDateTime(n.at):"Created"}</span>{n.engineer&&<span>👷 {n.engineer}</span>}</div></div></div>)}</div></div>}
 
-function TicketWorkspace({ticket,onBack}){
-  const sv=ST[ticket.status]||ST.open,svc=service(ticket),sla=getSLAInfo(ticket);
-  const signoff=ticket.clientSignoff?.signed;
-  const needsSignoff=["resolved","awaiting-signoff"].includes(ticket.status)&&!signoff;
-  const supportMsg=`Hello, I'm following up on my support ticket ${ticket.ref}.\n\nName: ${ticket.clientName||ticket.name||""}\nTicket: ${ticket.ref}\nStatus: ${sv.l}`;
-  const notes=(ticket.notes||[]).filter(n=>n.type!=="internal-only");
-  return <div className="workspace">
-    <div className="workspace-head">
-      <div>
-        <button className="btn-logout" onClick={onBack} style={{marginBottom:16}}>← Back to Dashboard</button>
-        <div className="workspace-ref">{ticket.ref}</div>
-        <div className="workspace-title">{ticketTitle(ticket)}</div>
-        <div className="workspace-meta"><StatusBadge status={ticket.status}/><span className="meta-chip">{svc.icon} {svc.label}</span>{ticket.priority&&<span className={`priority-pill priority-${ticket.priority}`}>{ticket.priority}</span>}<SLABadge ticket={ticket}/></div>
-      </div>
-    </div>
+function TicketDetail({ticket,onBack}){const sv=ST[ticket.status]||ST.open,svc=service(ticket),sla=getSLAInfo(ticket),signoff=ticket.clientSignoff?.signed,needsSignoff=["resolved","awaiting-signoff"].includes(ticket.status)&&!signoff;const supportMsg=`Hello, I'm following up on my support ticket ${ticket.ref}.\n\nName: ${ticket.clientName||ticket.name||""}\nTicket: ${ticket.ref}\nStatus: ${sv.l}`;return <div className="page"><button className="btn-logout" onClick={onBack} style={{marginBottom:20}}>← Back to My Tickets</button><div className="ticket-header fu"><div className="ticket-ref-row"><span className="ticket-ref">{ticket.ref}</span><StatusBadge status={ticket.status}/><SLABadge ticket={ticket}/></div><div className="ticket-title">{ticketTitle(ticket)}</div><div className="ticket-meta-row"><div className="ticket-meta-item">{svc.icon} {svc.label}</div><div className="ticket-meta-item">📅 {fmtDate(ticket.createdAt)}</div>{ticket.priority&&<div className="ticket-meta-item">⚡ {ticket.priority}</div>}{ticket.assignedEngineer&&ticket.assignedEngineer!=="Unassigned"&&<div className="ticket-meta-item">👷 {ticket.assignedEngineer}</div>}</div></div>{needsSignoff&&<div className="signoff-banner"><div className="signoff-banner-title">✍️ Action Required — Client Sign-Off</div><div className="signoff-banner-text">Your issue has been resolved. Complete the digital sign-off to confirm satisfaction, rate the service and close the ticket.</div><a href={`${CFG.signoffBase}?ticketId=${encodeURIComponent(ticket.ref)}`} target="_blank" rel="noreferrer" className="btn-signoff">Complete Sign-Off →</a></div>}{signoff&&<div className="signoff-done">✓ Sign-off completed by {ticket.clientSignoff.clientName||"Client"} {ticket.clientSignoff.signedAt?`on ${fmtDate(ticket.clientSignoff.signedAt)}`:""}</div>}<div className="big-status-card" style={{"--sc-bg":sv.c,background:`${sv.c}08`,borderColor:`${sv.c}30`,color:sv.c}}><div className="big-status-label">Current Status</div><div className="big-status-value">{sv.icon} {sv.l}</div><div className="big-status-desc">{sv.desc}</div></div><ProgressTrack status={ticket.status}/><div className="info-grid"><div className="info-card"><div className="info-card-label">Ticket Reference</div><div className="info-card-value mono">{ticket.ref}</div></div><div className="info-card"><div className="info-card-label">Last Updated</div><div className="info-card-value" style={{fontSize:13}}>{fmtDateTime(ticket.updatedAt||ticket.createdAt)}</div></div><div className="info-card"><div className="info-card-label">Service</div><div className="info-card-value">{svc.icon} {svc.label}</div></div><div className="info-card"><div className="info-card-label">SLA</div><div className="info-card-value" style={{fontSize:13}}>{sla?.label||"—"}</div></div></div>{(ticket.deviceType||ticket.manufacturer||ticket.modelNumber||ticket.serialNumber)&&<div className="device-card"><div className="device-card-title">💻 Device Information</div><div className="device-grid">{[["Device Type",ticket.deviceType],["Manufacturer",ticket.manufacturer],["Model",ticket.modelNumber],["Serial Number",ticket.serialNumber],["Operating System",ticket.operatingSystem],["Warranty",ticket.warrantyStatus],["Condition",ticket.conditionOnArrival],["Accessories",ticket.accessories]].filter(([,v])=>v).map(([k,v])=><div className="device-row" key={k}><div className="device-key">{k}</div><div className="device-val">{v}</div></div>)}</div></div>}{ticket.issueDetail&&<div className="device-card"><div className="device-card-title">📝 Issue Description</div><p style={{fontSize:14,color:"var(--text2)",lineHeight:1.7}}>{ticket.issueDetail}</p></div>}<Timeline notes={ticket.notes||[]}/>{ticket.quotationRef&&<div className="device-card"><div className="device-card-title">💰 Quotation</div><div style={{fontFamily:"'IBM Plex Mono',monospace",color:"var(--ac)"}}>{ticket.quotationRef}</div>{ticket.quoteLink&&<a className="btn-back" href={ticket.quoteLink} target="_blank" rel="noreferrer" style={{marginTop:12}}>View Quotation →</a>}</div>}{ticket.invoiceLink&&<div className="device-card"><div className="device-card-title">🧾 Invoice</div>{ticket.invoiceNumber&&<div style={{fontFamily:"'IBM Plex Mono',monospace",color:"var(--ac)",marginBottom:10}}>{ticket.invoiceNumber}</div>}<a className="btn-back" href={ticket.invoiceLink} target="_blank" rel="noreferrer">View Invoice →</a></div>}<div className="help-banner"><div className="help-banner-text"><h3>Need an update?</h3><p>Contact our team and quote <strong>{ticket.ref}</strong>.</p></div><a href={waUrl(CFG.wa,supportMsg)} target="_blank" rel="noreferrer" className="btn-wa">💬 Chat on WhatsApp</a></div></div>}
 
-    {needsSignoff&&<div className="signoff-banner"><div className="signoff-banner-title">✍️ Action Required — Client Sign-Off</div><div className="signoff-banner-text">Your issue has been resolved. Complete the digital sign-off to confirm satisfaction, rate the service and close the ticket.</div><a href={`${CFG.signoffBase}?ticketId=${encodeURIComponent(ticket.ref)}`} target="_blank" rel="noreferrer" className="btn-signoff">Complete Sign-Off →</a></div>}
-    {signoff&&<div className="signoff-done">✓ Sign-off completed by {ticket.clientSignoff.clientName||"Client"} {ticket.clientSignoff.signedAt?`on ${fmtDate(ticket.clientSignoff.signedAt)}`:""}</div>}
-
-    <div className="workspace-layout">
-      <main>
-        <div className="workspace-card">
-          <div className="workspace-card-head"><span className="workspace-card-title">Ticket Progress</span><span className="meta-chip">Last updated {fmtDateTime(ticket.updatedAt||ticket.createdAt)}</span></div>
-          <div className="workspace-card-body"><ProgressTrack status={ticket.status}/></div>
-        </div>
-
-        <div className="workspace-card">
-          <div className="workspace-card-head"><span className="workspace-card-title">Issue Summary</span></div>
-          <div className="workspace-card-body"><div className="ticket-summary">{ticket.issueDetail||ticket.problemDescription||ticket.issueTitle||"No detailed description was provided."}</div></div>
-        </div>
-
-        {(ticket.deviceType||ticket.manufacturer||ticket.modelNumber||ticket.serialNumber||ticket.operatingSystem||ticket.warrantyStatus||ticket.conditionOnArrival||ticket.accessories)&&<div className="workspace-card">
-          <div className="workspace-card-head"><span className="workspace-card-title">💻 Device / Service Information</span></div>
-          <div className="workspace-card-body"><div className="field-grid">{[["Device Type",ticket.deviceType],["Manufacturer",ticket.manufacturer],["Model",ticket.modelNumber],["Serial Number",ticket.serialNumber],["Operating System",ticket.operatingSystem],["Warranty",ticket.warrantyStatus],["Condition",ticket.conditionOnArrival],["Accessories",ticket.accessories]].filter(([,v])=>v).map(([k,v])=><div className="field" key={k}><div className="field-label">{k}</div><div className="field-value">{v}</div></div>)}</div></div>
-        </div>}
-
-        <div className="workspace-card">
-          <div className="workspace-card-head"><span className="workspace-card-title">Activity & Customer Updates</span><span className="meta-chip">{notes.length} update{notes.length===1?"":"s"}</span></div>
-          <ActivityTimeline notes={ticket.notes||[]} createdAt={ticket.createdAt}/>
-        </div>
-
-        {(ticket.quotationRef||ticket.quoteLink||ticket.invoiceNumber||ticket.invoiceLink)&&<div className="workspace-card">
-          <div className="workspace-card-head"><span className="workspace-card-title">💰 Commercial Information</span></div>
-          <div className="workspace-card-body"><div className="field-grid">
-            {ticket.quotationRef&&<div className="field"><div className="field-label">Quotation</div><div className="field-value">{ticket.quotationRef}</div>{ticket.quoteLink&&<a className="btn-back" href={ticket.quoteLink} target="_blank" rel="noreferrer" style={{marginTop:10,padding:"8px 12px",fontSize:10}}>View Quotation →</a>}</div>}
-            {ticket.invoiceNumber&&<div className="field"><div className="field-label">Invoice</div><div className="field-value">{ticket.invoiceNumber}</div>{ticket.invoiceLink&&<a className="btn-back" href={ticket.invoiceLink} target="_blank" rel="noreferrer" style={{marginTop:10,padding:"8px 12px",fontSize:10}}>View Invoice →</a>}</div>}
-          </div></div>
-        </div>}
-      </main>
-
-      <aside>
-        <div className="workspace-card">
-          <div className="workspace-card-head"><span className="workspace-card-title">Ticket Details</span></div>
-          <div className="side-list">
-            {[["Reference",ticket.ref],["Status",sv.l],["Priority",ticket.priority||"Normal"],["Service",svc.label],["Created",fmtDateTime(ticket.createdAt)], ["Updated",fmtDateTime(ticket.updatedAt||ticket.createdAt)],["Engineer",ticket.assignedEngineer||"Not assigned"],["SLA",sla?.label||"—"]].map(([k,v])=><div className="side-list-row" key={k}><span className="side-list-label">{k}</span><span className="side-list-value">{v}</span></div>)}
-          </div>
-        </div>
-        <div className="workspace-card">
-          <div className="workspace-card-head"><span className="workspace-card-title">Need Help?</span></div>
-          <div className="action-stack">
-            <a href={waUrl(CFG.wa,supportMsg)} target="_blank" rel="noreferrer" className="action-btn action-primary">💬 Contact Support</a>
-            {needsSignoff&&<a href={`${CFG.signoffBase}?ticketId=${encodeURIComponent(ticket.ref)}`} target="_blank" rel="noreferrer" className="action-btn">✍️ Complete Sign-Off</a>}
-            <a href={CFG.newTicketUrl} className="action-btn">＋ Create New Support Request</a>
-          </div>
-        </div>
-        <div className="workspace-card">
-          <div className="workspace-card-head"><span className="workspace-card-title">Customer Visibility</span></div>
-          <div className="workspace-card-body"><div style={{fontSize:11,color:"var(--text3)",lineHeight:1.6}}>This workspace shows customer-visible updates only. Internal engineering notes remain protected inside CIMOP.</div></div>
-        </div>
-      </aside>
-    </div>
-    <div className="mobile-bottom"><button className="btn-logout" onClick={onBack}>🏠 Dashboard</button><a className="btn-logout" href={waUrl(CFG.wa,supportMsg)} target="_blank" rel="noreferrer">💬 Support</a></div>
-  </div>;
-}
-
-function CustomerDashboard({customer,tickets,onSelect,onLogout}){
-  const [tab,setTab]=useState("overview");
-  const active=tickets.filter(t=>!['closed','resolved'].includes(t.status));
-  const open=tickets.filter(t=>['open'].includes(t.status)).length;
-  const inProgress=tickets.filter(t=>['in-progress'].includes(t.status)).length;
-  const waiting=tickets.filter(t=>['awaiting','awaiting-parts','awaiting-authorisation','awaiting-payment','awaiting-signoff','quoted'].includes(t.status)).length;
-  const resolved=tickets.filter(t=>['resolved','closed'].includes(t.status)).length;
-  const assets=[...new Map(tickets.flatMap(t=>t.deviceType?[{key:`${t.manufacturer}|${t.modelNumber}|${t.serialNumber}`,...t}]:[]).map(x=>[x.key,x])).values()];
-  const urgent=tickets.filter(t=>t.priority==='Urgent'&&!['closed','resolved'].includes(t.status)).length;
-  const slaBreaches=tickets.filter(t=>getSLAInfo(t)?.status==='breach').length;
-  const latest=tickets.slice(0,6);
-  const commercial=tickets.filter(t=>t.quotationRef||t.invoiceNumber||t.quoteLink||t.invoiceLink);
-  const initials=(customer?.name||customer?.clientName||"C").split(" ").map(x=>x[0]).join("").slice(0,2).toUpperCase();
-  return <div className="portal-shell">
-    <div className="portal-topbar">
-      <div><div className="eyebrow">Customer Workspace</div><h1 className="portal-title">Welcome, {customer?.name||customer?.clientName||"Customer"} 👋</h1><p className="portal-subtitle">Your support desk, ticket history and service activity — all in one place.</p></div>
-      <div className="customer-chip"><div className="customer-avatar">{initials}</div><div><div className="customer-chip-name">{customer?.company||customer?.name||"Customer"}</div><div className="customer-chip-id">{customer?.id||"Authenticated Customer"}</div></div></div>
-    </div>
-
-    <div className="psa-nav">{[["overview","Overview"],["tickets","🎫 Tickets"],["assets","💻 Assets"],["billing","💰 Quotes & Invoices"],["profile","👤 Profile"]].map(([id,l])=><button key={id} className={`btn-logout ${tab===id?"nav-active":""}`} onClick={()=>setTab(id)}>{l}</button>)}<button className="btn-logout" onClick={onLogout} style={{marginLeft:"auto"}}>Sign out</button></div>
-
-    {tab==="overview"&&<>
-      <div className="kpi-grid">
-        <div className="kpi-card"><div className="kpi-label">Total Tickets</div><div className="kpi-value">{tickets.length}</div><div className="kpi-meta">All support history</div></div>
-        <div className="kpi-card"><div className="kpi-label">Open</div><div className="kpi-value">{open}</div><div className="kpi-meta">Waiting in queue</div></div>
-        <div className="kpi-card"><div className="kpi-label">In Progress</div><div className="kpi-value">{inProgress}</div><div className="kpi-meta">Engineer working</div></div>
-        <div className="kpi-card"><div className="kpi-label">Awaiting You</div><div className="kpi-value">{waiting}</div><div className="kpi-meta">Action may be required</div></div>
-        <div className="kpi-card"><div className="kpi-label">Resolved</div><div className="kpi-value">{resolved}</div><div className="kpi-meta">Completed history</div></div>
-      </div>
-      <div className="dashboard-grid">
-        <div>
-          <div className="panel"><div className="panel-head"><span className="panel-title">Recent Tickets</span><button className="panel-action" onClick={()=>setTab("tickets")}>View all →</button></div>{latest.length?latest.map(t=><button className="ticket-row" key={t.id} onClick={()=>onSelect(t)}><div className="ticket-row-main"><div><div className="ticket-ref-small">{t.ref}</div><div className="ticket-row-title">{service(t).icon} {ticketTitle(t)}</div><div className="ticket-row-meta"><span>{fmtDate(t.createdAt)}</span><span>•</span><span>{service(t).label}</span>{t.assignedEngineer&&t.assignedEngineer!=="Unassigned"&&<><span>•</span><span>👷 {t.assignedEngineer}</span></>}</div></div><div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:7}}><StatusBadge status={t.status}/>{t.priority&&<span className={`priority-pill priority-${t.priority}`}>{t.priority}</span>}<SLABadge ticket={t}/></div></div></button>):<div className="empty-panel">No customer tickets found.</div>}</div>
-          <div className="panel"><div className="panel-head"><span className="panel-title">Quick Actions</span></div><div className="quick-grid"><a href={CFG.newTicketUrl} className="quick-btn"><div className="quick-icon">＋</div><div className="quick-title">New Support Request</div><div className="quick-sub">Open a new ticket</div></a><a href={waUrl(CFG.wa,"Hello Cyber I.T Masters, I need support from my Customer Portal.")} target="_blank" rel="noreferrer" className="quick-btn"><div className="quick-icon">💬</div><div className="quick-title">Contact Support</div><div className="quick-sub">Chat with our team</div></a><button className="quick-btn" onClick={()=>setTab("billing")}><div className="quick-icon">💰</div><div className="quick-title">Quotes & Invoices</div><div className="quick-sub">View linked documents</div></button><button className="quick-btn" onClick={()=>setTab("assets")}><div className="quick-icon">💻</div><div className="quick-title">My Assets</div><div className="quick-sub">Service history</div></button></div></div>
-        </div>
-        <aside>
-          <div className="panel"><div className="panel-head"><span className="panel-title">Service Snapshot</span></div><div className="side-stat"><div className="side-stat-top"><span className="side-stat-label">Active tickets</span><span className="side-stat-value">{active.length}</span></div><div className="bar"><span style={{width:`${tickets.length?Math.min(100,(active.length/tickets.length)*100):0}%`}}/></div></div><div className="side-stat"><div className="side-stat-top"><span className="side-stat-label">Urgent active</span><span className="side-stat-value" style={{color:urgent?"#F87171":"var(--text)"}}>{urgent}</span></div></div><div className="side-stat"><div className="side-stat-top"><span className="side-stat-label">SLA breaches</span><span className="side-stat-value" style={{color:slaBreaches?"#F87171":"#10B981"}}>{slaBreaches}</span></div></div><div className="side-stat"><div className="side-stat-top"><span className="side-stat-label">Known assets</span><span className="side-stat-value">{assets.length}</span></div></div></div>
-          <div className="panel"><div className="panel-head"><span className="panel-title">Need Assistance?</span></div><div style={{padding:18}}><div style={{fontSize:12,fontWeight:700,color:"var(--text)",marginBottom:5}}>Your IT is our responsibility.</div><div style={{fontSize:10,color:"var(--text3)",lineHeight:1.6,marginBottom:12}}>Contact our support team and include your ticket reference for faster assistance.</div><a href={waUrl(CFG.wa,"Hello Cyber I.T Masters, I need assistance with my support tickets.")} target="_blank" rel="noreferrer" className="btn-wa" style={{width:"100%",justifyContent:"center"}}>💬 WhatsApp Support</a></div></div>
-        </aside>
-      </div>
-    </>}
-
-    {tab==="tickets"&&<div className="panel"><div className="panel-head"><span className="panel-title">All Support Tickets</span><span className="meta-chip">{tickets.length} total</span></div>{tickets.length?tickets.map(t=><button className="ticket-row" key={t.id} onClick={()=>onSelect(t)}><div className="ticket-row-main"><div><div className="ticket-ref-small">{t.ref}</div><div className="ticket-row-title">{service(t).icon} {ticketTitle(t)}</div><div className="ticket-row-meta"><span>{fmtDate(t.createdAt)}</span><span>•</span><span>{t.priority||"Normal"}</span><span>•</span><span>{service(t).label}</span></div></div><div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:7}}><StatusBadge status={t.status}/><SLABadge ticket={t}/></div></div></button>):<div className="empty-panel">No tickets found.</div>}</div>}
-
-    {tab==="assets"&&<div className="panel"><div className="panel-head"><span className="panel-title">My IT Assets</span><span className="meta-chip">From service history</span></div>{assets.length?assets.map(a=><div className="ticket-row" key={a.key} style={{cursor:"default"}}><div className="ticket-row-main"><div><div className="ticket-ref-small">{a.serialNumber||"ASSET"}</div><div className="ticket-row-title">💻 {a.manufacturer||"Device"} {a.modelNumber||""}</div><div className="ticket-row-meta"><span>{a.deviceType||"IT Device"}</span><span>•</span><span>Service history available</span></div></div></div></div>):<div className="empty-panel">No registered device history yet.</div>}</div>}
-
-    {tab==="billing"&&<div className="panel"><div className="panel-head"><span className="panel-title">Quotes & Invoices</span><span className="meta-chip">{commercial.length} linked ticket{commercial.length===1?"":"s"}</span></div>{commercial.length?commercial.map(t=><div className="ticket-row" key={t.id} style={{cursor:"default"}}><div className="ticket-row-main"><div><div className="ticket-ref-small">{t.ref}</div><div className="ticket-row-title">{ticketTitle(t)}</div><div className="ticket-row-meta">{t.quotationRef&&<span>Quote: {t.quotationRef}</span>}{t.invoiceNumber&&<span>Invoice: {t.invoiceNumber}</span>}</div></div><div style={{display:"flex",gap:7,flexWrap:"wrap",justifyContent:"flex-end"}}>{t.quoteLink&&<a className="btn-back" style={{padding:"8px 11px",fontSize:10}} href={t.quoteLink} target="_blank" rel="noreferrer">View Quote</a>}{t.invoiceLink&&<a className="btn-back" style={{padding:"8px 11px",fontSize:10}} href={t.invoiceLink} target="_blank" rel="noreferrer">View Invoice</a>}</div></div></div>):<div className="empty-panel">No quotations or invoices are currently linked to your tickets.</div>}</div>}
-
-    {tab==="profile"&&<div className="panel"><div className="panel-head"><span className="panel-title">Customer Profile</span></div><div className="workspace-card-body"><div className="field-grid">{[["Name",customer?.name||customer?.clientName],["Company",customer?.company],["Cellphone",customer?.phone],["Email",customer?.email],["Customer ID",customer?.id]].map(([k,v])=><div className="field" key={k}><div className="field-label">{k}</div><div className="field-value">{v||"—"}</div></div>)}</div><p style={{fontSize:10,color:"var(--text3)",lineHeight:1.6,marginTop:14}}>To update your customer details, please contact our support team. CIMOP keeps your customer identity consistent across support records.</p></div></div>}
-  </div>;
-}
+function Dashboard({customer,tickets,onSelect,onLogout}){const [tab,setTab]=useState("overview");const open=tickets.filter(t=>!['closed','resolved'].includes(t.status)).length,resolved=tickets.filter(t=>['resolved','closed'].includes(t.status)).length,assets=[...new Map(tickets.flatMap(t=>t.deviceType?[{key:`${t.manufacturer}|${t.modelNumber}|${t.serialNumber}`,...t}]:[]).map(x=>[x.key,x])).values()];const selectedTicket=tickets[0];return <div className="page"><div style={{display:"flex",justifyContent:"space-between",gap:15,alignItems:"flex-start",marginBottom:24}}><div><div style={{fontSize:11,color:"var(--ac)",fontWeight:800,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:7}}>Customer Workspace</div><h1 style={{fontSize:30,fontWeight:900,color:"var(--text)",letterSpacing:"-0.03em"}}>Welcome, {customer?.name||customer?.clientName||"Customer"}</h1><p style={{fontSize:13,color:"var(--text3)",marginTop:5}}>Your support history, active services and tickets in one place.</p></div><button className="btn-logout" onClick={onLogout}>Sign out</button></div><div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:18}}>{[["overview","Overview"],["tickets","Tickets"],["assets","Assets"],["billing","Quotes & Invoices"],["profile","Profile"]].map(([id,l])=><button key={id} className="btn-logout" onClick={()=>setTab(id)} style={{color:tab===id?"var(--ac)":"var(--text3)",borderColor:tab===id?"rgba(0,200,150,.35)":"var(--border2)",background:tab===id?"rgba(0,200,150,.06)":"transparent"}}>{l}</button>)}</div>{tab==="overview"&&<><div className="info-grid"><Metric icon="🎫" label="Total Tickets" value={tickets.length}/><Metric icon="🔧" label="Open / Active" value={open}/><Metric icon="✅" label="Resolved / Closed" value={resolved}/><Metric icon="💻" label="Known Assets" value={assets.length}/></div><TicketList tickets={tickets.slice(0,8)} selected={selectedTicket} onSelect={onSelect}/><div className="help-banner"><div className="help-banner-text"><h3>Need something else?</h3><p>Log a new support request with our support centre.</p></div><a href={CFG.newTicketUrl} className="btn-back">+ New Support Ticket</a></div></>}{tab==="tickets"&&<TicketList tickets={tickets} selected={null} onSelect={onSelect}/>} {tab==="assets"&&<div className="device-card"><div className="device-card-title">💻 Your Assets From Service History</div>{assets.length?assets.map(a=><div key={a.key} className="device-row"><strong>{a.manufacturer||"Device"} {a.modelNumber||""}</strong><div style={{fontSize:11,color:"var(--text3)",marginTop:4}}>Serial: {a.serialNumber||"—"} · Type: {a.deviceType||"—"}</div></div>):<div className="tl-empty">No registered device history yet.</div>}</div>} {tab==="billing"&&<div className="device-card"><div className="device-card-title">💰 Quotes & Invoices</div>{tickets.filter(t=>t.quotationRef||t.invoiceNumber||t.quoteLink||t.invoiceLink).map(t=><div className="device-row" key={t.id}><div style={{fontWeight:700,color:"var(--text)"}}>{t.ref}</div><div style={{fontSize:12,color:"var(--text3)",margin:"5px 0"}}>{t.quotationRef&&`Quote: ${t.quotationRef}`} {t.invoiceNumber&&` · Invoice: ${t.invoiceNumber}`}</div><div style={{display:"flex",gap:8,flexWrap:"wrap"}}>{t.quoteLink&&<a className="btn-back" style={{padding:"7px 12px",fontSize:11}} href={t.quoteLink} target="_blank" rel="noreferrer">View Quote</a>}{t.invoiceLink&&<a className="btn-back" style={{padding:"7px 12px",fontSize:11}} href={t.invoiceLink} target="_blank" rel="noreferrer">View Invoice</a>}</div></div>)||<div className="tl-empty">No quotations or invoices are currently linked.</div>}</div>} {tab==="profile"&&<div className="device-card"><div className="device-card-title">👤 Customer Details</div>{[["Name",customer?.name||customer?.clientName],["Company",customer?.company],["Cellphone",customer?.phone],["Email",customer?.email]].map(([k,v])=><div className="device-row" key={k}><div className="device-key">{k}</div><div className="device-val">{v||"—"}</div></div>)}<p style={{fontSize:11,color:"var(--text3)",marginTop:15}}>To update these details, please contact our support team. This keeps the customer identity used by CIMOP consistent across tickets.</p></div>}</div>}
 
 function Root(){const [session,setSession]=useState(null);const [customer,setCustomer]=useState(null);const [tickets,setTickets]=useState([]);const [selected,setSelected]=useState(null);const [loading,setLoading]=useState(true);const [toast,setToast]=useState({msg:"",type:"ok"});const [theme,setTheme]=useState("dark");
  const showToast=(msg,type="ok")=>{setToast({msg,type});setTimeout(()=>setToast({msg:"",type:"ok"}),3000);};
- useEffect(()=>{const raw=sessionStorage.getItem(CFG.sessionKey);if(!raw){setLoading(false);return;}let s;try{s=JSON.parse(raw);}catch(e){sessionStorage.removeItem(CFG.sessionKey);setLoading(false);return;}setSession(s);(async()=>{try{if(s.secure&&!auth.currentUser){await auth.signInWithCustomToken(s.customToken);}const t=await loadCustomerTickets(s);setTickets(t);setCustomer(await loadCustomerProfile(s,t));setSelected(null);}catch(e){console.error(e);sessionStorage.removeItem(CFG.sessionKey);setSession(null);}finally{setLoading(false);}})();},[]);
- useEffect(()=>{if(!session?.secure||!session.customerId)return;let cancelled=false;(async()=>{try{const snap=await db.collection("tickets").where("customerId","==",session.customerId).limit(100).get();if(cancelled)return;const t=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));setTickets(t);setSelected(cur=>cur? t.find(x=>x.id===cur.id)||cur : t[0]||null);}catch(e){console.error("Customer ticket refresh failed:",e);}})();return()=>{cancelled=true;};},[session?.secure,session?.customerId]);
+ useEffect(()=>{const raw=sessionStorage.getItem(CFG.sessionKey);if(!raw){setLoading(false);return;}const s=JSON.parse(raw);setSession(s);(async()=>{try{if(s.secure&&!auth.currentUser){await auth.signInWithCustomToken(s.customToken).catch(()=>{});}const t=await loadCustomerTickets(s);setTickets(t);setCustomer(await loadCustomerProfile(s,t));setSelected(null);}catch(e){console.error(e);sessionStorage.removeItem(CFG.sessionKey);setSession(null);}finally{setLoading(false);}})();},[]);
+ useEffect(()=>{if(!session?.secure||!session.customerId)return;const unsub=db.collection("tickets").where("customerId","==",session.customerId).limit(100).onSnapshot(s=>{const t=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));setTickets(t);setSelected(cur=>cur? t.find(x=>x.id===cur.id)||cur : t[0]||null);},e=>console.error(e));return()=>unsub();},[session?.secure,session?.customerId]);
  const login=async(s,t)=>{setSession(s);setTickets(t);setCustomer(await loadCustomerProfile(s,t));setSelected(null);showToast(`Welcome to your customer portal`,'info');};
  const logout=async()=>{sessionStorage.removeItem(CFG.sessionKey);if(auth.currentUser)await auth.signOut().catch(()=>{});setSession(null);setCustomer(null);setTickets([]);setSelected(null);};
  const toggle=()=>{const next=theme==="dark"?"light":"dark";setTheme(next);document.body.classList.toggle("light-mode",next==="light");};
  if(loading)return <div className="spinner-page"><div className="spinner"/><p>Loading Customer Portal…</p></div>;
- return <><div className="grid-bg"/><header className="portal-header"><div className="portal-header-inner"><div className="brand"><div className="brand-icon">⚡</div><div><div className="brand-text-name">{CFG.bizName}</div><div className="brand-text-sub">Customer Portal</div></div></div><div style={{display:"flex",gap:8,alignItems:"center"}}>{session&&<div className="live-indicator"><div className="live-dot"/><span className="live-text">SECURE</span></div>}<button className="dark-toggle" onClick={toggle}>{theme==="dark"?"☀️":"🌙"}</button></div></div></header>{!session?<LoginScreen onLogin={login}/>:selected?<TicketWorkspace ticket={selected} onBack={()=>setSelected(null)}/>:<CustomerDashboard customer={customer} tickets={tickets} onSelect={setSelected} onLogout={logout}/>} {session&&selected&&<div style={{position:"fixed",bottom:18,left:"50%",transform:"translateX(-50%)",zIndex:40,display:"flex",gap:6}}><button className="btn-logout" onClick={()=>setSelected(null)}>🏠 Dashboard</button><button className="btn-logout" onClick={logout}>Sign out</button></div>}<Toast msg={toast.msg} type={toast.type}/></>;
+ return <><div className="grid-bg"/><header className="portal-header"><div className="portal-header-inner"><div className="brand"><div className="brand-icon">⚡</div><div><div className="brand-text-name">{CFG.bizName}</div><div className="brand-text-sub">Customer Portal</div></div></div><div style={{display:"flex",gap:8,alignItems:"center"}}>{session&&<div className="live-indicator"><div className="live-dot"/><span className="live-text">SECURE</span></div>}<button className="dark-toggle" onClick={toggle}>{theme==="dark"?"☀️":"🌙"}</button></div></div></header>{!session?<LoginScreen onLogin={login}/>:selected?<TicketDetail ticket={selected} onBack={()=>setSelected(null)}/>:<Dashboard customer={customer} tickets={tickets} onSelect={setSelected} onLogout={logout}/>} {session&&selected&&<div style={{position:"fixed",bottom:18,left:"50%",transform:"translateX(-50%)",zIndex:40,display:"flex",gap:6}}><button className="btn-logout" onClick={()=>setSelected(null)}>🏠 Dashboard</button><button className="btn-logout" onClick={logout}>Sign out</button></div>}<Toast msg={toast.msg} type={toast.type}/></>;
 }
 
 ReactDOM.render(<Root/>,document.getElementById("root"));
