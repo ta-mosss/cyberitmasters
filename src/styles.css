@@ -81,4 +81,8 @@ footer{padding:35px 5vw;border-top:1px solid var(--line);display:flex;align-item
 .wa-float:hover {
   transform: scale(1.1);
 }
+/* Force Impact font for the SVG Stroke Text */
+.stroke-text {
+  font-family: Impact, "Arial Narrow", sans-serif;
+}
 }
