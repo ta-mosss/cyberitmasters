@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Cyber I.T Masters — Track My Ticket</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body,#root{min-height:100%;height:100%;}
+body{
+  font-family:'Outfit',sans-serif;
+  background:#02040A;
+  color:#E2EAF4;
+  -webkit-font-smoothing:antialiased;
+}
+:root{
+  --ac:#00C896;
+  --ac2:#0EA5E9;
+  --bg:#02040A;
+  --bg2:#070C18;
+  --bg3:#0B1220;
+  --border:#0E1A2E;
+  --border2:#162338;
+  --text:#E2EAF4;
+  --text2:#8DA4BE;
+  --text3:#445E7A;
+  --text4:#253449;
+  --card:#070C18;
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
+
+/* ANIMATIONS */
+@keyframes spin{to{transform:rotate(360deg);}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+@keyframes glow{0%,100%{box-shadow:0 0 20px rgba(0,200,150,0.15);}50%{box-shadow:0 0 40px rgba(0,200,150,0.35);}}
+@keyframes scanline{0%{transform:translateY(-100%);}100%{transform:translateY(100vh);}}
+@keyframes shimmer{0%{background-position:-200% 0;}100%{background-position:200% 0;}}
+@keyframes countUp{from{opacity:0;transform:scale(0.8);}to{opacity:1;transform:scale(1);}}
+@keyframes borderPulse{0%,100%{border-color:rgba(0,200,150,0.3);}50%{border-color:rgba(0,200,150,0.7);}}
+@keyframes slideRight{from{width:0;}to{width:var(--w);}}
+@keyframes toastIn{from{opacity:0;transform:translateX(30px);}to{opacity:1;transform:translateX(0);}}
+@keyframes float{0%,100%{transform:translateY(0px);}50%{transform:translateY(-6px);}}
+
+.fu{animation:fadeUp 0.5s cubic-bezier(0.16,1,0.3,1) forwards;}
+.fu2{animation:fadeUp 0.5s 0.1s cubic-bezier(0.16,1,0.3,1) both;}
+.fu3{animation:fadeUp 0.5s 0.2s cubic-bezier(0.16,1,0.3,1) both;}
+.fu4{animation:fadeUp 0.5s 0.3s cubic-bezier(0.16,1,0.3,1) both;}
+.fu5{animation:fadeUp 0.5s 0.4s cubic-bezier(0.16,1,0.3,1) both;}
+
+/* GRID BACKGROUND */
+.grid-bg{
+  position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:
+    linear-gradient(rgba(0,200,150,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,200,150,0.03) 1px, transparent 1px);
+  background-size:60px 60px;
+}
+.grid-bg::after{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 80% 60% at 50% 0%, rgba(0,200,150,0.06) 0%, transparent 70%);
+}
+
+/* HEADER */
+.portal-header{
+  position:sticky;top:0;z-index:50;
+  background:rgba(2,4,10,0.85);
+  border-bottom:1px solid var(--border);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+}
+.portal-header-inner{
+  max-width:900px;margin:0 auto;
+  padding:0 24px;height:64px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.brand{display:flex;align-items:center;gap:12px;}
+.brand-icon{
+  width:38px;height:38px;border-radius:10px;
+  background:linear-gradient(135deg,var(--ac),var(--ac2));
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;flex-shrink:0;
+  box-shadow:0 0 20px rgba(0,200,150,0.3);
+}
+.brand-text-name{font-size:14px;font-weight:700;color:var(--text);letter-spacing:-0.02em;}
+.brand-text-sub{font-size:10px;color:var(--text3);font-weight:500;text-transform:uppercase;letter-spacing:0.08em;}
+.live-indicator{
+  display:flex;align-items:center;gap:6px;
+  padding:5px 12px;border-radius:20px;
+  background:rgba(0,200,150,0.08);
+  border:1px solid rgba(0,200,150,0.2);
+}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--ac);box-shadow:0 0 8px var(--ac);animation:pulse 2s infinite;}
+.live-text{font-size:11px;font-weight:600;color:var(--ac);font-family:'IBM Plex Mono',monospace;}
+
+/* PAGE */
+.page{max-width:900px;margin:0 auto;padding:48px 24px 80px;position:relative;z-index:1;}
+
+/* LOGIN CARD */
+.login-card{
+  max-width:460px;margin:0 auto;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:40px;
+  position:relative;overflow:hidden;
+  animation:glow 4s ease infinite;
+}
+.login-card::before{
+  content:'';position:absolute;inset:0;border-radius:20px;
+  background:linear-gradient(135deg,rgba(0,200,150,0.04) 0%,rgba(14,165,233,0.02) 100%);
+  pointer-events:none;
+}
+.login-hero{text-align:center;margin-bottom:36px;}
+.login-icon{
+  width:72px;height:72px;border-radius:20px;
+  background:linear-gradient(135deg,var(--ac),var(--ac2));
+  display:flex;align-items:center;justify-content:center;
+  font-size:34px;margin:0 auto 18px;
+  box-shadow:0 8px 32px rgba(0,200,150,0.3);
+  animation:float 3s ease-in-out infinite;
+}
+.login-title{font-size:26px;font-weight:800;color:var(--text);margin-bottom:6px;letter-spacing:-0.03em;}
+.login-sub{font-size:14px;color:var(--text3);line-height:1.5;}
+
+/* FORM ELEMENTS */
+.form-group{margin-bottom:18px;}
+.form-label{
+  display:block;font-size:11px;font-weight:700;
+  color:var(--text3);text-transform:uppercase;
+  letter-spacing:0.1em;margin-bottom:8px;
+}
+.form-label span{color:var(--ac);margin-left:4px;}
+.form-input{
+  width:100%;background:var(--bg3);
+  border:1px solid var(--border2);
+  border-radius:10px;padding:13px 16px;
+  color:var(--text);font-size:15px;font-family:'Outfit',sans-serif;
+  transition:all 0.2s;
+}
+.form-input:focus{
+  outline:none;border-color:var(--ac);
+  box-shadow:0 0 0 3px rgba(0,200,150,0.1);
+  background:rgba(11,18,32,0.9);
+}
+.form-input::placeholder{color:var(--text4);}
+.form-input.mono{font-family:'IBM Plex Mono',monospace;font-size:14px;letter-spacing:0.05em;}
+
+.btn-login{
+  width:100%;padding:15px;
+  background:linear-gradient(135deg,var(--ac),var(--ac2));
+  color:#02040A;font-size:15px;font-weight:800;
+  border:none;border-radius:10px;cursor:pointer;
+  font-family:'Outfit',sans-serif;letter-spacing:0.01em;
+  transition:all 0.2s;margin-top:8px;
+}
+.btn-login:hover{transform:translateY(-1px);box-shadow:0 8px 28px rgba(0,200,150,0.35);}
+.btn-login:active{transform:translateY(0);}
+.btn-login:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+
+.error-msg{
+  background:rgba(239,68,68,0.08);
+  border:1px solid rgba(239,68,68,0.25);
+  border-radius:8px;padding:11px 14px;
+  color:#F87171;font-size:13px;font-weight:500;
+  margin-top:12px;display:flex;align-items:center;gap:8px;
+}
+.help-text{
+  margin-top:24px;padding-top:20px;
+  border-top:1px solid var(--border);
+  font-size:12px;color:var(--text3);text-align:center;line-height:1.7;
+}
+.help-text strong{color:var(--text2);}
+
+/* TICKET VIEW */
+.ticket-header{margin-bottom:32px;}
+.ticket-ref-row{display:flex;align-items:center;gap:12px;margin-bottom:10px;flex-wrap:wrap;}
+.ticket-ref{
+  font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:700;
+  color:var(--ac);letter-spacing:0.03em;
+}
+.ticket-title{font-size:28px;font-weight:800;color:var(--text);letter-spacing:-0.03em;line-height:1.2;margin-bottom:6px;}
+.ticket-meta-row{display:flex;gap:16px;flex-wrap:wrap;align-items:center;}
+.ticket-meta-item{
+  display:flex;align-items:center;gap:5px;
+  font-size:13px;color:var(--text3);font-weight:500;
+}
+
+/* STATUS BADGE */
+.status-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:5px 12px;border-radius:20px;
+  font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;
+}
+.status-dot{width:6px;height:6px;border-radius:50%;}
+
+/* BIG STATUS */
+.big-status-card{
+  border-radius:16px;padding:28px;margin-bottom:24px;
+  border:1px solid;position:relative;overflow:hidden;
+}
+.big-status-card::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,var(--sc-bg) 0%, transparent 60%);
+  opacity:0.4;pointer-events:none;border-radius:16px;
+}
+.big-status-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:8px;opacity:0.7;}
+.big-status-value{font-size:32px;font-weight:900;letter-spacing:-0.03em;margin-bottom:4px;}
+.big-status-desc{font-size:14px;opacity:0.75;line-height:1.5;}
+
+/* PROGRESS TRACK */
+.progress-track{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:16px;padding:24px 28px;margin-bottom:24px;
+}
+.progress-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text3);margin-bottom:20px;}
+.steps{display:flex;align-items:flex-start;gap:0;position:relative;}
+.step{flex:1;display:flex;flex-direction:column;align-items:center;position:relative;}
+.step:not(:last-child)::after{
+  content:'';position:absolute;
+  top:16px;left:50%;width:100%;height:2px;
+  background:var(--border2);z-index:0;
+}
+.step:not(:last-child).done::after,
+.step:not(:last-child).active::after{background:linear-gradient(90deg,var(--ac),var(--border2));}
+.step:not(:last-child).done::after{background:var(--ac);}
+.step-circle{
+  width:32px;height:32px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;z-index:1;
+  background:var(--bg3);border:2px solid var(--border2);
+  color:var(--text3);flex-shrink:0;transition:all 0.3s;
+  font-family:'IBM Plex Mono',monospace;
+}
+.step.done .step-circle{background:var(--ac);border-color:var(--ac);color:#02040A;}
+.step.active .step-circle{
+  background:rgba(0,200,150,0.15);border-color:var(--ac);
+  color:var(--ac);box-shadow:0 0 16px rgba(0,200,150,0.3);
+  animation:borderPulse 2s infinite;
+}
+.step-label{font-size:10px;font-weight:600;color:var(--text3);text-align:center;margin-top:8px;text-transform:uppercase;letter-spacing:0.05em;max-width:70px;line-height:1.3;}
+.step.active .step-label{color:var(--ac);}
+.step.done .step-label{color:var(--text2);}
+
+/* INFO GRID */
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px;}
+.info-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 20px;}
+.info-card-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text3);margin-bottom:6px;}
+.info-card-value{font-size:15px;font-weight:600;color:var(--text);line-height:1.3;}
+.info-card-value.mono{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--ac);}
+
+/* ACTIVITY TIMELINE */
+.timeline{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px 28px;margin-bottom:24px;}
+.timeline-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text3);margin-bottom:20px;}
+.timeline-list{display:flex;flex-direction:column;gap:0;}
+.tl-item{display:flex;gap:14px;padding:10px 0;border-bottom:1px solid var(--border);position:relative;}
+.tl-item:last-child{border-bottom:none;}
+.tl-dot-wrap{display:flex;flex-direction:column;align-items:center;width:18px;flex-shrink:0;padding-top:2px;}
+.tl-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;border:2px solid;}
+.tl-line{width:2px;flex:1;background:var(--border);margin-top:4px;}
+.tl-item:last-child .tl-line{display:none;}
+.tl-content{flex:1;min-width:0;}
+.tl-note{font-size:13px;color:var(--text2);line-height:1.55;margin-bottom:4px;word-break:break-word;}
+.tl-meta{font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;display:flex;gap:10px;flex-wrap:wrap;}
+.tl-type-tag{
+  font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;
+  padding:1px 6px;border-radius:8px;align-self:flex-start;margin-left:auto;flex-shrink:0;
+}
+.tl-empty{text-align:center;padding:24px;color:var(--text3);font-size:13px;}
+
+/* DEVICE CARD */
+.device-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px 28px;margin-bottom:24px;}
+.device-card-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text3);margin-bottom:16px;}
+.device-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;}
+.device-row{padding:6px 0;border-bottom:1px solid var(--border);}
+.device-row:last-child{border-bottom:none;}
+.device-key{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--text3);margin-bottom:2px;}
+.device-val{font-size:13px;color:var(--text2);}
+
+/* NEED HELP BANNER */
+.help-banner{
+  background:linear-gradient(135deg,rgba(0,200,150,0.06),rgba(14,165,233,0.04));
+  border:1px solid rgba(0,200,150,0.15);
+  border-radius:16px;padding:24px 28px;
+  display:flex;align-items:center;justify-content:space-between;gap:20px;
+  flex-wrap:wrap;
+}
+.help-banner-text h3{font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.help-banner-text p{font-size:13px;color:var(--text3);line-height:1.5;}
+.btn-wa{
+  display:inline-flex;align-items:center;gap:8px;
+  background:#25D366;color:#fff;
+  padding:11px 20px;border-radius:10px;
+  font-size:14px;font-weight:700;text-decoration:none;
+  font-family:'Outfit',sans-serif;transition:all 0.2s;
+  white-space:nowrap;border:none;cursor:pointer;
+  flex-shrink:0;
+}
+.btn-wa:hover{background:#22BF5B;transform:translateY(-1px);box-shadow:0 6px 20px rgba(37,211,102,0.3);}
+
+/* SIGNOFF BANNER */
+.signoff-banner{
+  background:linear-gradient(135deg,rgba(249,115,22,0.08),rgba(249,115,22,0.03));
+  border:1px solid rgba(249,115,22,0.3);
+  border-radius:16px;padding:22px 28px;margin-bottom:24px;
+  animation:borderPulse 2s ease infinite;
+}
+.signoff-banner-title{font-size:15px;font-weight:700;color:#FB923C;margin-bottom:6px;display:flex;align-items:center;gap:8px;}
+.signoff-banner-text{font-size:13px;color:var(--text2);line-height:1.55;margin-bottom:14px;}
+.btn-signoff{
+  display:inline-flex;align-items:center;gap:8px;
+  background:linear-gradient(135deg,#F97316,#FB923C);color:#fff;
+  padding:11px 22px;border-radius:10px;
+  font-size:13px;font-weight:700;text-decoration:none;
+  font-family:'Outfit',sans-serif;transition:all 0.2s;
+}
+.btn-signoff:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(249,115,22,0.35);}
+
+/* SIGNOFF DONE BADGE */
+.signoff-done{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);
+  border-radius:10px;padding:10px 16px;
+  font-size:13px;font-weight:700;color:#10B981;margin-bottom:16px;
+}
+
+/* LOGOUT */
+.btn-logout{
+  background:transparent;border:1px solid var(--border2);
+  color:var(--text3);padding:7px 14px;border-radius:8px;
+  font-size:12px;font-weight:600;font-family:'Outfit',sans-serif;cursor:pointer;
+  transition:all 0.2s;
+}
+.btn-logout:hover{border-color:var(--border2);color:var(--text2);}
+
+/* SPINNER */
+.spinner{width:32px;height:32px;border-radius:50%;border:3px solid rgba(0,200,150,0.15);border-top-color:var(--ac);animation:spin 0.7s linear infinite;}
+.spinner-page{display:flex;align-items:center;justify-content:center;min-height:300px;flex-direction:column;gap:16px;}
+.spinner-page p{font-size:14px;color:var(--text3);}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;z-index:9999;padding:13px 20px;border-radius:12px;font-size:13px;font-weight:600;box-shadow:0 8px 32px rgba(0,0,0,0.6);animation:toastIn 0.3s ease;display:flex;align-items:center;gap:8px;}
+.toast.ok{background:var(--ac);color:#02040A;}
+.toast.error{background:#EF4444;color:#fff;}
+.toast.info{background:var(--ac2);color:#fff;}
+
+/* SLA */
+.sla-ok{color:#10B981;font-size:11px;font-weight:700;font-family:'IBM Plex Mono',monospace;}
+.sla-warn{color:#F59E0B;font-size:11px;font-weight:700;font-family:'IBM Plex Mono',monospace;animation:pulse 1.5s infinite;}
+.sla-breach{color:#EF4444;font-size:11px;font-weight:700;font-family:'IBM Plex Mono',monospace;animation:pulse 0.8s infinite;}
+
+/* NOT FOUND */
+.not-found{text-align:center;padding:60px 20px;}
+.not-found-icon{font-size:64px;margin-bottom:20px;display:block;}
+.not-found-title{font-size:22px;font-weight:800;color:var(--text);margin-bottom:8px;}
+.not-found-sub{font-size:14px;color:var(--text3);line-height:1.6;margin-bottom:28px;}
+.btn-back{
+  display:inline-flex;align-items:center;gap:8px;
+  background:linear-gradient(135deg,var(--ac),var(--ac2));color:#02040A;
+  padding:12px 24px;border-radius:10px;font-size:14px;font-weight:700;
+  border:none;cursor:pointer;font-family:'Outfit',sans-serif;transition:all 0.2s;
+}
+.btn-back:hover{transform:translateY(-1px);box-shadow:0 8px 28px rgba(0,200,150,0.3);}
+
+/* RESPONSIVE */
+@media(max-width:640px){
+  .info-grid{grid-template-columns:1fr;}
+  .device-grid{grid-template-columns:1fr;}
+  .help-banner{flex-direction:column;align-items:flex-start;}
+  .login-card{padding:28px 20px;}
+  .page{padding:28px 16px 60px;}
+  .steps{gap:0;}
+  .step-label{font-size:9px;max-width:55px;}
+}
+
+body.light-mode{background:#ffffff !important;color:#111827 !important;}
+body.light-mode .portal-header,
+body.light-mode .login-card,
+body.light-mode .info-card,
+body.light-mode .timeline,
+body.light-mode .device-card,
+body.light-mode .progress-track{background:#ffffff !important;color:#111827 !important;}
+.dark-toggle{
+padding:8px 12px;border-radius:8px;border:1px solid #ccc;cursor:pointer;background:#fff;
+}
+.logo-img{height:38px;width:auto;border-radius:6px;}
+
+</style>
+
+<!-- PHASE 1 & 2 ENTERPRISE PORTAL EXTENSIONS -->
+<script>
+window.CIM_ENTERPRISE_FEATURES = {
+  engineerMessaging:true,
+  quotationViewer:true,
+  invoiceViewer:true,
+  ticketHistory:true,
+  deviceHistory:true,
+  satisfactionSurvey:true,
+  googleReviewAutomation:true
+};
+</script>
+
+<script>
+const firebaseConfig={
+  apiKey:"AIzaSyBpoDnbWKvWQdvcZnhUZwFr24iox2fWJto",
+  authDomain:"test-bot-49f99.firebaseapp.com",
+  projectId:"test-bot-49f99",
+  storageBucket:"test-bot-49f99.firebasestorage.app",
+  messagingSenderId:"522231357803",
+  appId:"1:522231357803:web:bf65a73d1df7269615ac2e"
+};
+firebase.initializeApp(firebaseConfig);
+const db=firebase.firestore();
+const auth=firebase.auth();
+</script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useEffect,useMemo}=React;
+
+/* ============================================================
+   CIMOP CUSTOMER PORTAL v2
+   Customer identity = a customer record, not a ticket.
+   Login UX remains: Ticket Number + Mobile Number.
+
+   PRODUCTION AUTHENTICATION:
+   Set CFG.portalAuthEndpoint to the CIMOP authentication API that:
+     1) validates ticketRef + phone server-side
+     2) resolves/creates the customer record
+     3) returns a Firebase custom token + customerId
+   The HTML then signs in with Firebase Auth and Firestore rules can
+   enforce access using request.auth.uid / customerId.
+
+   DEVELOPMENT FALLBACK:
+   If portalAuthEndpoint is blank, the file uses the current legacy
+   ticket lookup. This preserves today's behaviour while you deploy
+   the secure auth endpoint. Do NOT use fallback mode in production.
+   ============================================================ */
+
+const CFG={
+  bizName:"Cyber I.T Masters",
+  tagline:"Professional I.T Solutions",
+  wa:"27726650565",
+  email:"support@mbulahenigroup.co.za",
+  signoffBase:"https://cyberit.mbulahenigroup.co.za/clientsignoff.html",
+  googleReview:"https://g.page/r/CUSUmJkZZNmSEBM/review",
+  newTicketUrl:"https://cyberit.mbulahenigroup.co.za/",
+  // IMPORTANT: configure this before production deployment.
+  portalAuthEndpoint:"https://cimop-portal-auth.mosesanza.workers.dev/",
+  sessionKey:"cimopCustomerSessionV2"
+};
+
+const ST={
+  open:{l:"Open",c:"#3B82F6",icon:"🔵",desc:"Your ticket has been received and is in our queue."},
+  "in-progress":{l:"In Progress",c:"#F59E0B",icon:"🔧",desc:"An engineer is actively working on your issue."},
+  awaiting:{l:"Awaiting Parts",c:"#8B5CF6",icon:"📦",desc:"We are waiting for parts before continuing."},
+  "awaiting-parts":{l:"Awaiting Parts",c:"#8B5CF6",icon:"📦",desc:"We are waiting for parts before continuing."},
+  "awaiting-authorisation":{l:"Awaiting Authorisation",c:"#8B5CF6",icon:"📋",desc:"We are waiting for your authorisation."},
+  "awaiting-payment":{l:"Awaiting Payment",c:"#8B5CF6",icon:"💰",desc:"We are waiting for payment before proceeding."},
+  resolved:{l:"Resolved",c:"#10B981",icon:"✅",desc:"Your issue has been resolved. Please review and sign off."},
+  "awaiting-signoff":{l:"Awaiting Sign-Off",c:"#F97316",icon:"✍️",desc:"Your ticket is ready for your sign-off."},
+  closed:{l:"Closed",c:"#6B7280",icon:"🔒",desc:"This ticket has been closed."},
+  quoted:{l:"Quoted",c:"#EC4899",icon:"💰",desc:"A quotation has been prepared for your review."}
+};
+const STATUS_STEP={open:0,"in-progress":1,awaiting:1,"awaiting-parts":1,quoted:1,resolved:2,"awaiting-signoff":2,closed:3,"awaiting-authorisation":1,"awaiting-payment":1};
+const SLA_HOURS={Urgent:4,High:8,Medium:24,Low:48};
+const PAUSED_STATUSES=["awaiting-authorisation","awaiting-payment","awaiting-parts","awaiting-signoff"];
+const SVCS=[{id:"device",label:"Device Drop-off",icon:"💻"},{id:"remote",label:"Remote Support",icon:"🌐"},{id:"onsite",label:"On-Site Support",icon:"🔧"}];
+
+function fmtDate(d){if(!d)return"—";return new Date(d).toLocaleDateString("en-ZA",{day:"numeric",month:"short",year:"numeric"});}
+function fmtDateTime(d){if(!d)return"—";return new Date(d).toLocaleString("en-ZA",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});}
+function normalisePhone(p){if(!p)return"";const c=String(p).replace(/[^0-9]/g,"");if(c.startsWith("27"))return c;if(c.startsWith("0"))return"27"+c.slice(1);return c;}
+function waUrl(phone,msg){return`https://wa.me/${normalisePhone(phone)}?text=${encodeURIComponent(msg)}`;}
+function ticketTitle(t){return t.issueTitle||t.problemDescription||"Support Ticket";}
+function service(t){return SVCS.find(s=>s.id===t.serviceType)||{label:t.serviceType||"Support",icon:"🔧"};}
+function getSLAInfo(ticket){
+  if(!ticket||!ticket.createdAt||!ticket.priority)return null;
+  if(PAUSED_STATUSES.includes(ticket.status))return{status:"paused",label:"Paused"};
+  if(ticket.status==="resolved"||ticket.status==="closed")return{status:"done",label:"Resolved"};
+  const hours=SLA_HOURS[ticket.priority]||24;
+  const diff=new Date(ticket.createdAt).getTime()+hours*3600000-Date.now();
+  const h=Math.round(diff/3600000);
+  if(diff<0)return{status:"breach",label:`Breached ${Math.abs(h)}h ago`};
+  if(diff<7200000)return{status:"warn",label:`${h}h left`};
+  return{status:"ok",label:`${h}h left`};
+}
+function StatusBadge({status}){const v=ST[status]||{l:status||"Unknown",c:"#64748B",icon:"•"};return <span className="status-badge" style={{background:v.c+"18",color:v.c,border:`1px solid ${v.c}30`}}><span className="status-dot" style={{background:v.c}}/>{v.l}</span>;}
+function SLABadge({ticket}){const i=getSLAInfo(ticket);if(!i||i.status==="done")return null;if(i.status==="paused")return <span style={{color:"#8B5CF6",fontSize:11,fontWeight:700,fontFamily:"'IBM Plex Mono',monospace"}}>⏸ {i.label}</span>;const cls=i.status==="breach"?"sla-breach":i.status==="warn"?"sla-warn":"sla-ok";return <span className={cls}>⏱ {i.label}</span>;}
+function Toast({msg,type}){if(!msg)return null;return <div className={`toast ${type||"ok"}`}>{msg}</div>;}
+
+/* ---------- secure/legacy authentication gateway ---------- */
+async function authenticatePortal(ticketRef,phone){
+  if(CFG.portalAuthEndpoint){
+    const r=await fetch(CFG.portalAuthEndpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({ticketRef,phone})});
+    if(!r.ok){const body=await r.json().catch(()=>({}));throw new Error(body.message||"Unable to verify portal access.");}
+    const result=await r.json();
+    if(!result.customToken||!result.customerId)throw new Error("Authentication service returned an invalid response.");
+    await auth.signInWithCustomToken(result.customToken);
+    return {customerId:result.customerId,bootstrapTicketRef:ticketRef,secure:true,customToken:result.customToken};
+  }
+
+  // DEVELOPMENT ONLY — preserves the current portal's ticket+phone experience.
+  const snap=await db.collection("tickets").doc(ticketRef).get();
+  if(!snap.exists)throw new Error("Ticket not found. Please check your Ticket Number.");
+  const data=snap.data();
+  if(normalisePhone(data.phone)!==normalisePhone(phone))throw new Error("The cellphone number does not match this ticket.");
+  return {customerId:`legacy-${normalisePhone(phone)}`,bootstrapTicketRef:ticketRef,secure:false,bootstrapTicket:{id:snap.id,...data}};
+}
+
+async function loadCustomerProfile(identity,tickets){
+  if(identity.secure&&identity.customerId){
+    const snap=await db.collection("customers").doc(identity.customerId).get();
+    if(snap.exists)return {id:snap.id,...snap.data()};
+  }
+  const t=tickets[0]||{};
+  return {id:identity.customerId,name:t.clientName||t.name||"Customer",company:t.company||"",phone:t.phone||"",email:t.email||""};
+}
+
+async function loadCustomerTickets(identity){
+  // Secure mode: rules should permit only records belonging to auth.uid/customerId.
+  // Preferred schema: customers/{customerId}.tickets subcollection or tickets.customerId.
+  if(identity.secure){
+    const snap=await db.collection("tickets").where("customerId","==",identity.customerId).limit(100).get();
+    return snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
+  }
+  // Legacy bridge: retrieve the known bootstrap ticket, then find matching tickets
+  // by exact stored phone. This is temporary until the secure endpoint is deployed.
+  const first=identity.bootstrapTicket;
+  const phone=first?.phone||"";
+  const snap=await db.collection("tickets").where("phone","==",phone).orderBy("createdAt","desc").limit(100).get().catch(()=>null);
+  if(snap)return snap.docs.map(d=>({id:d.id,...d.data()}));
+  return first?[first]:[];
+}
+
+/* ---------- login ---------- */
+function LoginScreen({onLogin,initialTicket}){
+  const [ticketId,setTicketId]=useState(initialTicket||"");
+  const [phone,setPhone]=useState("");
+  const [loading,setLoading]=useState(false);const [error,setError]=useState("");
+  const submit=async e=>{e.preventDefault();const tid=ticketId.trim().toUpperCase(),ph=phone.trim();if(!tid||!ph){setError("Enter your Ticket Number and cellphone number.");return;}setLoading(true);setError("");try{const identity=await authenticatePortal(tid,ph);const tickets=await loadCustomerTickets(identity);if(!tickets.length)throw new Error("We verified your access, but could not load your customer records.");const session={...identity,phone:normalisePhone(ph),createdAt:Date.now()};sessionStorage.setItem(CFG.sessionKey,JSON.stringify(session));onLogin(session,tickets);}catch(err){console.error(err);setError(err.message||"Unable to sign in. Please try again.");}finally{setLoading(false);}};
+  return <div className="page" style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"calc(100vh - 64px)"}}><div className="login-card fu"><div className="login-hero"><div className="login-icon">🔐</div><h1 className="login-title">Customer Portal</h1><p className="login-sub">Use any current or previous ticket number together with the cellphone number registered with us.</p></div><form onSubmit={submit}><div className="form-group"><label className="form-label">Ticket Number <span>*</span></label><input className="form-input mono" placeholder="CIM-1001" value={ticketId} onChange={e=>setTicketId(e.target.value.toUpperCase())} autoComplete="off"/></div><div className="form-group"><label className="form-label">Cellphone Number <span>*</span></label><input className="form-input" type="tel" placeholder="071 234 5678" value={phone} onChange={e=>setPhone(e.target.value)} autoComplete="tel"/></div>{error&&<div className="error-msg"><span>⚠️</span><span>{error}</span></div>}<button className="btn-login" disabled={loading}>{loading?<span>Verifying your access…</span>:"Access My Customer Portal →"}</button></form><div className="help-text"><strong>One login. All your support.</strong><br/>Your ticket number identifies an existing relationship; after verification, CIMOP loads your customer workspace and your related tickets.<br/><br/>Need help? <strong>{CFG.email}</strong></div></div></div>;
+}
+
+/* ---------- dashboard ---------- */
+function Metric({label,value,icon}){return <div className="info-card"><div className="info-card-label">{icon} {label}</div><div className="info-card-value" style={{fontSize:24,fontFamily:"'IBM Plex Mono',monospace"}}>{value}</div></div>;}
+function TicketList({tickets,selected,onSelect}){return <div className="timeline"><div className="timeline-title">Your Tickets <span style={{color:"var(--ac)"}}>({tickets.length})</span></div>{tickets.length===0?<div className="tl-empty">No tickets found.</div>:tickets.map(t=>{const sv=service(t),st=ST[t.status]||{};return <button key={t.id} onClick={()=>onSelect(t)} style={{display:"block",width:"100%",textAlign:"left",background:selected?.id===t.id?"rgba(0,200,150,0.06)":"transparent",border:"1px solid "+(selected?.id===t.id?"rgba(0,200,150,0.3)":"var(--border)"),borderRadius:10,padding:14,marginBottom:8,color:"inherit",fontFamily:"inherit",cursor:"pointer"}}><div style={{display:"flex",justifyContent:"space-between",gap:10,alignItems:"center",marginBottom:6}}><span className="mono" style={{color:"var(--ac)",fontWeight:700}}>{t.ref}</span><StatusBadge status={t.status}/></div><div style={{fontSize:14,fontWeight:700,color:"var(--text)",marginBottom:5}}>{sv.icon} {ticketTitle(t)}</div><div style={{fontSize:11,color:"var(--text3)"}}>{fmtDate(t.createdAt)} · {t.priority||"Normal"}</div></button>})}</div>}
+
+function ProgressTrack({status}){const steps=[{l:"Logged",i:"📋"},{l:"In Progress",i:"🔧"},{l:"Resolved",i:"✅"},{l:"Closed",i:"🔒"}],active=STATUS_STEP[status]??0;return <div className="progress-track"><div className="progress-title">Ticket Progress</div><div className="steps">{steps.map((s,i)=><div key={s.l} className={`step${i<active?" done":i===active?" active":""}`}><div className="step-circle">{i<active?"✓":i===active?s.i:i+1}</div><div className="step-label">{s.l}</div></div>)}</div></div>}
+
+function Timeline({notes=[]}){const items=[{txt:"Ticket created and logged in our system.",at:null,type:"system"},...notes.filter(n=>n.type!=="internal-only")].sort((a,b)=>new Date(b.at||0)-new Date(a.at||0));return <div className="timeline"><div className="timeline-title">Activity & Updates</div><div className="timeline-list">{items.map((n,i)=><div className="tl-item" key={i}><div className="tl-dot-wrap"><div className="tl-dot" style={{borderColor:n.type==="engineer-note"?"var(--ac)":n.type==="status-change"?"#3B82F6":"var(--text3)",background:n.type==="engineer-note"?"var(--ac)":"transparent"}}/><div className="tl-line"/></div><div className="tl-content"><div className="tl-note">{n.txt}</div><div className="tl-meta"><span>{n.at?fmtDateTime(n.at):"Created"}</span>{n.engineer&&<span>👷 {n.engineer}</span>}</div></div></div>)}</div></div>}
+
+function TicketDetail({ticket,onBack}){const sv=ST[ticket.status]||ST.open,svc=service(ticket),sla=getSLAInfo(ticket),signoff=ticket.clientSignoff?.signed,needsSignoff=["resolved","awaiting-signoff"].includes(ticket.status)&&!signoff;const supportMsg=`Hello, I'm following up on my support ticket ${ticket.ref}.\n\nName: ${ticket.clientName||ticket.name||""}\nTicket: ${ticket.ref}\nStatus: ${sv.l}`;return <div className="page"><button className="btn-logout" onClick={onBack} style={{marginBottom:20}}>← Back to My Tickets</button><div className="ticket-header fu"><div className="ticket-ref-row"><span className="ticket-ref">{ticket.ref}</span><StatusBadge status={ticket.status}/><SLABadge ticket={ticket}/></div><div className="ticket-title">{ticketTitle(ticket)}</div><div className="ticket-meta-row"><div className="ticket-meta-item">{svc.icon} {svc.label}</div><div className="ticket-meta-item">📅 {fmtDate(ticket.createdAt)}</div>{ticket.priority&&<div className="ticket-meta-item">⚡ {ticket.priority}</div>}{ticket.assignedEngineer&&ticket.assignedEngineer!=="Unassigned"&&<div className="ticket-meta-item">👷 {ticket.assignedEngineer}</div>}</div></div>{needsSignoff&&<div className="signoff-banner"><div className="signoff-banner-title">✍️ Action Required — Client Sign-Off</div><div className="signoff-banner-text">Your issue has been resolved. Complete the digital sign-off to confirm satisfaction, rate the service and close the ticket.</div><a href={`${CFG.signoffBase}?ticketId=${encodeURIComponent(ticket.ref)}`} target="_blank" rel="noreferrer" className="btn-signoff">Complete Sign-Off →</a></div>}{signoff&&<div className="signoff-done">✓ Sign-off completed by {ticket.clientSignoff.clientName||"Client"} {ticket.clientSignoff.signedAt?`on ${fmtDate(ticket.clientSignoff.signedAt)}`:""}</div>}<div className="big-status-card" style={{"--sc-bg":sv.c,background:`${sv.c}08`,borderColor:`${sv.c}30`,color:sv.c}}><div className="big-status-label">Current Status</div><div className="big-status-value">{sv.icon} {sv.l}</div><div className="big-status-desc">{sv.desc}</div></div><ProgressTrack status={ticket.status}/><div className="info-grid"><div className="info-card"><div className="info-card-label">Ticket Reference</div><div className="info-card-value mono">{ticket.ref}</div></div><div className="info-card"><div className="info-card-label">Last Updated</div><div className="info-card-value" style={{fontSize:13}}>{fmtDateTime(ticket.updatedAt||ticket.createdAt)}</div></div><div className="info-card"><div className="info-card-label">Service</div><div className="info-card-value">{svc.icon} {svc.label}</div></div><div className="info-card"><div className="info-card-label">SLA</div><div className="info-card-value" style={{fontSize:13}}>{sla?.label||"—"}</div></div></div>{(ticket.deviceType||ticket.manufacturer||ticket.modelNumber||ticket.serialNumber)&&<div className="device-card"><div className="device-card-title">💻 Device Information</div><div className="device-grid">{[["Device Type",ticket.deviceType],["Manufacturer",ticket.manufacturer],["Model",ticket.modelNumber],["Serial Number",ticket.serialNumber],["Operating System",ticket.operatingSystem],["Warranty",ticket.warrantyStatus],["Condition",ticket.conditionOnArrival],["Accessories",ticket.accessories]].filter(([,v])=>v).map(([k,v])=><div className="device-row" key={k}><div className="device-key">{k}</div><div className="device-val">{v}</div></div>)}</div></div>}{ticket.issueDetail&&<div className="device-card"><div className="device-card-title">📝 Issue Description</div><p style={{fontSize:14,color:"var(--text2)",lineHeight:1.7}}>{ticket.issueDetail}</p></div>}<Timeline notes={ticket.notes||[]}/>{ticket.quotationRef&&<div className="device-card"><div className="device-card-title">💰 Quotation</div><div style={{fontFamily:"'IBM Plex Mono',monospace",color:"var(--ac)"}}>{ticket.quotationRef}</div>{ticket.quoteLink&&<a className="btn-back" href={ticket.quoteLink} target="_blank" rel="noreferrer" style={{marginTop:12}}>View Quotation →</a>}</div>}{ticket.invoiceLink&&<div className="device-card"><div className="device-card-title">🧾 Invoice</div>{ticket.invoiceNumber&&<div style={{fontFamily:"'IBM Plex Mono',monospace",color:"var(--ac)",marginBottom:10}}>{ticket.invoiceNumber}</div>}<a className="btn-back" href={ticket.invoiceLink} target="_blank" rel="noreferrer">View Invoice →</a></div>}<div className="help-banner"><div className="help-banner-text"><h3>Need an update?</h3><p>Contact our team and quote <strong>{ticket.ref}</strong>.</p></div><a href={waUrl(CFG.wa,supportMsg)} target="_blank" rel="noreferrer" className="btn-wa">💬 Chat on WhatsApp</a></div></div>}
+
+function Dashboard({customer,tickets,onSelect,onLogout}){const [tab,setTab]=useState("overview");const open=tickets.filter(t=>!['closed','resolved'].includes(t.status)).length,resolved=tickets.filter(t=>['resolved','closed'].includes(t.status)).length,assets=[...new Map(tickets.flatMap(t=>t.deviceType?[{key:`${t.manufacturer}|${t.modelNumber}|${t.serialNumber}`,...t}]:[]).map(x=>[x.key,x])).values()];const selectedTicket=tickets[0];return <div className="page"><div style={{display:"flex",justifyContent:"space-between",gap:15,alignItems:"flex-start",marginBottom:24}}><div><div style={{fontSize:11,color:"var(--ac)",fontWeight:800,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:7}}>Customer Workspace</div><h1 style={{fontSize:30,fontWeight:900,color:"var(--text)",letterSpacing:"-0.03em"}}>Welcome, {customer?.name||customer?.clientName||"Customer"}</h1><p style={{fontSize:13,color:"var(--text3)",marginTop:5}}>Your support history, active services and tickets in one place.</p></div><button className="btn-logout" onClick={onLogout}>Sign out</button></div><div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:18}}>{[["overview","Overview"],["tickets","Tickets"],["assets","Assets"],["billing","Quotes & Invoices"],["profile","Profile"]].map(([id,l])=><button key={id} className="btn-logout" onClick={()=>setTab(id)} style={{color:tab===id?"var(--ac)":"var(--text3)",borderColor:tab===id?"rgba(0,200,150,.35)":"var(--border2)",background:tab===id?"rgba(0,200,150,.06)":"transparent"}}>{l}</button>)}</div>{tab==="overview"&&<><div className="info-grid"><Metric icon="🎫" label="Total Tickets" value={tickets.length}/><Metric icon="🔧" label="Open / Active" value={open}/><Metric icon="✅" label="Resolved / Closed" value={resolved}/><Metric icon="💻" label="Known Assets" value={assets.length}/></div><TicketList tickets={tickets.slice(0,8)} selected={selectedTicket} onSelect={onSelect}/><div className="help-banner"><div className="help-banner-text"><h3>Need something else?</h3><p>Log a new support request with our support centre.</p></div><a href={CFG.newTicketUrl} className="btn-back">+ New Support Ticket</a></div></>}{tab==="tickets"&&<TicketList tickets={tickets} selected={null} onSelect={onSelect}/>} {tab==="assets"&&<div className="device-card"><div className="device-card-title">💻 Your Assets From Service History</div>{assets.length?assets.map(a=><div key={a.key} className="device-row"><strong>{a.manufacturer||"Device"} {a.modelNumber||""}</strong><div style={{fontSize:11,color:"var(--text3)",marginTop:4}}>Serial: {a.serialNumber||"—"} · Type: {a.deviceType||"—"}</div></div>):<div className="tl-empty">No registered device history yet.</div>}</div>} {tab==="billing"&&<div className="device-card"><div className="device-card-title">💰 Quotes & Invoices</div>{tickets.filter(t=>t.quotationRef||t.invoiceNumber||t.quoteLink||t.invoiceLink).map(t=><div className="device-row" key={t.id}><div style={{fontWeight:700,color:"var(--text)"}}>{t.ref}</div><div style={{fontSize:12,color:"var(--text3)",margin:"5px 0"}}>{t.quotationRef&&`Quote: ${t.quotationRef}`} {t.invoiceNumber&&` · Invoice: ${t.invoiceNumber}`}</div><div style={{display:"flex",gap:8,flexWrap:"wrap"}}>{t.quoteLink&&<a className="btn-back" style={{padding:"7px 12px",fontSize:11}} href={t.quoteLink} target="_blank" rel="noreferrer">View Quote</a>}{t.invoiceLink&&<a className="btn-back" style={{padding:"7px 12px",fontSize:11}} href={t.invoiceLink} target="_blank" rel="noreferrer">View Invoice</a>}</div></div>)||<div className="tl-empty">No quotations or invoices are currently linked.</div>}</div>} {tab==="profile"&&<div className="device-card"><div className="device-card-title">👤 Customer Details</div>{[["Name",customer?.name||customer?.clientName],["Company",customer?.company],["Cellphone",customer?.phone],["Email",customer?.email]].map(([k,v])=><div className="device-row" key={k}><div className="device-key">{k}</div><div className="device-val">{v||"—"}</div></div>)}<p style={{fontSize:11,color:"var(--text3)",marginTop:15}}>To update these details, please contact our support team. This keeps the customer identity used by CIMOP consistent across tickets.</p></div>}</div>}
+
+function Root(){const [session,setSession]=useState(null);const [customer,setCustomer]=useState(null);const [tickets,setTickets]=useState([]);const [selected,setSelected]=useState(null);const [loading,setLoading]=useState(true);const [toast,setToast]=useState({msg:"",type:"ok"});const [theme,setTheme]=useState("dark");
+ const showToast=(msg,type="ok")=>{setToast({msg,type});setTimeout(()=>setToast({msg:"",type:"ok"}),3000);};
+ useEffect(()=>{const raw=sessionStorage.getItem(CFG.sessionKey);if(!raw){setLoading(false);return;}const s=JSON.parse(raw);setSession(s);(async()=>{try{if(s.secure&&!auth.currentUser){await auth.signInWithCustomToken(s.customToken).catch(()=>{});}const t=await loadCustomerTickets(s);setTickets(t);setCustomer(await loadCustomerProfile(s,t));setSelected(null);}catch(e){console.error(e);sessionStorage.removeItem(CFG.sessionKey);setSession(null);}finally{setLoading(false);}})();},[]);
+ useEffect(()=>{if(!session?.secure||!session.customerId)return;const unsub=db.collection("tickets").where("customerId","==",session.customerId).limit(100).onSnapshot(s=>{const t=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));setTickets(t);setSelected(cur=>cur? t.find(x=>x.id===cur.id)||cur : t[0]||null);},e=>console.error(e));return()=>unsub();},[session?.secure,session?.customerId]);
+ const login=async(s,t)=>{setSession(s);setTickets(t);setCustomer(await loadCustomerProfile(s,t));setSelected(null);showToast(`Welcome to your customer portal`,'info');};
+ const logout=async()=>{sessionStorage.removeItem(CFG.sessionKey);if(auth.currentUser)await auth.signOut().catch(()=>{});setSession(null);setCustomer(null);setTickets([]);setSelected(null);};
+ const toggle=()=>{const next=theme==="dark"?"light":"dark";setTheme(next);document.body.classList.toggle("light-mode",next==="light");};
+ if(loading)return <div className="spinner-page"><div className="spinner"/><p>Loading Customer Portal…</p></div>;
+ return <><div className="grid-bg"/><header className="portal-header"><div className="portal-header-inner"><div className="brand"><div className="brand-icon">⚡</div><div><div className="brand-text-name">{CFG.bizName}</div><div className="brand-text-sub">Customer Portal</div></div></div><div style={{display:"flex",gap:8,alignItems:"center"}}>{session&&<div className="live-indicator"><div className="live-dot"/><span className="live-text">SECURE</span></div>}<button className="dark-toggle" onClick={toggle}>{theme==="dark"?"☀️":"🌙"}</button></div></div></header>{!session?<LoginScreen onLogin={login}/>:selected?<TicketDetail ticket={selected} onBack={()=>setSelected(null)}/>:<Dashboard customer={customer} tickets={tickets} onSelect={setSelected} onLogout={logout}/>} {session&&selected&&<div style={{position:"fixed",bottom:18,left:"50%",transform:"translateX(-50%)",zIndex:40,display:"flex",gap:6}}><button className="btn-logout" onClick={()=>setSelected(null)}>🏠 Dashboard</button><button className="btn-logout" onClick={logout}>Sign out</button></div>}<Toast msg={toast.msg} type={toast.type}/></>;
+}
+
+ReactDOM.render(<Root/>,document.getElementById("root"));
+</script>
+</body>
+</html>
