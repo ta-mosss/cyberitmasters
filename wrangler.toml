@@ -1,0 +1,10 @@
+name = "citm-contact"
+main = "index.js"
+compatibility_date = "2025-01-01"
+
+[vars]
+TO_EMAIL = "info@mbulahenigroup.co.za"
+FROM_EMAIL = "enquiries@cyberitmasters.co.za"
+
+# Secret — do not put the real key here. Set it with:
+#   wrangler secret put RESEND_API_KEY
