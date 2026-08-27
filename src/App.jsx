@@ -119,7 +119,7 @@ function App(){
   }, []);
 
   // At the top of App.jsx, replace the old comment with:
-const CONTACT_ENDPOINT = "https://citm-contact.mosesanza.workers.dev"; // ← Paste your URL here
+const CONTACT_ENDPOINT = "https://formspree.io/f/mykvqdoj"; // ← Paste your URL here
 
 // Replace the submit function:
 const submit=async(e)=>{
@@ -253,14 +253,7 @@ STATUS:  ALL SYSTEMS GO`}</pre></div>
       <section id="contact" className="section contact-section">
         <div className="contact-grid">
           <div><div className="eyebrow">06 / START HERE</div><h2>LET'S FIX<br/><em>YOUR IT.</em></h2><p className="large-copy">Tell us what you are trying to improve, build or protect. We will route the enquiry to the right technology discipline.</p><div className="contact-details"><a href="tel:+27726650565">+27 72 665 0565</a><a href="mailto:info@mbulahenigroup.co.za">info@mbulahenigroup.co.za</a><span>Polokwane · Limpopo · South Africa</span></div></div>
-          <form
-            name="contact"
-            onSubmit={submit}
-            className="contact-form"
-            noValidate
-            data-netlify="true"
-            netlify-honeypot="website"
-          >
+          <form name="contact" onSubmit={submit} className="contact-form" noValidate>
             <input type="hidden" name="form-name" value="contact" />
             <label>Name<input name="name" required value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/></label>
             <label>Company<input name="company" value={form.company} onChange={e=>setForm({...form,company:e.target.value})}/></label>
