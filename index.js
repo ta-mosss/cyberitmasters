@@ -12,7 +12,7 @@
 const ALLOWED_ORIGINS = [
   "https://www.cyberitmasters.co.za",
   "https://cyberitmasters.co.za",
-  // Add your Cloudflare Pages / Vercel / Netlify preview domain(s) here while testing, e.g.:
+  "https://cyberit.mbulahenigroup.co.za", // ← ADD THIS LINE
   // "https://citm-website.pages.dev",
 ];
 
