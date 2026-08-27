@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, Suspense, lazy } from "react";
 import HeroBackgroundBoundary from "./components/HeroBackgroundBoundary";
+import StrokeText from "./components/StrokeText";
 
 // Deferred: ogl (WebGL) is a non-trivial chunk for a purely decorative
 // background — no reason to block first paint on it.
@@ -184,7 +185,21 @@ const submit=async(e)=>{
           {/* ... rest of the Hero content ... */}
           <div className="hero-copy">
             <div className="eyebrow"><span className="pulse"></span> TECHNOLOGY PARTNER · POLOKWANE · SOUTH AFRICA</div>
-            <h1>IT THAT <em>WORKS.</em><br/>SOLUTIONS THAT <em>SCALE.</em></h1>
+            <StrokeText
+  text="IT THAT WORKS. SOLUTIONS THAT SCALE."
+  strokeColor="#00d9ff" 
+  fillColor="#ffffff"
+  strokeWidth={1.5}
+  drawDuration={1.8}
+  fillDelay={0.3}
+  stagger={0.05}
+  ease="power3.out"
+  trigger="mount"
+  fillMode="wipe"
+  fontSize={120}
+  fontWeight={900}
+  letterSpacing={-2}
+/>
             <p className="hero-lead">Cyber I.T Masters is a full-service technology partner delivering <strong>Managed IT, IT Solutions, Cybersecurity, Web & Application Development and DevOps</strong> for businesses that cannot afford technology to slow them down.</p>
             <div className="hero-actions"><a className="btn primary" href="#contact">Start a Technology Assessment</a><a className="btn ghost" href="#services">Explore Services ↓</a></div>
             <div className="trust-row"><span>✓ Proactive IT</span><span>✓ Security-first</span><span>✓ Business-focused</span><span>✓ One technology partner</span></div>
