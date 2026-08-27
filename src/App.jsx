@@ -290,6 +290,12 @@ STATUS:  ALL SYSTEMS GO`}</pre></div>
     </main>
 
     <footer><div className="footer-brand">CYBER <em>I.T</em> MASTERS<small>MANAGED IT · IT SOLUTIONS · SOFTWARE · DEVOPS</small></div><div className="footer-links"><a href="#services">Services</a><a href="#solutions">Solutions</a><a href="#devops">Development</a><a href="#contact">Contact</a></div><span>© {new Date().getFullYear()} Cyber I.T Masters · Mbulaheni Group</span></footer>
+  {/* Floating WhatsApp Chat */}
+<a href="https://wa.me/27726650565" target="_blank" rel="noreferrer" className="wa-float" aria-label="Chat on WhatsApp">
+  <svg viewBox="0 0 32 32" fill="currentColor" width="30" height="30">
+    <path d="M16.004 0h-.008C7.174 0 0 7.174 0 16c0 2.823.739 5.465 2.032 7.756L0 32l8.387-2.05A15.93 15.93 0 0 0 16.004 32C24.826 32 32 24.826 32 16S24.826 0 16.004 0zm9.322 22.621c-.383 1.077-2.224 2.063-3.087 2.126-.831.061-1.878.087-3.03-.188-1.075-.254-2.456-.803-4.23-1.59-3.531-1.567-5.905-5.221-6.085-5.459-.18-.238-1.452-2.058-1.452-3.926 0-1.868.973-2.781 1.324-3.166.351-.385.765-.483 1.024-.483.259 0 .517.005.743.012.239.007.561-.092.877.672.328.792 1.109 2.736 1.207 2.94.099.202.165.429.033.694-.131.265-.197.428-.394.659-.197.231-.413.515-.59.69-.196.197-.4.411-.171.805.229.393 1.019 1.678 2.186 2.719 1.502 1.339 2.766 1.754 3.15 1.953.384.198.606.166.829-.099.223-.264.957-1.115 1.212-1.5.254-.385.508-.32.857-.192.348.129 2.191 1.035 2.568 1.223.377.188.627.282.719.439.093.157.093.91-.29 1.988z"/>
+  </svg>
+</a>
   </div>;
 }
 export default App;
