@@ -35,7 +35,7 @@ const capabilities = [
   "24/7 remote monitoring & support", "Microsoft 365 & cloud management", "Endpoint & identity security",
   "Network design, Wi-Fi & firewall", "Backup & disaster recovery", "Websites & customer portals",
   "Custom business applications", "API & systems integration", "CI/CD & release automation",
-  "Cloud architecture & migration", "IT asset lifecycle management", "Technical consulting"
+  "Cloud architecture & migration", "I.T asset lifecycle management", "Technical consulting"
 ];
 
 const industries = ["SMEs","Professional Services","Healthcare","Construction","Retail","Education","Hospitality","Non-Profits"];
@@ -186,7 +186,7 @@ const submit=async(e)=>{
           <div className="hero-copy">
             <div className="eyebrow"><span className="pulse"></span> TECHNOLOGY PARTNER · POLOKWANE · SOUTH AFRICA</div>
             <StrokeText
-  text="IT THAT WORKS. SOLUTIONS THAT SCALE."
+  text="I.T THAT WORKS. SOLUTIONS THAT SCALE."
   strokeColor="#00d9ff" 
   fillColor="#ffffff"
   strokeWidth={1.5}
@@ -200,14 +200,14 @@ const submit=async(e)=>{
   fontWeight={900}
   letterSpacing={-2}
 />
-            <p className="hero-lead">Cyber I.T Masters is a full-service technology partner delivering <strong>Managed IT, IT Solutions, Cybersecurity, Web & Application Development and DevOps</strong> for businesses that cannot afford technology to slow them down.</p>
+            <p className="hero-lead">Cyber I.T Masters is a full-service technology partner delivering <strong>Managed I.T, I.T Solutions, Cybersecurity, Web & Application Development and DevOps</strong> for businesses that cannot afford technology to slow them down.</p>
             <div className="hero-actions"><a className="btn primary" href="#contact">Start a Technology Assessment</a><a className="btn ghost" href="#services">Explore Services ↓</a></div>
-            <div className="trust-row"><span>✓ Proactive IT</span><span>✓ Security-first</span><span>✓ Business-focused</span><span>✓ One technology partner</span></div>
+            <div className="trust-row"><span>✓ Proactive I.T</span><span>✓ Security-first</span><span>✓ Business-focused</span><span>✓ One technology partner</span></div>
           </div>
           <div className="hero-panel">
             <div className="panel-top"><span>CYBER I.T / COMMAND CENTRE</span><i>LIVE</i></div>
             <div className="panel-status"><span className="status-dot"></span><b>Technology operations</b><span>Protected</span></div>
-            <div className="signal"><div><strong>MSP</strong><small>MANAGED IT</small></div><div><strong>SEC</strong><small>CYBERSECURITY</small></div><div><strong>DEV</strong><small>SOFTWARE</small></div></div>
+            <div className="signal"><div><strong>MSP</strong><small>MANAGED I.T</small></div><div><strong>SEC</strong><small>CYBERSECURITY</small></div><div><strong>DEV</strong><small>SOFTWARE</small></div></div>
             <div className="panel-lines"><span>Infrastructure</span><b>Operational</b><span>Security posture</span><b>Monitored</b><span>Cloud & applications</span><b>Scalable</b></div>
             <div className="panel-footer">ONE PARTNER · MULTIPLE TECHNOLOGY DISCIPLINES</div>
           </div>
@@ -216,8 +216,8 @@ const submit=async(e)=>{
 
       {/* The rest of your file (Metrics, Services, etc.) remains EXACTLY the same as before */}
       <section className="metrics">
-        <div><b>01</b><span>MANAGED IT</span><small>Proactive support & monitoring</small></div>
-        <div><b>02</b><span>IT SOLUTIONS</span><small>Infrastructure & cloud</small></div>
+        <div><b>01</b><span>MANAGED I.T</span><small>Proactive support & monitoring</small></div>
+        <div><b>02</b><span>I.T SOLUTIONS</span><small>Infrastructure & cloud</small></div>
         <div><b>03</b><span>SOFTWARE</span><small>Web & application delivery</small></div>
         <div><b>04</b><span>DEVOPS</span><small>Automation & deployment</small></div>
       </section>
@@ -225,14 +225,14 @@ const submit=async(e)=>{
       {/* Include the rest of your sections here exactly as they were */}
       {/* ... Services, Solutions, DevOps, Industries, Process, Contact, FAQ, Footer ... */}
       <section id="services" className="section">
-        <div className="section-head"><div><div className="eyebrow">01 / CORE SERVICES</div><h2>THE TECHNOLOGY<br/><em>STACK BEHIND</em> YOUR BUSINESS.</h2></div><p>From everyday IT operations to new digital products, we bring infrastructure, security and software engineering into one accountable service.</p></div>
+        <div className="section-head"><div><div className="eyebrow">01 / CORE SERVICES</div><h2>THE TECHNOLOGY<br/><em>STACK BEHIND</em> YOUR BUSINESS.</h2></div><p>From everyday I.T operations to new digital products, we bring infrastructure, security and software engineering into one accountable service.</p></div>
         <div className="service-grid">{services.map(s=><article className="service-card" key={s.title}><div className="service-icon">{s.icon}</div><div className="service-tag">{s.tag}</div><h3>{s.title}</h3><p>{s.text}</p><a href="#contact">Discuss this service →</a></article>)}</div>
       </section>
 
       <section id="solutions" className="section dark-section">
-        <div className="section-head"><div><div className="eyebrow">02 / IT SOLUTIONS</div><h2>BUILD A <em>STRONGER</em><br/>TECHNOLOGY FOUNDATION.</h2></div><p>Technology should be secure, maintainable and aligned to the way your organisation actually operates.</p></div>
+        <div className="section-head"><div><div className="eyebrow">02 / I.T SOLUTIONS</div><h2>BUILD A <em>STRONGER</em><br/>TECHNOLOGY FOUNDATION.</h2></div><p>Technology should be secure, maintainable and aligned to the way your organisation actually operates.</p></div>
         <div className="cap-grid">{capabilities.map((c,i)=><div key={c}><span>{String(i+1).padStart(2,"0")}</span><b>{c}</b></div>)}</div>
-        <div className="solution-band"><div><span>NEED A ROADMAP?</span><h3>Turn scattered IT into a managed technology strategy.</h3></div><a className="btn primary" href="#contact">Book a Technology Review →</a></div>
+        <div className="solution-band"><div><span>NEED A ROADMAP?</span><h3>Turn scattered I.T into a managed technology strategy.</h3></div><a className="btn primary" href="#contact">Book a Technology Review →</a></div>
       </section>
 
       <section id="devops" className="section">
@@ -267,14 +267,14 @@ STATUS:  ALL SYSTEMS GO`}</pre></div>
 
       <section id="contact" className="section contact-section">
         <div className="contact-grid">
-          <div><div className="eyebrow">06 / START HERE</div><h2>LET'S FIX<br/><em>YOUR IT.</em></h2><p className="large-copy">Tell us what you are trying to improve, build or protect. We will route the enquiry to the right technology discipline.</p><div className="contact-details"><a href="tel:+27726650565">+27 72 665 0565</a><a href="mailto:info@mbulahenigroup.co.za">info@mbulahenigroup.co.za</a><span>Polokwane · Limpopo · South Africa</span></div></div>
+          <div><div className="eyebrow">06 / START HERE</div><h2>LET'S FIX<br/><em>YOUR I.T.</em></h2><p className="large-copy">Tell us what you are trying to improve, build or protect. We will route the enquiry to the right technology discipline.</p><div className="contact-details"><a href="tel:+27726650565">+27 72 665 0565</a><a href="mailto:info@mbulahenigroup.co.za">info@mbulahenigroup.co.za</a><span>Polokwane · Limpopo · South Africa</span></div></div>
           <form name="contact" onSubmit={submit} className="contact-form" noValidate>
             <input type="hidden" name="form-name" value="contact" />
             <label>Name<input name="name" required value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/></label>
             <label>Company<input name="company" value={form.company} onChange={e=>setForm({...form,company:e.target.value})}/></label>
             <label>Email<input name="email" required type="email" value={form.email} onChange={e=>setForm({...form,email:e.target.value})}/></label>
-            <label>What do you need?<select name="service" required value={form.service} onChange={e=>setForm({...form,service:e.target.value})}><option value="">Select a service</option><option>Managed IT Services</option><option>IT Solutions & Infrastructure</option><option>Cybersecurity</option><option>Microsoft 365 / Cloud</option><option>Website Development</option><option>Application Development</option><option>DevOps / Cloud Engineering</option><option>IT Procurement</option></select></label>
-            <label className="full">Project / IT requirements<textarea name="message" required minLength="10" rows="5" value={form.message} onChange={e=>setForm({...form,message:e.target.value})}/></label>
+            <label>What do you need?<select name="service" required value={form.service} onChange={e=>setForm({...form,service:e.target.value})}><option value="">Select a service</option><option>Managed I.T Services</option><option>I.T Solutions & Infrastructure</option><option>Cybersecurity</option><option>Microsoft 365 / Cloud</option><option>Website Development</option><option>Application Development</option><option>DevOps / Cloud Engineering</option><option>I.T Procurement</option></select></label>
+            <label className="full">Project / I.T requirements<textarea name="message" required minLength="10" rows="5" value={form.message} onChange={e=>setForm({...form,message:e.target.value})}/></label>
             <label className="hp-field" aria-hidden="true">
               Leave this field empty
               <input name="website" tabIndex="-1" autoComplete="off" value={form.website} onChange={e=>setForm({...form,website:e.target.value})}/>
@@ -297,7 +297,7 @@ STATUS:  ALL SYSTEMS GO`}</pre></div>
       </section>
     </main>
 
-    <footer><div className="footer-brand">CYBER <em>I.T</em> MASTERS<small>MANAGED IT · IT SOLUTIONS · SOFTWARE · DEVOPS</small></div><div className="footer-links"><a href="#services">Services</a><a href="#solutions">Solutions</a><a href="#devops">Development</a><a href="#contact">Contact</a></div><span>© {new Date().getFullYear()} Cyber I.T Masters · Mbulaheni Group</span></footer>
+    <footer><div className="footer-brand">CYBER <em>I.T</em> MASTERS<small>MANAGED I.T · I.T SOLUTIONS · SOFTWARE · DEVOPS</small></div><div className="footer-links"><a href="#services">Services</a><a href="#solutions">Solutions</a><a href="#devops">Development</a><a href="#contact">Contact</a></div><span>© {new Date().getFullYear()} Cyber I.T Masters · Mbulaheni Group</span></footer>
   {/* Floating WhatsApp Chat */}
 <a href="https://wa.me/27726650565" target="_blank" rel="noreferrer" className="wa-float" aria-label="Chat on WhatsApp">
   <svg viewBox="0 0 32 32" fill="currentColor" width="30" height="30">
