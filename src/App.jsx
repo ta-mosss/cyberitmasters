@@ -118,23 +118,27 @@ function App(){
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const submit=async(e)=>{
-    e.preventDefault();
-    if (status === "sending") return;
-    setStatus("sending");
-    try {
-      const res = await fetch("/", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({ "form-name": "contact", ...form }).toString(),
-      });
-      if (!res.ok) throw new Error("Request failed");
-      setStatus("sent");
-      setForm({name:"",email:"",company:"",service:"",message:"",website:""});
-    } catch (err) {
-      setStatus("error");
-    }
-  };
+  // At the top of App.jsx, replace the old comment with:
+const CONTACT_ENDPOINT = "https://citm-contact.mosesanza.workers.dev"; // ← Paste your URL here
+
+// Replace the submit function:
+const submit=async(e)=>{
+  e.preventDefault();
+  if (status === "sending") return;
+  setStatus("sending");
+  try {
+    const res = await fetch(CONTACT_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form), // This includes your name, email, company, service, message
+    });
+    if (!res.ok) throw new Error("Request failed");
+    setStatus("sent");
+    setForm({name:"",email:"",company:"",service:"",message:"",website:""});
+  } catch (err) {
+    setStatus("error");
+  }
+};
 
   return <div className="app">
     <a href="#main-content" className="skip-link">Skip to main content</a>
