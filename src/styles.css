@@ -32,33 +32,33 @@ footer{padding:35px 5vw;border-top:1px solid var(--line);display:flex;align-item
 @media(max-width:620px){h1{font-size:53px}h2{font-size:45px}.hero{padding-left:20px;padding-right:20px}.section{width:calc(100% - 40px);padding:80px 0}.dark-section{padding-left:20px;padding-right:20px}.metrics{grid-template-columns:1fr 1fr}.metrics div{padding:20px}.service-grid,.cap-grid,.industry-grid,.process-grid,.devops-cards{grid-template-columns:1fr}.contact-form{grid-template-columns:1fr;padding:20px}.full{grid-column:auto}.signal{grid-template-columns:1fr}.hero-actions .btn{width:100%}.trust-row{gap:10px}.footer-links{width:100%;flex-wrap:wrap}.brand small{display:none}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.service-card{transition:none}}
 
-/* Static fallback shown instead of the WebGL hero when WebGL is unsupported,
-   the shader fails, prefers-reduced-motion is set, or the GPU context is lost. */
+/* Static fallback shown instead of the WebGL hero */
 .hero-bg-fallback{
   position:absolute;inset:0;
   background:
     radial-gradient(circle at 68% 38%, rgba(82,39,255,.35), transparent 55%),
     radial-gradient(circle at 20% 70%, rgba(10,41,255,.25), transparent 60%),
     linear-gradient(160deg,#0a1730,#050b14 65%);
-   /* FORCE BRIGHT HERO TEXT FOR HIGH CONTRAST */
+}
+
+/* Force Hero Text to be Bright & Readable */
 .hero-copy h1, 
 .hero-copy .hero-lead, 
 .hero-copy .eyebrow {
-  color: #ffffff !important; /* Forces main text to be pure white */
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.9); /* Strong dark shadow for edge definition */
+  color: #ffffff !important;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.9);
 }
 
-/* Make the "WORKS." and "SCALE." parts glow bright cyan */
 .hero-copy h1 em {
-  color: #00d9ff !important; 
+  color: #00d9ff !important;
   text-shadow: 0 0 25px rgba(0, 217, 255, 0.9);
 }
 
-/* Make the paragraph text bright and readable */
 .hero-copy .hero-lead {
-  color: #d1e4ff !important; 
+  color: #d1e4ff !important;
 }
-   /* Floating WhatsApp Button */
+
+/* Floating WhatsApp Button (Added outside the fallback block!) */
 .wa-float {
   position: fixed;
   bottom: 25px;
@@ -77,6 +77,7 @@ footer{padding:35px 5vw;border-top:1px solid var(--line);display:flex;align-item
   transition: transform 0.3s ease;
   text-decoration: none;
 }
+
 .wa-float:hover {
   transform: scale(1.1);
 }
