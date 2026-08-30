@@ -3,7 +3,6 @@ import HeroBackgroundBoundary from "./components/HeroBackgroundBoundary";
 import CursorRingField from "./components/CursorRingField";
 import StrokeText from "./components/StrokeText";
 
-// Shown while WebGL/animation isn't available, reduced-motion, or throws.
 function HeroBackgroundFallback() {
   return <div className="hero-bg-fallback" aria-hidden="true" />;
 }
@@ -26,9 +25,18 @@ const capabilities = [
 
 const industries = ["SMEs","Professional Services","Healthcare","Construction","Retail","Education","Hospitality","Non-Profits"];
 
+const problems = [
+  "IT keeps breaking",
+  "Worried about cybersecurity",
+  "Microsoft 365 needs managing",
+  "Network/Wi-Fi problems",
+  "Need a business application",
+  "Current IT provider isn't delivering"
+];
+
 const caseStudies = [
-  { title: "Microsoft 365 Migration", industry: "Professional Services", problem: "Aging email infrastructure and poor collaboration.", solution: "Microsoft 365 migration, identity configuration, security hardening and user rollout.", result: "Modern cloud environment with centralized administration and improved collaboration." },
-  { title: "Network Upgrade", industry: "Construction", problem: "Poor Wi-Fi and unreliable connectivity across the premises.", solution: "Network redesign, structured cabling, managed Wi-Fi and segmentation.", result: "Reliable coverage and a more manageable network." },
+  { title: "Microsoft 365 Migration", industry: "Professional Services", before: "Aging email infrastructure, frequent downtime, poor collaboration.", solution: "Microsoft 365 migration, identity configuration, security hardening and user rollout.", after: "Modern cloud environment, centralized administration, 99.9% uptime." },
+  { title: "Network Upgrade", industry: "Construction", before: "6 Wi-Fi dead zones, unmanaged network, connection drops.", solution: "Network redesign, structured cabling, managed Wi-Fi and segmentation.", after: "Full-site coverage, segmented network, centralized monitoring, reduced support incidents." },
 ];
 
 const faqs = [
@@ -74,21 +82,25 @@ function App(){
 
   const [heroBgFailed,setHeroBgFailed]=useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [form,setForm]=useState({name:"",email:"",phone:"",employees:"",company:"",service:"",lookingFor:"",message:"",website:""});
+  const [isLowPower, setIsLowPower] = useState(false);
+  const [form,setForm]=useState({name:"",email:"",phone:"",company:"",service:"",message:"",website:""}); // Removed employees, lookingFor
   const [status,setStatus]=useState("idle");
 
-  // Improved mobile detection
+  // Mobile, Low Power, and Reduced Motion detection
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 768px)");
     const handleResize = () => setIsMobile(mq.matches);
     handleResize();
     mq.addEventListener('change', handleResize);
+
+    const hc = navigator.hardwareConcurrency || 8;
+    setIsLowPower(hc <= 4);
+    
     return () => mq.removeEventListener('change', handleResize);
   }, []);
 
-  // Add Reduced Motion detection
   const prefersReducedMotion = typeof window !== 'undefined' && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const useStaticFallback = isMobile || heroBgFailed || prefersReducedMotion;
+  const useStaticFallback = isMobile || isLowPower || heroBgFailed || prefersReducedMotion;
 
   const CONTACT_ENDPOINT = "https://formspree.io/f/mykvqdoj"; 
 
@@ -97,11 +109,7 @@ function App(){
     if (status === "sending") return;
     setStatus("sending");
     
-    // Honeypot fix
-    if (form.website) {
-      setStatus("sent");
-      return;
-    }
+    if (form.website) { setStatus("sent"); return; } // Honeypot
 
     try {
       const res = await fetch(CONTACT_ENDPOINT, {
@@ -111,7 +119,7 @@ function App(){
       });
       if (!res.ok) throw new Error("Request failed");
       setStatus("sent");
-      setForm({name:"",email:"",phone:"",employees:"",company:"",service:"",lookingFor:"",message:"",website:""});
+      setForm({name:"",email:"",phone:"",company:"",service:"",message:"",website:""});
     } catch (err) {
       setStatus("error");
     }
@@ -123,7 +131,8 @@ function App(){
       <a href="#home" className="brand"><img src="/logo.png" alt="Cyber I.T Masters" onError={e=>e.currentTarget.style.display="none"}/><span><b>CYBER</b> I.T MASTERS<small>IT MSP · SOLUTIONS · SOFTWARE</small></span></a>
       <button ref={menuBtnRef} className="menu-btn" onClick={()=>setMenuOpen(!menuOpen)} aria-label="Toggle navigation" aria-expanded={menuOpen} aria-controls="primary-navigation">☰</button>
       <nav ref={navRef} id="primary-navigation" className={menuOpen?"nav-links open":"nav-links"}>
-        {["Services","Solutions","Software","Industries","Why Us","Contact"].map(x=><a key={x} href={`#${x.toLowerCase().replace(" ", "-")}`} onClick={()=>setMenuOpen(false)}>{x}</a>)}
+        {/* Updated Nav */}
+        {["Services","Solutions","Pricing","Case Studies","Why Us","Contact"].map(x=><a key={x} href={`#${x.toLowerCase().replace(" ", "-")}`} onClick={()=>setMenuOpen(false)}>{x}</a>)}
         <a className="nav-cta" href="#contact">Get Assessment →</a>
       </nav>
     </header>
@@ -135,7 +144,7 @@ function App(){
             <HeroBackgroundBoundary fallback={<HeroBackgroundFallback />}>
               <Suspense fallback={<HeroBackgroundFallback />}>
                 <CursorRingField
-                  density={300}
+                  density={150} // Reduced from 300 for performance
                   dotSize={120}
                   speed={6}
                   cameraDistance={160}
@@ -166,7 +175,8 @@ function App(){
               fontWeight={900}
               letterSpacing={-2}
             />
-            <p className="hero-lead">Local support. Enterprise capability.<br/>We help growing businesses manage, secure and build the technology they depend on.</p>
+            {/* Updated Hero Copy */}
+            <p className="hero-lead">IT support, cybersecurity and software for businesses that can't afford technology problems.<br/><br/>Polokwane-based. Nationwide remote support. Enterprise-grade capability without enterprise complexity.</p>
             <div className="hero-actions"><a className="btn primary" href="#contact">Book a Technology Assessment</a><a className="btn ghost" href="#services">Explore Services ↓</a></div>
             <div className="trust-row"><span>✓ Local Support</span><span>✓ Security-first</span><span>✓ One technology partner</span></div>
           </div>
@@ -180,16 +190,23 @@ function App(){
         </div>
       </section>
 
-      <section className="metrics">
-        <div><b>01</b><span>MANAGED IT</span><small>Proactive support & monitoring</small></div>
-        <div><b>02</b><span>SECURITY</span><small>Practical controls</small></div>
-        <div><b>03</b><span>SOFTWARE</span><small>Web & application delivery</small></div>
-        <div><b>04</b><span>CLOUD</span><small>Automation & deployment</small></div>
+      {/* NEW: Problems Section */}
+      <section id="solutions" className="section dark-section problems-section">
+        <div className="section-head"><div><div className="eyebrow">01 / PROBLEMS</div><h2>What are you trying to <em>fix?</em></h2></div><p>Tell us what's going wrong. We know how to fix it.</p></div>
+        <div className="problems-grid">
+          {problems.map(p => (
+            <div key={p} className="problem-card">⚠️ {p}</div>
+          ))}
+        </div>
+        <div className="takeover-banner">
+          <div><strong>Unhappy with your current IT provider?</strong><br/>We'll audit your environment, document what matters, identify risks and transition you without disrupting your business.</div>
+          <a className="btn primary" href="#contact">Switch your IT provider →</a>
+        </div>
       </section>
 
-      {/* NEW: Why Us Section */}
-      <section id="why-us" className="section dark-section why-us-section">
-        <div className="section-head"><div><div className="eyebrow">01 / WHY US</div><h2>Technology shouldn't be <em>another problem</em> to manage.</h2></div><p>Local support with the capability of a much larger IT operation.</p></div>
+      {/* Why Us Section */}
+      <section id="why-us" className="section">
+        <div className="section-head"><div><div className="eyebrow">02 / WHY US</div><h2>Technology shouldn't be <em>another problem</em> to manage.</h2></div><p>Local support with the capability of a much larger IT operation.</p></div>
         <div className="why-grid">
           {[["Local","Polokwane-based support with onsite capability."],["Proactive","We identify problems before they become downtime."],["Security-first","Security is built into the way we manage technology."],["One Partner","IT support, infrastructure, cloud and software under one roof."],["Business-focused","We care about your workflows and outcomes—not just hardware."]].map(([t, d]) => (
             <div key={t} className="why-card"><h3>{t}</h3><p>{d}</p></div>
@@ -197,38 +214,38 @@ function App(){
         </div>
       </section>
 
-      {/* NEW: Pricing Section */}
-      <section id="pricing" className="section pricing-section">
-        <div className="section-head"><div><div className="eyebrow">02 / PRICING</div><h2>Managed IT <em>Plans</em>.</h2></div><p>Not sure which fits? We'll assess your environment and recommend the right model.</p></div>
+      {/* Pricing Section */}
+      <section id="pricing" className="section dark-section pricing-section">
+        <div className="section-head"><div><div className="eyebrow">03 / PRICING</div><h2>Managed IT <em>Plans</em>.</h2></div><p>Not sure which fits? We'll assess your environment and recommend the right model.</p></div>
         <div className="price-grid">
-          {[["ESSENTIALS","From R2,500/mo","For small businesses needing reliable day-to-day IT.", ["Remote & onsite support", "Microsoft 365", "Backup monitoring"]],
-            ["BUSINESS","From R5,500/mo","For growing businesses needing managed infrastructure & security.", ["Everything in Essentials", "Advanced cybersecurity", "Priority SLA"]],
-            ["ENTERPRISE","Custom","For complex environments and larger organisations.", ["Dedicated engineer", "Custom SLAs", "Full stack"]]
-          ].map(([name, price, desc, features]) => (
+          {[["ESSENTIALS","From R2,500/month","For businesses that need reliable IT without employing a full-time IT team.", ["Remote support", "Microsoft 365 management", "Backup monitoring", "Endpoint management", "Basic security"], "See if this plan fits →"],
+            ["BUSINESS","From R5,500/month","For growing businesses needing managed infrastructure and security.", ["Everything in Essentials", "Advanced cybersecurity", "Priority SLA"], "See if this plan fits →"],
+            ["ENTERPRISE","Custom","For complex environments and larger organisations.", ["Dedicated engineer", "Custom SLAs", "Full stack"], "See if this plan fits →"]
+          ].map(([name, price, desc, features, cta]) => (
             <div key={name} className="price-card">
               <h3>{name}</h3>
               <div className="price-tag">{price}</div>
               <p>{desc}</p>
               <ul>{features.map(f => <li key={f}>✓ {f}</li>)}</ul>
-              <a className="btn ghost" href="#contact">Get a Quote →</a>
+              <a className="btn ghost" href="#contact">{cta}</a>
             </div>
           ))}
         </div>
       </section>
 
       <section id="services" className="section">
-        <div className="section-head"><div><div className="eyebrow">03 / CORE SERVICES</div><h2>THE TECHNOLOGY<br/><em>STACK BEHIND</em> YOUR BUSINESS.</h2></div><p>From everyday IT operations to new digital products, we bring infrastructure, security and software engineering into one accountable service.</p></div>
+        <div className="section-head"><div><div className="eyebrow">04 / CORE SERVICES</div><h2>THE TECHNOLOGY<br/><em>STACK BEHIND</em> YOUR BUSINESS.</h2></div><p>From everyday IT operations to new digital products, we bring infrastructure, security and software engineering into one accountable service.</p></div>
         <div className="service-grid">{services.map(s=><article className="service-card" key={s.title}><div className="service-icon">{s.icon}</div><div className="service-tag">{s.tag}</div><h3>{s.title}</h3><p>{s.text}</p><a href="#contact">Discuss this service →</a></article>)}</div>
       </section>
 
-      <section id="solutions" className="section dark-section">
-        <div className="section-head"><div><div className="eyebrow">04 / SOLUTIONS</div><h2>BUILD A <em>STRONGER</em><br/>TECHNOLOGY FOUNDATION.</h2></div><p>Technology should be secure, maintainable and aligned to the way your organisation actually operates.</p></div>
+      <section id="solutions-block" className="section dark-section">
+        <div className="section-head"><div><div className="eyebrow">05 / SOLUTIONS</div><h2>BUILD A <em>STRONGER</em><br/>TECHNOLOGY FOUNDATION.</h2></div><p>Technology should be secure, maintainable and aligned to the way your organisation actually operates.</p></div>
         <div className="cap-grid">{capabilities.map((c,i)=><div key={c}><span>{String(i+1).padStart(2,"0")}</span><b>{c}</b></div>)}</div>
       </section>
 
       <section id="software" className="section">
         <div className="devops-grid">
-          <div><div className="eyebrow">05 / SOFTWARE & DEVOPS</div><h2>FROM <em>IDEA</em> TO<br/>PRODUCTION.</h2><p className="large-copy">Need a client portal? Internal system? Business dashboard? Integration? We handle the architecture, development, deployment and ongoing support.</p><a className="btn primary" href="#contact">Discuss a Software Project →</a></div>
+          <div><div className="eyebrow">06 / SOFTWARE & DEVOPS</div><h2>FROM <em>IDEA</em> TO<br/>PRODUCTION.</h2><p className="large-copy">Need a client portal? Internal system? Business dashboard? Integration? We handle the architecture, development, deployment and ongoing support.</p><a className="btn primary" href="#contact">Discuss a Software Project →</a></div>
           <div className="terminal"><div className="terminal-bar"><span></span><span></span><span></span><b>deployment.pipeline</b></div><pre>{`$ git push origin main
 
 ✓ lint & type checks
@@ -244,39 +261,39 @@ STATUS:  ALL SYSTEMS GO`}</pre></div>
         </div>
       </section>
 
-      {/* NEW: Case Studies */}
+      {/* Case Studies Section */}
       <section id="case-studies" className="section dark-section">
-        <div className="section-head"><div><div className="eyebrow">06 / PROOF</div><h2>Technology that delivers <em>outcomes</em>.</h2></div><p>Real projects for real businesses.</p></div>
+        <div className="section-head"><div><div className="eyebrow">07 / PROOF</div><h2>Technology that delivers <em>outcomes</em>.</h2></div><p>Real projects for real businesses.</p></div>
         <div className="case-grid">
           {caseStudies.map(cs => (
             <div key={cs.title} className="case-card">
               <div className="case-tag">{cs.industry}</div>
               <h3>{cs.title}</h3>
-              <div className="case-row"><strong>Problem:</strong> {cs.problem}</div>
+              <div className="case-row before"><strong>Before:</strong> {cs.before}</div>
               <div className="case-row"><strong>Solution:</strong> {cs.solution}</div>
-              <div className="case-row result"><strong>Result:</strong> {cs.result}</div>
+              <div className="case-row result"><strong>After:</strong> {cs.after}</div>
             </div>
           ))}
         </div>
       </section>
 
       <section id="industries" className="section industry-section">
-        <div className="eyebrow">07 / INDUSTRIES</div><h2>TECHNOLOGY FOR<br/><em>REAL OPERATIONS.</em></h2>
-        <p className="section-sub">Solutions are shaped around business risk, users, workflows and growth — not generic technology checklists.</p>
+        <div className="eyebrow">08 / INDUSTRIES</div>
+        <h2>TECHNOLOGY FOR<br/><em>REAL OPERATIONS.</em></h2>
+        <p className="section-sub">Built for businesses with 5–200+ employees that need technology to simply work. Particularly suited to professional services, construction, healthcare, retail, education and growing SMEs.</p>
         <div className="industry-grid">{industries.map((x,i)=><div key={x}><span>0{i+1}</span><b>{x}</b><small>Technology support & solutions</small></div>)}</div>
       </section>
 
       <section id="contact" className="section contact-section">
         <div className="contact-grid">
-          <div><div className="eyebrow">08 / START HERE</div><h2>LET'S FIX<br/><em>YOUR IT.</em></h2><p className="large-copy">Tell us what you are trying to improve, build or protect. We will route the enquiry to the right technology discipline.</p><div className="contact-details"><a href="tel:+27726650565">072 665 0565</a><a href="mailto:info@mbulahenigroup.co.za">info@mbulahenigroup.co.za</a><span>Polokwane · Limpopo · South Africa</span></div></div>
+          <div><div className="eyebrow">09 / START HERE</div><h2>LET'S FIX<br/><em>YOUR IT.</em></h2><p className="large-copy">Tell us what you are trying to improve, build or protect. We will route the enquiry to the right technology discipline.</p><div className="contact-details"><a href="tel:+27726650565">072 665 0565</a><a href="mailto:info@mbulahenigroup.co.za">info@mbulahenigroup.co.za</a><span>Polokwane · Limpopo · South Africa</span></div></div>
           <form name="contact" onSubmit={submit} className="contact-form" noValidate>
             <label>Name<input name="name" required value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/></label>
             <label>Company<input name="company" value={form.company} onChange={e=>setForm({...form,company:e.target.value})}/></label>
             <label>Email<input name="email" required type="email" value={form.email} onChange={e=>setForm({...form,email:e.target.value})}/></label>
             <label>Phone / WhatsApp<input name="phone" required type="tel" value={form.phone} onChange={e=>setForm({...form,phone:e.target.value})}/></label>
-            <label>No. of Employees<select name="employees" value={form.employees} onChange={e=>setForm({...form,employees:e.target.value})}><option value="">Select</option><option>1-10</option><option>11-50</option><option>51-200</option><option>200+</option></select></label>
-            <label>What do you need?<select name="service" required value={form.service} onChange={e=>setForm({...form,service:e.target.value})}><option value="">Select a service</option><option>Managed IT Services</option><option>Cybersecurity</option><option>Infrastructure / Network</option><option>Microsoft 365</option><option>Software / Website</option><option>DevOps</option></select></label>
-            <label className="full">How can we help?<textarea name="message" required minLength="10" rows="4" value={form.message} onChange={e=>setForm({...form,message:e.target.value})}/></label>
+            <label className="full">What can we help with?<select name="service" required value={form.service} onChange={e=>setForm({...form,service:e.target.value})}><option value="">Select a service</option><option>Managed IT Services</option><option>Cybersecurity</option><option>Infrastructure / Network</option><option>Microsoft 365</option><option>Software / Website</option><option>DevOps</option></select></label>
+            <label className="full">Message<textarea name="message" required minLength="10" rows="4" value={form.message} onChange={e=>setForm({...form,message:e.target.value})}/></label>
             <label className="hp-field" aria-hidden="true">Leave this field empty<input name="website" tabIndex="-1" autoComplete="off" value={form.website} onChange={e=>setForm({...form,website:e.target.value})}/></label>
             <button className="btn primary full" type="submit" disabled={status==="sending"}>{status==="sending" ? "Sending…" : status==="sent" ? "Enquiry sent ✓" : "Send Technology Enquiry →"}</button>
             <div className={`form-status${status==="error"?" error":""}`} role="status" aria-live="polite">{status==="sent" && "Thanks — we'll be in touch shortly."}{status==="error" && "Something went wrong. Please try again or call us."}</div>
@@ -285,7 +302,7 @@ STATUS:  ALL SYSTEMS GO`}</pre></div>
       </section>
 
       <section id="faq" className="section faq-section">
-        <div className="eyebrow">09 / FAQ</div><h2>QUESTIONS, <em>ANSWERED.</em></h2>
+        <div className="eyebrow">10 / FAQ</div><h2>QUESTIONS, <em>ANSWERED.</em></h2>
         <div className="faq-list">{faqs.map(([q,a],i)=><div className={openFaq===i?"faq open":"faq"} key={q}><button onClick={()=>setOpenFaq(openFaq===i?-1:i)} aria-expanded={openFaq===i} aria-controls={`faq-${i}`}>{q}<span>+</span></button><div id={`faq-${i}`} className="faq-answer"><div className="faq-answer-inner">{a}</div></div></div>)}</div>
       </section>
     </main>
