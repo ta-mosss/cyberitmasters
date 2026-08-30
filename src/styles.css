@@ -85,4 +85,18 @@ footer{padding:35px 5vw;border-top:1px solid var(--line);display:flex;align-item
 .stroke-text {
   font-family: Impact, "Arial Narrow", sans-serif;
 }
+/* Make Hero Text pop over the Cursor Ring */
+.hero-copy {
+  background: rgba(5, 5, 15, 0.35); /* Semi-transparent dark box */
+  padding: 25px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(5px); /* Slight glass blur */
+  -webkit-backdrop-filter: blur(5px);
+}
+
+/* Keep the Stroke Text animation working over the new background */
+.stroke-text__stroke {
+  filter: drop-shadow(0 0 12px rgba(0, 217, 255, 0.8));
+}
 }
