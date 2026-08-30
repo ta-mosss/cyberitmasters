@@ -1,69 +1,105 @@
-<!doctype html>
-<html lang="en-ZA">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#050b14" />
-    <meta name="description" content="Cyber I.T Masters — Managed IT, cybersecurity, IT solutions, cloud, Microsoft 365, networks, web development and DevOps for South African businesses." />
-    <meta property="og:title" content="Cyber I.T Masters | IT MSP & Digital Solutions" />
-    <meta property="og:description" content="One technology partner for managed IT, cybersecurity, cloud, infrastructure, web applications and DevOps." />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://www.cyberitmasters.co.za/" />
-    <meta property="og:image" content="https://www.cyberitmasters.co.za/og-image.png" />
-    <meta property="og:locale" content="en_ZA" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Cyber I.T Masters | IT MSP & Digital Solutions" />
-    <meta name="twitter:description" content="One technology partner for managed IT, cybersecurity, cloud, infrastructure, web applications and DevOps." />
-    <meta name="twitter:image" content="https://www.cyberitmasters.co.za/og-image.png" />
-    <link rel="canonical" href="https://www.cyberitmasters.co.za/" />
-    <link rel="icon" href="/logo.png" />
-    <title>Cyber I.T Masters | IT MSP & Digital Solutions</title>
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "ProfessionalService",
-      "name": "Cyber I.T Masters",
-      "alternateName": "CITM",
-      "description": "Managed IT services, cybersecurity, IT solutions, cloud, Microsoft 365, networks, web application development and DevOps for South African businesses.",
-      "url": "https://www.cyberitmasters.co.za/",
-      "telephone": "+27726650565",
-      "email": "info@mbulahenigroup.co.za",
-      "areaServed": ["Limpopo", "Gauteng", "South Africa"],
-      "address": {
-        "@type": "PostalAddress",
-        "addressLocality": "Polokwane",
-        "addressRegion": "Limpopo",
-        "addressCountry": "ZA"
-      },
-      "sameAs": [],
-      "makesOffer": [
-        { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Managed IT Services" } },
-        { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Cybersecurity" } },
-        { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "IT Solutions & Infrastructure" } },
-        { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Web & Application Development" } },
-        { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "DevOps & Cloud Engineering" } },
-        { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "IT Procurement & Technology" } }
-      ]
-    }
-    </script>
-  </head>
-  <body>
-    <div id="root"></div>
-    <!--
-      Netlify detects forms by parsing static HTML at deploy time — it
-      cannot see forms rendered client-side by React. This hidden duplicate,
-      with the same name/fields as the real form in App.jsx, is what lets
-      Netlify register the form and its POST endpoint. It's never shown to
-      users; the visible form is the React one.
-    -->
-    <form name="contact" data-netlify="true" netlify-honeypot="website" hidden>
-      <input type="text" name="name" />
-      <input type="text" name="company" />
-      <input type="email" name="email" />
-      <select name="service"><option>Managed IT Services</option></select>
-      <textarea name="message"></textarea>
-      <input type="text" name="website" />
-    </form>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Primary meta -->
+  <title>Cyber I.T Masters | Managed IT, Cybersecurity & Software — Polokwane</title>
+  <meta name="description" content="Managed IT support, cybersecurity, cloud infrastructure and custom software for businesses in Polokwane and across South Africa. One technology partner, every discipline." />
+  <link rel="canonical" href="https://www.cyberitmasters.co.za/" />
+
+  <!-- Theme color (matches --bg navy) -->
+  <meta name="theme-color" content="#050b14" />
+  <meta name="color-scheme" content="dark" />
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+
+  <!-- Open Graph (Facebook, LinkedIn, WhatsApp) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Cyber I.T Masters" />
+  <meta property="og:title" content="Cyber I.T Masters | Managed IT, Cybersecurity & Software" />
+  <meta property="og:description" content="IT support, cybersecurity and software for businesses that can't afford technology problems. Polokwane-based, nationwide remote support." />
+  <meta property="og:image" content="https://www.cyberitmasters.co.za/og-image.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Cyber I.T Masters — Managed IT, Cybersecurity & Software" />
+  <meta property="og:url" content="https://www.cyberitmasters.co.za/" />
+  <meta property="og:locale" content="en_ZA" />
+
+  <!-- Twitter / X card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Cyber I.T Masters | Managed IT, Cybersecurity & Software" />
+  <meta name="twitter:description" content="IT support, cybersecurity and software for businesses that can't afford technology problems. Polokwane-based, nationwide remote support." />
+  <meta name="twitter:image" content="https://www.cyberitmasters.co.za/og-image.jpg" />
+
+  <!-- Fonts (preloaded, replaces the @import in styles.css for faster first paint) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- LocalBusiness structured data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "@id": "https://www.cyberitmasters.co.za/#business",
+    "name": "Cyber I.T Masters",
+    "alternateName": "CITM",
+    "description": "Managed IT support, cybersecurity, cloud infrastructure and custom software development for businesses in Polokwane and across South Africa.",
+    "url": "https://www.cyberitmasters.co.za/",
+    "telephone": "+27726650565",
+    "email": "info@mbulahenigroup.co.za",
+    "priceRange": "R2500 - R$$$",
+    "image": "https://www.cyberitmasters.co.za/og-image.jpg",
+    "logo": "https://www.cyberitmasters.co.za/logo.png",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "REPLACE WITH STREET ADDRESS",
+      "addressLocality": "Polokwane",
+      "addressRegion": "Limpopo",
+      "postalCode": "REPLACE WITH POSTAL CODE",
+      "addressCountry": "ZA"
+    },
+    "areaServed": [
+      { "@type": "AdministrativeArea", "name": "Limpopo" },
+      { "@type": "AdministrativeArea", "name": "Gauteng" },
+      { "@type": "Country", "name": "South Africa" }
+    ],
+    "parentOrganization": {
+      "@type": "Organization",
+      "name": "Mbulaheni Group Integrated Solutions"
+    },
+    "sameAs": [
+      "REPLACE WITH FACEBOOK URL",
+      "REPLACE WITH LINKEDIN URL",
+      "REPLACE WITH INSTAGRAM URL"
+    ],
+    "openingHoursSpecification": [
+      {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+        "opens": "08:00",
+        "closes": "17:00"
+      }
+    ],
+    "makesOffer": [
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Managed IT Services" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Cybersecurity" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Cloud & Infrastructure" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Software Development" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "DevOps" } },
+      { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Technology Procurement" } }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <!-- Your React app mounts here -->
+  <div id="root"></div>
+</body>
 </html>
