@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, Suspense, lazy } from "react";
 import HeroBackgroundBoundary from "./components/HeroBackgroundBoundary";
-import StrokeText from "./components/StrokeText";
+import CursorRingField from "./components/CursorRingField";
 
 // Deferred: ogl (WebGL) is a non-trivial chunk for a purely decorative
 // background — no reason to block first paint on it.
@@ -155,31 +155,22 @@ const submit=async(e)=>{
     <main id="main-content" tabIndex="-1">
       <section id="home" className="hero">
         <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
-          {/* UPDATED: Check if mobile OR failed */}
-          {heroBgFailed || isMobile ? <HeroBackgroundFallback /> : (
-            <HeroBackgroundBoundary fallback={<HeroBackgroundFallback />}>
-              <Suspense fallback={<HeroBackgroundFallback />}>
-                <SoftAurora
-                  speed={0.6}
-                  scale={1.5}
-                  brightness={1.0}
-                  color1="#0A29FF"
-                  color2="#5227FF"
-                  noiseFrequency={2.5}
-                  noiseAmplitude={1.0}
-                  bandHeight={0.5}
-                  bandSpread={1.0}
-                  octaveDecay={0.1}
-                  layerOffset={0}
-                  colorSpeed={1.0}
-                  enableMouseInteraction={true}
-                  mouseInfluence={0.25}
-                  onError={()=>setHeroBgFailed(true)}
-                />
-              </Suspense>
-            </HeroBackgroundBoundary>
-          )}
-        </div>
+  {heroBgFailed || isMobile ? <HeroBackgroundFallback /> : (
+    <HeroBackgroundBoundary fallback={<HeroBackgroundFallback />}>
+      <Suspense fallback={<HeroBackgroundFallback />}>
+        <CursorRingField
+          density={300}
+          dotSize={120}
+          speed={6}
+          cameraDistance={160}
+          ring={{ radius: 12, width: 9, push: 50, turbulence: 100 }}
+          colors={["#7189ff", "#3074f9", "#00d9ff"]} // Blue/Purple/Cyan
+          background="#04050a"
+        />
+      </Suspense>
+    </HeroBackgroundBoundary>
+  )}
+</div>
 
         <div className="hero-grid" style={{ position: 'relative', zIndex: 1 }}>
           {/* ... rest of the Hero content ... */}
