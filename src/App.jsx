@@ -188,7 +188,7 @@ function App(){
       <section id="services" className="section">
         {/* ... Keep your existing services, solutions, devops, industries, process, contact, faq code here ... */}
       </section>
-
+</main>
       <footer>
         {/* ... Keep your existing footer here ... */}
       </footer>
