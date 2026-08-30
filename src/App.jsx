@@ -137,7 +137,7 @@ function App(){
                   speed={6}
                   cameraDistance={160}
                   ring={{ radius: 12, width: 9, push: 50, turbulence: 100 }}
-                  colors={["#7189ff", "#3074f9", "#00d9ff"]} // Blue/Purple/Cyan
+                  colors={["#7189ff", "#3074f9", "#00d9ff"]}
                   background="#04050a"
                 />
               </Suspense>
@@ -184,14 +184,80 @@ function App(){
         <div><b>04</b><span>DEVOPS</span><small>Automation & deployment</small></div>
       </section>
 
-      {/* The rest of your file remains EXACTLY the same */}
       <section id="services" className="section">
-        {/* ... Keep your existing services, solutions, devops, industries, process, contact, faq code here ... */}
+        <div className="section-head"><div><div className="eyebrow">01 / CORE SERVICES</div><h2>THE TECHNOLOGY<br/><em>STACK BEHIND</em> YOUR BUSINESS.</h2></div><p>From everyday IT operations to new digital products, we bring infrastructure, security and software engineering into one accountable service.</p></div>
+        <div className="service-grid">{services.map(s=><article className="service-card" key={s.title}><div className="service-icon">{s.icon}</div><div className="service-tag">{s.tag}</div><h3>{s.title}</h3><p>{s.text}</p><a href="#contact">Discuss this service →</a></article>)}</div>
       </section>
-</main>
-      <footer>
-        {/* ... Keep your existing footer here ... */}
-      </footer>
+
+      <section id="solutions" className="section dark-section">
+        <div className="section-head"><div><div className="eyebrow">02 / IT SOLUTIONS</div><h2>BUILD A <em>STRONGER</em><br/>TECHNOLOGY FOUNDATION.</h2></div><p>Technology should be secure, maintainable and aligned to the way your organisation actually operates.</p></div>
+        <div className="cap-grid">{capabilities.map((c,i)=><div key={c}><span>{String(i+1).padStart(2,"0")}</span><b>{c}</b></div>)}</div>
+        <div className="solution-band"><div><span>NEED A ROADMAP?</span><h3>Turn scattered IT into a managed technology strategy.</h3></div><a className="btn primary" href="#contact">Book a Technology Review →</a></div>
+      </section>
+
+      <section id="devops" className="section">
+        <div className="devops-grid">
+          <div><div className="eyebrow">03 / WEB · APPS · DEVOPS</div><h2>FROM <em>IDEA</em> TO<br/>PRODUCTION.</h2><p className="large-copy">We design and build digital systems that connect your people, customers and operations — then put the engineering discipline around them to keep them reliable.</p><a className="btn primary" href="#contact">Discuss a Software Project →</a></div>
+          <div className="terminal"><div className="terminal-bar"><span></span><span></span><span></span><b>deployment.pipeline</b></div><pre>{`$ git push origin main
+
+✓ lint & type checks
+✓ automated tests
+✓ security scan
+✓ build application
+✓ package release
+✓ deploy staging
+✓ smoke tests
+→ production ready
+
+STATUS:  ALL SYSTEMS GO`}</pre></div>
+        </div>
+        <div className="devops-cards"><article><b>01</b><h3>Websites</h3><p>Fast, responsive, SEO-ready business websites and landing pages.</p></article><article><b>02</b><h3>Applications</h3><p>Portals, dashboards, workflow systems and custom business software.</p></article><article><b>03</b><h3>DevOps</h3><p>Git workflows, CI/CD, environments, deployments and operational visibility.</p></article><article><b>04</b><h3>Integrations</h3><p>APIs, payment, messaging, CRM and third-party platform integrations.</p></article></div>
+      </section>
+
+      <section id="industries" className="section industry-section">
+        <div className="eyebrow">04 / INDUSTRIES</div><h2>TECHNOLOGY FOR<br/><em>REAL OPERATIONS.</em></h2>
+        <p className="section-sub">Solutions are shaped around business risk, users, workflows and growth — not generic technology checklists.</p>
+        <div className="industry-grid">{industries.map((x,i)=><div key={x}><span>0{i+1}</span><b>{x}</b><small>Technology support & solutions</small></div>)}</div>
+      </section>
+
+      <section id="process" className="section dark-section">
+        <div className="eyebrow">05 / DELIVERY MODEL</div><h2>DISCOVER. <em>DESIGN.</em><br/>DELIVER. SUPPORT.</h2>
+        <div className="process-grid">{[["01","Discover","Understand your environment, business goals, risks and pain points."],["02","Design","Build a practical technology roadmap, architecture and delivery plan."],["03","Deliver","Implement, migrate, develop and deploy with controlled change."],["04","Operate","Monitor, support, secure, optimise and continuously improve."]].map(([n,t,d])=><article key={n}><span>{n}</span><h3>{t}</h3><p>{d}</p></article>)}</div>
+      </section>
+
+      <section id="contact" className="section contact-section">
+        <div className="contact-grid">
+          <div><div className="eyebrow">06 / START HERE</div><h2>LET'S FIX<br/><em>YOUR IT.</em></h2><p className="large-copy">Tell us what you are trying to improve, build or protect. We will route the enquiry to the right technology discipline.</p><div className="contact-details"><a href="tel:+27726650565">+27 72 665 0565</a><a href="mailto:info@mbulahenigroup.co.za">info@mbulahenigroup.co.za</a><span>Polokwane · Limpopo · South Africa</span></div></div>
+          <form name="contact" onSubmit={submit} className="contact-form" noValidate>
+            <input type="hidden" name="form-name" value="contact" />
+            <label>Name<input name="name" required value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/></label>
+            <label>Company<input name="company" value={form.company} onChange={e=>setForm({...form,company:e.target.value})}/></label>
+            <label>Email<input name="email" required type="email" value={form.email} onChange={e=>setForm({...form,email:e.target.value})}/></label>
+            <label>What do you need?<select name="service" required value={form.service} onChange={e=>setForm({...form,service:e.target.value})}><option value="">Select a service</option><option>Managed IT Services</option><option>IT Solutions & Infrastructure</option><option>Cybersecurity</option><option>Microsoft 365 / Cloud</option><option>Website Development</option><option>Application Development</option><option>DevOps / Cloud Engineering</option><option>IT Procurement</option></select></label>
+            <label className="full">Project / IT requirements<textarea name="message" required minLength="10" rows="5" value={form.message} onChange={e=>setForm({...form,message:e.target.value})}/></label>
+            <label className="hp-field" aria-hidden="true">
+              Leave this field empty
+              <input name="website" tabIndex="-1" autoComplete="off" value={form.website} onChange={e=>setForm({...form,website:e.target.value})}/>
+            </label>
+            <button className="btn primary full" type="submit" disabled={status==="sending"}>
+              {status==="sending" ? "Sending…" : status==="sent" ? "Enquiry sent ✓" : "Send Technology Enquiry →"}
+            </button>
+            <div className={`form-status${status==="error"?" error":""}`} role="status" aria-live="polite">
+              {status==="sent" && "Thanks — your enquiry has been sent. We'll be in touch shortly."}
+              {status==="error" && "Something went wrong sending that. Please try again, or call/email us directly."}
+            </div>
+            <small className="form-note">Your enquiry is sent directly to our team — no email client required.</small>
+          </form>
+        </div>
+      </section>
+
+      <section id="faq" className="section faq-section">
+        <div className="eyebrow">07 / FAQ</div><h2>QUESTIONS, <em>ANSWERED.</em></h2>
+        <div className="faq-list">{faqs.map(([q,a],i)=><div className={openFaq===i?"faq open":"faq"} key={q}><button onClick={()=>setOpenFaq(openFaq===i?-1:i)} aria-expanded={openFaq===i}>{q}<span>+</span></button><div className="faq-answer"><div className="faq-answer-inner">{a}</div></div></div>)}</div>
+      </section>
+    </main>
+
+    <footer><div className="footer-brand">CYBER <em>I.T</em> MASTERS<small>MANAGED IT · IT SOLUTIONS · SOFTWARE · DEVOPS</small></div><div className="footer-links"><a href="#services">Services</a><a href="#solutions">Solutions</a><a href="#devops">Development</a><a href="#contact">Contact</a></div><span>© {new Date().getFullYear()} Cyber I.T Masters · Mbulaheni Group</span></footer>
       
       {/* Floating WhatsApp Chat */}
       <a href="https://wa.me/27726650565" target="_blank" rel="noreferrer" className="wa-float" aria-label="Chat on WhatsApp">
