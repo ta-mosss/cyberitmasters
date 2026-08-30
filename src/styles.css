@@ -99,4 +99,61 @@ footer{padding:35px 5vw;border-top:1px solid var(--line);display:flex;align-item
 .stroke-text__stroke {
   filter: drop-shadow(0 0 12px rgba(0, 217, 255, 0.8));
 }
+/* New Sections CSS */
+
+/* Why Us */
+.why-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.why-card {
+  background: var(--card, #0b1727);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 20px;
+}
+.why-card h3 { color: var(--blue); font-size: 18px; margin-bottom: 8px; }
+.why-card p { color: var(--muted); font-size: 13px; line-height: 1.5; }
+
+/* Pricing */
+.price-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+.price-card {
+  background: var(--card, #0b1727);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 30px;
+}
+.price-card h3 { font-size: 16px; letter-spacing: 1px; margin-bottom: 8px; }
+.price-tag { font-size: 28px; font-weight: 800; color: var(--blue); margin-bottom: 12px; }
+.price-card p { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
+.price-card ul { list-style: none; padding: 0; margin-bottom: 20px; }
+.price-card li { font-size: 12px; margin-bottom: 6px; color: var(--text2); }
+
+/* Case Studies */
+.case-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.case-card {
+  background: var(--card, #0b1727);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 24px;
+}
+.case-tag { display: inline-block; font-size: 10px; font-weight: 800; letter-spacing: 1px; color: var(--blue); background: rgba(77,163,255,.1); padding: 4px 10px; border-radius: 12px; margin-bottom: 12px; }
+.case-card h3 { font-size: 20px; margin-bottom: 12px; }
+.case-row { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+.case-row strong { color: var(--text); }
+.case-row.result strong { color: var(--mint); }
+
+@media (max-width: 620px) {
+  .case-grid { grid-template-columns: 1fr; }
+}
 }
