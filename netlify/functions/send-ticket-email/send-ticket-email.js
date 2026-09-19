@@ -15,90 +15,114 @@ function initFirebase() {
   resend = new Resend(process.env.RESEND_API_KEY);
 }
 
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+};
+
+function ts() { return new Date().toISOString(); }
+
 exports.handler = async (event) => {
-  const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  };
-
   if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 204, headers, body: '' };
+    return { statusCode: 204, headers: CORS, body: '' };
   }
-
   if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, headers, body: 'Method not allowed' };
+    return { statusCode: 405, headers: CORS, body: 'Method not allowed' };
   }
 
   try {
-    const { ticketId, to, subject, body, messageId } = JSON.parse(event.body);
+    const body = JSON.parse(event.body || '{}');
+    const { ticketId, to, subject, body: emailBody, staffName, staffEmail } = body;
 
-    // TODO: Add staff authentication check here
-    // The setup doc notes you may want to restrict this to engineers only
+    if (!ticketId || !to || !emailBody) {
+      return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: 'Missing ticketId, to, or body' }) };
+    }
+
+    // TODO: Add Firebase Auth verification here if you want to restrict this
+    //       to signed-in engineers only (see "hardening" note at bottom)
 
     initFirebase();
 
     const ticketRef = db.collection('tickets').doc(ticketId);
-    const ticket = await ticketRef.get();
-
-    if (!ticket.exists) {
-      return { statusCode: 404, headers, body: JSON.stringify({ error: 'Ticket not found' }) };
+    const ticketSnap = await ticketRef.get();
+    if (!ticketSnap.exists) {
+      return { statusCode: 404, headers: CORS, body: JSON.stringify({ error: `Ticket ${ticketId} not found` }) };
     }
+    const ticket = ticketSnap.data() || {};
+    const thread = Array.isArray(ticket.emailThread) ? ticket.emailThread.slice() : [];
 
-    const ticketData = ticket.data();
+    const lastMessageId = (() => {
+      for (let i = thread.length - 1; i >= 0; i--) {
+        if (thread[i]?.messageId) return thread[i].messageId;
+      }
+      return null;
+    })();
 
-    // Build threading headers so replies land on the same ticket
-    // Reply-To format: tickets+<REF>@<TICKETS_DOMAIN>
     const replyTo = `tickets+${ticketId}@${process.env.TICKETS_DOMAIN}`;
+    const fromAddress = process.env.TICKETS_FROM_EMAIL;
+    const subj = subject || `Re: ${ticket.issueTitle || ticket.problemDescription?.slice(0, 60) || ticket.ref}`;
 
-    const thread = ticketData.emailThread || [];
-    const lastMessageId = thread.length > 0 ? thread[thread.length - 1].messageId : null;
-
-    const sendPayload = {
-      from: process.env.TICKETS_FROM_EMAIL,
-      to,
-      subject: subject || `Re: ${ticketData.subject || 'Your ticket'}`,
-      html: body,
-      replyTo,
-    };
-
-    // Add In-Reply-To and References for email client threading
+    const headers = {};
     if (lastMessageId) {
-      sendPayload.headers = {
-        'In-Reply-To': lastMessageId,
-        'References': thread.map(m => m.messageId).filter(Boolean).join(' '),
-      };
+      headers['In-Reply-To'] = lastMessageId;
+      const refs = thread.map((m) => m.messageId).filter(Boolean);
+      if (refs.length) headers['References'] = refs.join(' ');
     }
 
-    const { data, error } = await resend.emails.send(sendPayload);
+    const { data, error } = await resend.emails.send({
+      from: fromAddress,
+      to,
+      subject: subj,
+      html: emailBody,
+      replyTo,
+      headers,
+    });
+
     if (error) throw new Error(error.message);
 
-    // Append outbound message to the ticket thread
+    const outbound = {
+      direction: 'outbound',
+      messageId: data.id,
+      from: fromAddress,
+      to,
+      subject: subj,
+      body: emailBody,
+      html: emailBody,
+      sentAt: ts(),
+      sentBy: staffName || staffEmail || 'engineer',
+      staffEmail: staffEmail || null,
+    };
+
+    const timeline = Array.isArray(ticket.timeline) ? ticket.timeline.slice() : [];
+    timeline.push({
+      id: `tl_email_${Date.now()}`,
+      type: 'note',
+      title: 'Email reply sent',
+      detail: `To ${to}: ${subj}`,
+      at: ts(),
+      actorEmail: staffEmail || null,
+      actorName: staffName || staffEmail || 'Engineer',
+    });
+
     await ticketRef.update({
-      emailThread: [...thread, {
-        direction: 'outbound',
-        messageId: data.id,
-        from: process.env.TICKETS_FROM_EMAIL,
-        to,
-        subject: sendPayload.subject,
-        body,
-        sentAt: new Date().toISOString(),
-        sentBy: 'engineer', // or the staff user ID
-      }],
-      emailMessageIds: [...(ticketData.emailMessageIds || []), data.id],
+      emailThread: [...thread, outbound].slice(-200),
+      emailMessageIds: [...(ticket.emailMessageIds || []), data.id].slice(-500),
+      timeline: timeline.slice(-250),
+      updatedAt: ts(),
     });
 
     return {
       statusCode: 200,
-      headers,
+      headers: CORS,
       body: JSON.stringify({ success: true, messageId: data.id }),
     };
-  } catch (error) {
-    console.error('Send ticket email error:', error);
+  } catch (err) {
+    console.error('send-ticket-email error:', err);
     return {
       statusCode: 500,
-      headers,
-      body: JSON.stringify({ error: error.message }),
+      headers: CORS,
+      body: JSON.stringify({ error: err.message }),
     };
   }
 };
