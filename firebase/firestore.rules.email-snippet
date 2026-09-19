@@ -1,0 +1,26 @@
+// ─── Add to your existing `match /tickets/{ticketRef}` block ─────────
+//
+// 1) Read receipts. The admin.html Email tab writes emailLastReadAt
+//    client-side so the unread badge clears. Allow only that field to
+//    be updated by staff.
+//
+// 2) emailEvents audit subcollection. Server-only writes (Admin SDK
+//    bypasses rules), readable by staff.
+//
+// Place this INSIDE your existing `match /tickets/{ticketRef} { ... }`:
+
+match /tickets/{ticketRef} {
+
+  // ... existing create/read/update rules ...
+
+  // Read receipt — client-side write, single field.
+  allow update: if request.auth != null
+    && request.resource.data.diff(resource.data).affectedKeys()
+        .hasOnly(['emailLastReadAt', 'updatedAt']);
+
+  // Email audit log — read-only to staff, writes only from Admin SDK.
+  match /emailEvents/{eventId} {
+    allow read: if request.auth != null;
+    allow write: if false;
+  }
+}
