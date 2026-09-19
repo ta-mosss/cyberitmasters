@@ -1,426 +1,221 @@
-const { initializeApp, cert } = require('firebase-admin/app');
-const { getFirestore } = require('firebase-admin/firestore');
-const { getStorage } = require('firebase-admin/storage');
-const { Resend } = require('resend');
-const { Webhook } = require('svix');
+import { Resend } from "resend";
+import admin from "firebase-admin";
 
-let db, storage, resend, app;
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 function initFirebase() {
-  if (db) return;
-  const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-  app = initializeApp({
-    credential: cert(serviceAccount),
-    projectId: 'test-bot-49f99',
-    storageBucket: process.env.FIREBASE_STORAGE_BUCKET || 'test-bot-49f99.firebasestorage.app',
-  });
-  db = getFirestore();
-  storage = getStorage();
-  resend = new Resend(process.env.RESEND_API_KEY);
-}
-
-/* ─────────────────────────────────────────────
-   Helpers
-───────────────────────────────────────────── */
-function ts() { return new Date().toISOString(); }
-
-async function nextTicketNumber() {
-  const ref = db.collection('meta').doc('counter');
-  return await db.runTransaction(async (tx) => {
-    const doc = await tx.get(ref);
-    const current = doc.exists ? doc.data().val : 1000;
-    const next = current + 1;
-    tx.set(ref, { val: next });
-    return next;
+  if (admin.apps.length) return admin.app();
+  const raw = process.env.FIREBASE_SERVICE_ACCOUNT;
+  if (!raw) throw new Error("FIREBASE_SERVICE_ACCOUNT is not configured");
+  const serviceAccount = JSON.parse(raw);
+  return admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    storageBucket: process.env.FIREBASE_STORAGE_BUCKET || serviceAccount.storage_bucket,
   });
 }
-function makeTktRef(num) { return `CIM-${String(num).padStart(4, '0')}`; }
+const app = initFirebase();
+const db = admin.firestore();
 
-function normalisePhone(p) {
-  if (!p) return '';
-  const c = String(p).replace(/[^0-9]/g, '');
-  if (c.startsWith('27')) return c;
-  if (c.startsWith('0')) return '27' + c.slice(1);
-  return c;
+function json(body,status=200){
+  return new Response(JSON.stringify(body),{status,headers:{"Content-Type":"application/json"}});
 }
 
-function extractEmails(str) {
-  if (!str) return [];
-  if (Array.isArray(str)) return str.flatMap(extractEmails);
-  const matches = String(str).match(/[^\s<>,]+@[^\s<>,]+/g) || [];
-  return matches.map((m) => m.toLowerCase());
+// Strict: only match explicit ticket-ref formats. The previous fallback to
+// "any 4+ digit number" was too eager and could attach a reply to the wrong
+// ticket if the subject or body happened to contain a phone number, invoice
+// number, or year.
+function ticketRefFromText(...values){
+  const joined = values.filter(Boolean).join(" ");
+  const m = joined.match(/\b(IT|TKT|CIM)-?\d{3,}\b/i);
+  return m ? m[0].toUpperCase().replace(/\s+/g, "") : null;
 }
 
-function stripHtml(html) {
-  if (!html) return '';
-  return String(html)
-    .replace(/<style[\s\S]*?<\/style>/gi, '')
-    .replace(/<script[\s\S]*?<\/script>/gi, '')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/\s+/g, ' ')
-    .trim();
+function normaliseEmail(v=""){
+  const m=String(v).match(/<([^>]+)>/);
+  return (m?m[1]:String(v)).trim().toLowerCase();
 }
 
-/* ─────────────────────────────────────────────
-   Ticket matching: 3-tier strategy
-   1. Reply-To address (tickets+<REF>@domain)
-   2. In-Reply-To / References vs emailMessageIds
-   3. Subject line CIM-#### tag
-───────────────────────────────────────────── */
-async function matchTicket(email) {
-  const domain = process.env.TICKETS_DOMAIN;
+function allowedSender(email){
+  const e=normaliseEmail(email);
+  const exact=(process.env.ALLOWED_INBOUND_SENDERS||"").split(",").map(x=>x.trim().toLowerCase()).filter(Boolean);
+  const domains=(process.env.ALLOWED_INBOUND_DOMAINS||"").split(",").map(x=>x.trim().toLowerCase().replace(/^@/,"")).filter(Boolean);
+  if(!exact.length && !domains.length) return true;
+  return exact.includes(e) || domains.some(d=>e.endsWith(`@${d}`));
+}
 
-  // Tier 1 — reply-to / to / cc / delivered-to headers
-  const headerTargets = [
-    ...extractEmails(email.to),
-    ...extractEmails(email.cc),
-    ...extractEmails(email.headers?.['reply-to']),
-    ...extractEmails(email.headers?.['delivered-to']),
-    ...extractEmails(email.headers?.['x-forwarded-to']),
-  ];
-  for (const addr of headerTargets) {
-    const m = addr.match(/tickets\+([^@]+)@/i);
-    if (m) {
-      const ref = m[1].toUpperCase();
-      const snap = await db.collection('tickets').doc(ref).get();
-      if (snap.exists) return snap.ref;
-    }
-    // Also handle bare tickets@ — the ref will be in subject
+function parseTicketFromRecipients(to=[]){
+  const domain=(process.env.TICKETS_DOMAIN||"").toLowerCase();
+  for(const raw of Array.isArray(to)?to:[to]){
+    const email=normaliseEmail(raw);
+    const local=email.split("@")[0];
+    const m=local.match(/^tickets\+(.+)$/i);
+    if(m && (!domain || email.endsWith(`@${domain}`))) return m[1].toUpperCase();
   }
-
-  // Tier 2 — threading headers vs stored message IDs
-  const inReplyTo = email.headers?.['in-reply-to'] || '';
-  const references = email.headers?.['references'] || '';
-  const candidateIds = [
-    ...extractMessageIds(inReplyTo),
-    ...extractMessageIds(references),
-  ].filter(Boolean);
-
-  if (candidateIds.length) {
-    // Firestore array-contains-any limit is 10
-    const batches = [];
-    for (let i = 0; i < candidateIds.length; i += 10) {
-      batches.push(candidateIds.slice(i, i + 10));
-    }
-    for (const batch of batches) {
-      const snap = await db
-        .collection('tickets')
-        .where('emailMessageIds', 'array-contains-any', batch)
-        .limit(1)
-        .get();
-      if (!snap.empty) return snap.docs[0].ref;
-    }
-  }
-
-  // Tier 3 — subject line CIM-#### tag
-  const subject = email.subject || '';
-  const subjMatch = subject.match(/CIM-\d+/i);
-  if (subjMatch) {
-    const ref = subjMatch[0].toUpperCase();
-    const snap = await db.collection('tickets').doc(ref).get();
-    if (snap.exists) return snap.ref;
-  }
-
   return null;
 }
 
-function extractMessageIds(str) {
-  if (!str) return [];
-  const matches = String(str).match(/<[^>]+>/g) || [];
-  return matches.map((m) => m.trim());
-}
+async function updateThread(ticketRef, message, eventId, emailId){
+  const ref=db.collection("tickets").doc(ticketRef);
+  await db.runTransaction(async tx=>{
+    const snap=await tx.get(ref);
+    if(!snap.exists) throw new Error("Ticket not found");
+    const data=snap.data()||{};
+    const existing=Array.isArray(data.emailThread)?data.emailThread:[];
+    const ids=Array.isArray(data.emailMessageIds)?data.emailMessageIds:[];
+    if(emailId && ids.includes(emailId)) return; // webhook retry → no-op
 
-/* ─────────────────────────────────────────────
-   Attachment handling
-───────────────────────────────────────────── */
-async function saveAttachments(ticketRef, attachments) {
-  if (!attachments || !attachments.length) return [];
-  const bucket = storage.bucket();
-  const saved = [];
-  for (const att of attachments.slice(0, 20)) {
-    try {
-      const res = await fetch(att.download_url || att.url);
-      if (!res.ok) continue;
-      const buffer = Buffer.from(await res.arrayBuffer());
-      const safeName = String(att.filename || `attachment-${Date.now()}`).replace(/[^a-zA-Z0-9._-]/g, '_');
-      const path = `tickets/${ticketRef}/email-attachments/${Date.now()}-${safeName}`;
-      const file = bucket.file(path);
-      await file.save(buffer, { contentType: att.content_type || 'application/octet-stream' });
-      const [signedUrl] = await file.getSignedUrl({
-        action: 'read',
-        expires: Date.now() + 1000 * 60 * 60 * 24 * 30, // 30 days
+    const thread=[...existing,message].slice(-100);
+    const update={
+      emailThread:thread,
+      emailMessageIds:emailId?[...ids,emailId].slice(-500):ids.slice(-500),
+      emailLastInboundAt:message.receivedAt,
+      updatedAt:message.receivedAt,
+    };
+
+    // A reply on a closed/resolved ticket reopens it so the operator notices.
+    if(data.status==="closed" || data.status==="resolved"){
+      update.status="open";
+      update.reopenedAt=message.receivedAt;
+      update.reopenedBy="email";
+      const timeline=Array.isArray(data.timeline)?data.timeline.slice():[];
+      timeline.push({
+        id:`tl_email_reopen_${Date.now()}`,
+        type:"status",
+        title:"Ticket reopened by email reply",
+        detail:`Client replied from ${message.fromEmail || message.from || "unknown"}`,
+        at:message.receivedAt,
+        actorEmail:message.fromEmail || null,
+        actorName:message.from || "Client",
       });
-      saved.push({
-        filename: att.filename || safeName,
-        size: buffer.length,
-        contentType: att.content_type || 'application/octet-stream',
-        path,
-        url: signedUrl,
-      });
-    } catch (e) {
-      console.error('Attachment save failed:', att.filename, e.message);
+      update.timeline=timeline.slice(-250);
     }
-  }
-  return saved;
+
+    tx.update(ref,update);
+  });
+
+  await ref.collection("emailEvents").doc(String(eventId||emailId||Date.now())).set({
+    type:"email.received",
+    emailId:eventId || emailId || null,
+    at:new Date().toISOString(),
+    ticketRef,
+  },{merge:true});
 }
 
-/* ─────────────────────────────────────────────
-   Ticket creation from a fresh email
-───────────────────────────────────────────── */
-async function createTicketFromEmail(email, messageId) {
-  const num = await nextTicketNumber();
-  const ref = makeTktRef(num);
-
-  const fromAddrs = extractEmails(email.from);
-  const fromEmail = fromAddrs[0] || '';
-  const fromName = (email.from || '').replace(/<[^>]+>/g, '').replace(/"/g, '').trim() || fromEmail.split('@')[0];
-
-  const subject = (email.subject || '').replace(/^(re|fwd?):\s*/i, '').trim() || '(no subject)';
-  const textBody = email.text || stripHtml(email.html) || '';
-  const attachments = await saveAttachments(ref, email.attachments);
-
-  const now = ts();
-  const ticket = {
-    ref,
-    ticketNumber: num,
-    schemaVersion: 3,
-    status: 'open',
-    priority: 'Medium',
-    serviceType: 'remote',
-    source: 'email',
-    loggedBy: 'Customer (via email)',
-    clientName: fromName,
-    name: fromName,
-    email: fromEmail,
-    phone: '',
-    issueTitle: subject.slice(0, 140),
-    problemDescription: textBody.slice(0, 4000),
-    issueDetail: '',
-    notes: [],
-    parts: [],
-    quotationRef: '',
-    assignedEngineer: 'Unassigned',
-    assignedUid: null,
-    timeline: [{
-      id: `tl_created_${Date.now()}`,
-      type: 'created',
-      title: 'Ticket created via email',
-      detail: `Received from ${fromEmail}`,
-      at: now,
-      actorEmail: fromEmail,
-      actorName: fromName,
-    }],
-    emailThread: [{
-      direction: 'inbound',
-      messageId,
-      from: fromEmail,
-      to: Array.isArray(email.to) ? email.to : extractEmails(email.to),
-      cc: Array.isArray(email.cc) ? email.cc : extractEmails(email.cc),
-      subject: email.subject || subject,
-      body: textBody,
-      html: email.html || '',
-      attachments,
-      sentAt: email.created_at || now,
-      receivedAt: now,
-    }],
-    emailMessageIds: [messageId].filter(Boolean),
-    emailAutoAckSent: false,
-    timeTrackedMinutes: 0,
-    billableMinutes: 0,
-    timeEntryCount: 0,
-    timeByEngineer: {},
-    slaPausedBusinessMinutes: 0,
-    slaPausedAt: null,
-    resolvedAt: null,
-    closedAt: null,
-    clientSignoff: { signed: false, clientName: '', clientPosition: '', signedAt: null, signatureImage: '' },
-    authorized: false,
-    authorisationName: '',
-    authorisationPosition: '',
-    authorisationSignature: '',
-    authorisationSignedAt: null,
-    createdAt: now,
-    updatedAt: now,
-  };
-
-  await db.collection('tickets').doc(ref).set(ticket);
-  return { ref, ticket };
-}
-
-/* ─────────────────────────────────────────────
-   Append inbound message to existing ticket
-───────────────────────────────────────────── */
-async function appendToTicket(ticketRef, email, messageId) {
-  const ref = db.collection('tickets').doc(ticketRef);
-  const snap = await ref.get();
-  if (!snap.exists) return;
-  const data = snap.data() || {};
-
-  const fromAddrs = extractEmails(email.from);
-  const fromEmail = fromAddrs[0] || '';
-  const textBody = email.text || stripHtml(email.html) || '';
-  const attachments = await saveAttachments(ticketRef, email.attachments);
-
-  const inboundMsg = {
-    direction: 'inbound',
-    messageId,
-    from: fromEmail,
-    to: Array.isArray(email.to) ? email.to : extractEmails(email.to),
-    cc: Array.isArray(email.cc) ? email.cc : extractEmails(email.cc),
-    subject: email.subject || '',
-    body: textBody,
-    html: email.html || '',
-    attachments,
-    sentAt: email.created_at || ts(),
-    receivedAt: ts(),
-  };
-
-  const thread = Array.isArray(data.emailThread) ? data.emailThread.slice() : [];
-  thread.push(inboundMsg);
-  const trimmedThread = thread.slice(-200);
-
-  const ids = Array.isArray(data.emailMessageIds) ? data.emailMessageIds.slice() : [];
-  if (messageId) ids.push(messageId);
-
-  const timelineEvent = {
-    id: `tl_email_${Date.now()}`,
-    type: 'note',
-    title: 'Email reply received',
-    detail: `${fromEmail}: ${inboundMsg.subject || textBody.slice(0, 80)}`,
-    at: ts(),
-    actorEmail: fromEmail,
-    actorName: fromEmail,
-  };
-
-  const timeline = Array.isArray(data.timeline) ? data.timeline.slice() : [];
-  timeline.push(timelineEvent);
-
-  await ref.update({
-    emailThread: trimmedThread,
-    emailMessageIds: ids.slice(-500),
-    timeline: timeline.slice(-250),
-    updatedAt: ts(),
+async function updateDeliveryStatus(emailId,status,event){
+  if(!emailId) return;
+  const tickets=await db.collection("tickets").where("emailMessageIds","array-contains",emailId).limit(1).get();
+  if(tickets.empty) return;
+  const ref=tickets.docs[0].ref;
+  await db.runTransaction(async tx=>{
+    const snap=await tx.get(ref);
+    const data=snap.data()||{};
+    const thread=Array.isArray(data.emailThread)?data.emailThread:[];
+    let changed=false;
+    const next=thread.map(m=>{
+      if(m.emailId!==emailId) return m;
+      changed=true;
+      return {...m,status,emailStatus:event.type,lastEmailEventAt:event.created_at||new Date().toISOString(),deliveryDetail:event.data?.bounce?.message||event.data?.reason||null,messageId:m.messageId||event.data?.message_id||null};
+    });
+    if(changed) tx.update(ref,{emailThread:next,updatedAt:new Date().toISOString()});
+  });
+  await ref.collection("emailEvents").add({
+    type:event.type,emailId,at:event.created_at||new Date().toISOString(),
+    payload:{
+      to:event.data?.to||null,
+      bounce:event.data?.bounce||null,
+      reason:event.data?.reason||null,
+      messageId:event.data?.message_id||null,
+    }
   });
 }
 
-/* ─────────────────────────────────────────────
-   Auto-acknowledgement email
-───────────────────────────────────────────── */
-function buildAckHtml(ticket) {
-  const biz = 'Cyber I.T Masters';
-  return `
-  <div style="font-family:Arial,Helvetica,sans-serif;color:#1a2332;line-height:1.6;max-width:600px">
-    <h2 style="color:#00C896;margin:0 0 12px">Thanks — we've logged your ticket</h2>
-    <p>Hi ${(ticket.clientName || 'there').split(' ')[0]},</p>
-    <p>Your email has been turned into a support ticket and our team will be in touch shortly.</p>
-    <p style="background:#f4f7fb;border:1px solid #dde3ee;border-radius:8px;padding:14px 18px;font-size:16px">
-      <strong>Ticket reference:</strong>
-      <span style="font-family:monospace;color:#00C896;font-size:18px">${ticket.ref}</span>
-    </p>
-    <p>Please quote <strong>${ticket.ref}</strong> in all future communication. You can simply <strong>reply to this email</strong> and it will be added to your ticket automatically.</p>
-    <hr style="border:none;border-top:1px solid #dde3ee;margin:20px 0"/>
-    <p style="font-size:12px;color:#718096">${biz} · Professional I.T Solutions<br/>
-    WhatsApp: 072 665 0565 · Email: info@mbulahenigroup.co.za</p>
-  </div>`;
-}
+export default async (req) => {
+  if(req.method!=="POST") return json({error:"Method not allowed"},405);
 
-async function sendAutoAcknowledgement(ticket) {
-  const replyTo = `tickets+${ticket.ref}@${process.env.TICKETS_DOMAIN}`;
-  const sendPayload = {
-    from: process.env.TICKETS_FROM_EMAIL,
-    to: ticket.email,
-    subject: `[${ticket.ref}] We've received your support request`,
-    html: buildAckHtml(ticket),
-    replyTo,
-    headers: {
-      'Auto-Submitted': 'auto-replied',
-      'X-Auto-Response-Suppress': 'All',
-    },
-  };
-
-  const { data, error } = await resend.emails.send(sendPayload);
-  if (error) throw new Error(error.message);
-
-  await db.collection('tickets').doc(ticket.ref).update({
-    emailAutoAckSent: true,
-    emailMessageIds: [...(ticket.emailMessageIds || []), data.id],
-    emailThread: [...(ticket.emailThread || []), {
-      direction: 'outbound',
-      messageId: data.id,
-      from: process.env.TICKETS_FROM_EMAIL,
-      to: ticket.email,
-      subject: sendPayload.subject,
-      body: buildAckHtml(ticket),
-      html: buildAckHtml(ticket),
-      sentAt: ts(),
-      sentBy: 'system',
-      autoAck: true,
-    }],
-    updatedAt: ts(),
-  });
-}
-
-/* ─────────────────────────────────────────────
-   Handler
-───────────────────────────────────────────── */
-exports.handler = async (event) => {
-  if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, body: 'Method not allowed' };
-  }
-
-  try {
-    // 1. Verify signature with Svix (raw body REQUIRED)
-    const wh = new Webhook(process.env.RESEND_WEBHOOK_SECRET);
-    const payload = wh.verify(event.body, {
-      'svix-id': event.headers['svix-id'],
-      'svix-timestamp': event.headers['svix-timestamp'],
-      'svix-signature': event.headers['svix-signature'],
+  try{
+    const payload=await req.text();
+    const event=resend.webhooks.verify({
+      payload,
+      headers:{
+        id:req.headers.get("svix-id"),
+        timestamp:req.headers.get("svix-timestamp"),
+        signature:req.headers.get("svix-signature"),
+      },
+      secret:process.env.RESEND_WEBHOOK_SECRET,
     });
 
-    if (payload.type !== 'email.received') {
-      return { statusCode: 200, body: 'Ignored: ' + payload.type };
+    if(event.type==="email.received"){
+      const d=event.data||{};
+      const sender=normaliseEmail(d.from);
+      if(!allowedSender(sender)){
+        console.warn("Rejected inbound sender",sender);
+        return json({ok:true,rejected:true});
+      }
+
+      const {data:email,error}=await resend.emails.receiving.get(d.email_id);
+      if(error) throw new Error(error.message || "Unable to retrieve received email");
+
+      const to=email?.to || d.to || [];
+      let ticketRef=parseTicketFromRecipients(to);
+      const fullText=String(email?.text || "").trim();
+      const subject=String(email?.subject || d.subject || "").trim();
+
+      // Fallback: subject / headers only. No bare-number fallback.
+      if(!ticketRef){
+        ticketRef=ticketRefFromText(subject, email?.headers?.["in-reply-to"], email?.headers?.references);
+      }
+
+      if(!ticketRef){
+        console.warn("Inbound email did not contain a ticket reference", {subject,to});
+        return json({ok:true,unmatched:true});
+      }
+
+      const ref=db.collection("tickets").doc(ticketRef);
+      const snap=await ref.get();
+      if(!snap.exists){
+        console.warn("Inbound email ticket not found",ticketRef);
+        return json({ok:true,unmatched:true});
+      }
+
+      const receivedAt=d.created_at || email?.created_at || new Date().toISOString();
+      const attachments=(email?.attachments||[]).map(a=>({
+        id:a.id||null,
+        filename:a.filename||a.name||"attachment",
+        size:Number(a.size||0),
+        type:a.content_type||a.type||"",
+        url:a.download_url||a.url||"",
+      }));
+
+      const message={
+        messageId:d.message_id||email?.message_id||null,
+        emailId:d.email_id||email?.id||null,
+        direction:"inbound",
+        from:d.from||email?.from||sender,
+        fromEmail:sender,
+        to,
+        subject,
+        body:fullText || String(email?.html||"").replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim(),
+        receivedAt,
+        status:"received",
+        attachments,
+      };
+
+      await updateThread(ticketRef,message,d.email_id||event.created_at,d.email_id);
+      return json({ok:true,threaded:true,ticketRef});
     }
 
-    initFirebase();
-
-    const emailId = payload.data.email_id;
-    if (!emailId) {
-      console.error('No email_id in payload');
-      return { statusCode: 200, body: 'No email id' };
+    const deliveryTypes=new Set([
+      "email.sent","email.delivered","email.delivery_delayed","email.bounced",
+      "email.failed","email.complained","email.opened","email.clicked"
+    ]);
+    if(deliveryTypes.has(event.type)){
+      await updateDeliveryStatus(event.data?.email_id,event.type.replace(/^email\./,""),event);
+      return json({ok:true,updated:true});
     }
 
-    // 2. Fetch full content — webhook only has metadata
-    const { data: email, error } = await resend.emails.receiving.get(emailId);
-    if (error || !email) {
-      console.error('Failed to fetch email:', error);
-      return { statusCode: 500, body: 'Fetch failed' };
-    }
-
-    const messageId = email.message_id || `<${emailId}@resend>`;
-
-    // 3. Match to existing ticket
-    const ticketRef = await matchTicket(email);
-
-    if (!ticketRef) {
-      // New ticket
-      const { ref, ticket } = await createTicketFromEmail(email, messageId);
-      try { await sendAutoAcknowledgement({ ...ticket, ref }); }
-      catch (e) { console.error('Auto-ack failed:', e.message); }
-      console.log(`✓ Created ticket ${ref} from ${email.from}`);
-    } else {
-      // Existing ticket — append
-      await appendToTicket(ticketRef.id, email, messageId);
-      console.log(`✓ Appended to ticket ${ticketRef.id}`);
-    }
-
-    return { statusCode: 200, body: 'OK' };
-  } catch (err) {
-    console.error('Inbound email error:', err);
-    return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
+    return json({ok:true,ignored:event.type});
+  }catch(error){
+    console.error("inbound-email error",error);
+    return json({error:"Invalid webhook or processing failure"},400);
   }
 };
