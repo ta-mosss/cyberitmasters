@@ -196,22 +196,10 @@
 </div>
 
 <script>
-  // ================= 🔥 FIREBASE CONFIGURATION (REPLACE / USE EXACT FROM ADMIN 2) =================
-  // Exact Firebase config taken from your admin panel (test-bot project)
-  const firebaseConfig = {
-    apiKey: "AIzaSyBpoDnbWKvWQdvcZnhUZwFr24iox2fWJto",
-    authDomain: "test-bot-49f99.firebaseapp.com",
-    projectId: "test-bot-49f99",
-    storageBucket: "test-bot-49f99.firebasestorage.app",
-    messagingSenderId: "522231357803",
-    appId: "1:522231357803:web:bf65a73d1df7269615ac2e",
-    databaseURL: "https://test-bot-49f99-default-rtdb.firebaseio.com"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-  const rtdb = firebase.database();
-
-  // DOM Elements
+  // Phase 1: customer sign-off is server-authorised by an expiring one-time token.
+  const params = new URLSearchParams(window.location.search);
+  const ticketToken = params.get('token') || '';
+  const ticketRefFromUrl = params.get('ticketId') || '';
   const form = document.getElementById('signOffForm');
   const submitBtn = document.getElementById('submitBtn');
   const successOverlay = document.getElementById('successOverlay');
@@ -220,119 +208,34 @@
   const ticketRefHeader = document.getElementById('ticketRefHeader');
   const signatureCanvas = document.getElementById('signaturePad');
   let signaturePad = null;
+  let verifiedTicket = null;
 
-  // Helper: Send system message to live chat (RTDB)
-  async function sendSysMsgToChat(ticketRef, text) {
-    try {
-      if (!ticketRef) return;
-      const chatRef = rtdb.ref(`chats/${ticketRef}`);
-      await chatRef.push({
-        from: "system",
-        text: text,
-        at: Date.now(),
-        type: "system"
-      });
-    } catch(e) { console.warn("Chat sys msg failed", e); }
-  }
-
-  // Helper: Update ticket status in Firestore & add notes
-  async function updateTicketStatusAndSignoff(ticketRef, signoffData) {
-    const ticketDoc = db.collection('tickets').doc(ticketRef);
-    const ticketSnap = await ticketDoc.get();
-    if (!ticketSnap.exists) throw new Error("Ticket not found in Firestore");
-    
-    // Merge existing clientSignoff, add feedback + signature
-    const existingData = ticketSnap.data();
-    const updatedSignoff = {
-      signed: true,
-      signedAt: new Date().toISOString(),
-      clientName: existingData.clientName || existingData.name || "Client",
-      clientPosition: signoffData.clientPosition || "",
-      signatureImage: signoffData.signature,
-      feedback: {
-        q1_resolved: signoffData.q1_resolved,
-        q2_timeframe: signoffData.q2_timeframe,
-        q3_tasks: signoffData.q3_tasks,
-        remaining_issues: signoffData.remaining_issues || "",
-        serviceRating: signoffData.serviceRating,
-        engineerRating: signoffData.engineerRating,
-        npsScore: signoffData.npsScore,
-        comments: signoffData.comments || "",
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-      }
-    };
-    
-    await ticketDoc.update({
-      status: "closed",
-      clientSignoff: updatedSignoff,
-      updatedAt: new Date().toISOString()
-    });
-    // Also store a separate feedback collection for analytics (optional)
-    await db.collection('client_signoffs').add({
-      ticketRef: ticketRef,
-      ...signoffData,
-      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-      status: "closed_via_portal"
-    });
-    return true;
-  }
-
-  // Initialize signature pad with proper scaling
-  function initSignaturePad() {
-    const canvas = signatureCanvas;
-    const container = canvas.parentElement;
-    const resizeCanvas = () => {
-      const ratio = Math.max(window.devicePixelRatio || 1, 1);
-      const width = canvas.clientWidth;
-      const height = canvas.clientHeight;
-      canvas.width = width * ratio;
-      canvas.height = height * ratio;
-      canvas.getContext('2d').scale(ratio, ratio);
-      if (signaturePad && !signaturePad.isEmpty()) {
-        const data = signaturePad.toData();
-        signaturePad.clear();
-        signaturePad.fromData(data);
-      }
-    };
-    signaturePad = new SignaturePad(canvas, { backgroundColor: '#f8fafc', penColor: '#00C896', minWidth: 1.5 });
-    window.addEventListener('resize', () => setTimeout(resizeCanvas, 100));
-    setTimeout(resizeCanvas, 20);
-    return signaturePad;
-  }
-
-  // Fetch ticket details from Firestore by reference (CIM-XXXX)
   async function fetchTicketAndValidate(ticketRef) {
-    if (!ticketRef || ticketRef === "UNKNOWN" || ticketRef === "") {
-      ticketRefHeader.innerText = "⚠️ Invalid ticket reference";
+    if (!ticketRef || !ticketToken) {
+      ticketRefHeader.innerText = '⚠️ Invalid or incomplete sign-off link';
       return null;
     }
-    ticketRefHeader.innerText = `Ticket: ${ticketRef} (verifying...)`;
+    ticketRefHeader.innerText = `Ticket: ${ticketRef} (verifying secure link...)`;
     try {
-      const docRef = db.collection('tickets').doc(ticketRef);
-      const docSnap = await docRef.get();
-      if (!docSnap.exists) {
-        ticketRefHeader.innerText = `❌ Ticket ${ticketRef} not found`;
+      const res = await fetch(`/.netlify/functions/authorise?ticketId=${encodeURIComponent(ticketRef)}&token=${encodeURIComponent(ticketToken)}`, { cache: 'no-store' });
+      const result = await res.json().catch(() => ({}));
+      if (!res.ok || !result.success || !result.ticket) {
+        ticketRefHeader.innerText = `⚠️ ${result.error || 'Sign-off link could not be verified'}`;
         return null;
       }
-      const ticketData = docSnap.data();
-      if (ticketData.status === "closed") {
-        ticketRefHeader.innerText = `🔒 Ticket ${ticketRef} is already closed`;
-        alert("This ticket has already been signed off and closed. No further action needed.");
-        return { alreadyClosed: true };
-      }
-      if (ticketData.status !== "resolved" && ticketData.status !== "awaiting-signoff") {
-        ticketRefHeader.innerText = `⚠️ Ticket ${ticketRef} is not yet ready for sign-off (current: ${ticketData.status})`;
-        alert("This ticket is not yet marked as 'resolved' or 'awaiting sign-off'. Please contact support.");
-        return { invalidStatus: true };
-      }
-      ticketRefHeader.innerText = `✅ Ticket: ${ticketRef} — Ready for sign-off`;
+      const ticketData = result.ticket;
+      ticketIdInput.value = ticketRef;
+      if (firestoreDocIdInput) firestoreDocIdInput.value = ticketRef;
+      ticketRefHeader.innerText = `✅ Ticket: ${ticketRef} — Ready for secure sign-off`;
       return { data: ticketData, ref: ticketRef };
     } catch (err) {
-      console.error("Firestore error:", err);
-      ticketRefHeader.innerText = `⚠️ Could not verify ticket`;
+      console.error('Sign-off validation error:', err);
+      ticketRefHeader.innerText = '⚠️ Could not verify secure sign-off link';
       return null;
     }
   }
+
+  // No direct Firestore or Realtime Database writes are performed by this page.
 
   // Build star ratings dynamically
   function buildStarRatings() {
@@ -451,46 +354,47 @@
       return;
     }
 
-    // Double-check ticket status before final commit
     const verify = await fetchTicketAndValidate(ticketRefRaw);
-    if (!verify || verify.alreadyClosed || verify.invalidStatus) {
-      alert("Cannot sign off: Ticket is already closed or not eligible. Refresh and try again.");
+    if (!verify) {
+      alert('Cannot sign off: this secure link is invalid, expired, or the ticket is not eligible.');
       return;
     }
 
-    // Collect data
     const signDataURL = signaturePad.toDataURL();
     const formData = {
+      token: ticketToken,
       ticketId: ticketRefRaw,
+      clientName: verify.data.clientName || verify.data.name || 'Client',
       q1_resolved: radioResolved.value,
       q2_timeframe: radioTime.value,
       q3_tasks: radioTasks.value,
       remaining_issues: document.getElementById('remainingIssues').value.trim(),
-      serviceRating: serviceRating,
-      engineerRating: engineerRating,
-      npsScore: npsScore,
+      serviceRating,
+      engineerRating,
+      npsScore,
       comments: document.getElementById('comments').value.trim(),
       signature: signDataURL,
-      clientPosition: "", // optional
-      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      clientPosition: document.getElementById('clientPosition')?.value?.trim() || ''
     };
 
     submitBtn.disabled = true;
-    submitBtn.innerHTML = '<span class="loading-spinner"></span> Submitting sign-off...';
+    submitBtn.innerHTML = '<span class="loading-spinner"></span> Submitting secure sign-off...';
 
     try {
-      // 1. Update ticket in Firestore (status=closed + feedback)
-      await updateTicketStatusAndSignoff(ticketRefRaw, formData);
-      // 2. Send system message to live chat (Admin panel will reflect)
-      await sendSysMsgToChat(ticketRefRaw, `✅ Client signed off & closed ticket. Feedback: Resolved=${formData.q1_resolved}, Quality ${serviceRating}/5, NPS ${npsScore}/10`);
-      // 3. Show success overlay
+      const res = await fetch('/.netlify/functions/authorise', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...formData, mode: 'customer-signoff' })
+      });
+      const result = await res.json().catch(() => ({}));
+      if (!res.ok || !result.success) throw new Error(result.error || 'Sign-off could not be saved.');
       successOverlay.classList.remove('hidden');
       form.reset();
       signaturePad.clear();
-      // Clear UI stars / NPS active states
       document.querySelectorAll('.star, .nps-btn').forEach(el => el.classList.remove('active', 'hover'));
       document.getElementById('googleReviewSection').classList.add('hidden');
-    } catch (err) {
+      ticketRefHeader.innerText = `🔒 Ticket: ${ticketRefRaw} — Sign-off completed`;
+        } catch (err) {
       console.error("Finalization error:", err);
       alert("Failed to save sign-off. Please check network and try again. Error: " + err.message);
     } finally {

@@ -41,3 +41,18 @@ The animated Lightfall hero uses OGL and is implemented in:
 `src/components/Lightfall.jsx`
 
 The component was adapted from the supplied React Bits Lightfall source. OGL is therefore included as a dependency.
+
+## Phase 3 — Production application migration
+
+The project now has a shared Vite/React application shell for the operational portals. Direct dependencies are pinned to React 19.1.1, Firebase 12.19.0 and React Router DOM 7.18.3.
+
+Start the application with:
+
+```bash
+npm install
+npm run dev
+```
+
+Then open `/login` for the shared application login. `/portal`, `/admin`, `/management`, `/engineer` and `/customer` are protected migration routes.
+
+The existing HTML portals under `public/` remain available during the migration and are intentionally not removed yet. See `PHASE3_MIGRATION.md` and `MIGRATION_STATUS.md`.

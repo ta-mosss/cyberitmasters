@@ -1,0 +1,50 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function signedIn() { return request.auth != null; }
+    function userDoc() {
+      return get(/databases/(default)/documents/users/$(request.auth.uid)).data;
+    }
+    function role() { return signedIn() ? userDoc().role : null; }
+    function staff() {
+      return signedIn() && userDoc().active != false && role() in [
+        'super_admin','operations_manager','service_manager','dispatcher','finance','engineer','support_agent'
+      ];
+    }
+    function manager() {
+      return signedIn() && userDoc().active != false && role() in [
+        'super_admin','operations_manager','service_manager','dispatcher'
+      ];
+    }
+    function ownsTicket(ticketRef) {
+      return signedIn() && (
+        get(/databases/(default)/documents/tickets/$(ticketRef)).data.requesterUid == request.auth.uid ||
+        get(/databases/(default)/documents/tickets/$(ticketRef)).data.customerId == request.auth.uid
+      );
+    }
+    function assigned(ticketRef) {
+      return signedIn() && (
+        get(/databases/(default)/documents/tickets/$(ticketRef)).data.assignedEngineerId == request.auth.uid ||
+        get(/databases/(default)/documents/tickets/$(ticketRef)).data.assignedUid == request.auth.uid
+      );
+    }
+    function safeUpload() {
+      return request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*|application/pdf|text/.*|application/msword|application/vnd.openxmlformats-officedocument.*');
+    }
+
+    match /ticket-attachments/{ticketRef}/{allPaths=**} {
+      allow read: if staff() || ownsTicket(ticketRef) || assigned(ticketRef);
+      allow write: if safeUpload() && (staff() || ownsTicket(ticketRef) || assigned(ticketRef));
+      allow delete: if manager() || assigned(ticketRef) || ownsTicket(ticketRef);
+    }
+
+    match /tickets/{ticketRef}/emailAttachments/{fileName} {
+      allow read: if staff();
+      allow write: if safeUpload() && staff();
+      allow delete: if manager();
+    }
+
+    match /{allPaths=**} { allow read, write: if false; }
+  }
+}

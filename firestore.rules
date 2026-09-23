@@ -1,0 +1,144 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function claimRole() { return signedIn() ? request.auth.token.role : null; }
+    function userDoc() {
+      return signedIn()
+        ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data
+        : {};
+    }
+    function userRole() { return signedIn() ? userDoc().role : null; }
+    function activeUser() { return signedIn() && userDoc().active != false; }
+    function isStaff() {
+      return activeUser() && (
+        claimRole() in ['super_admin','operations_manager','service_manager','dispatcher','finance','engineer','support_agent'] ||
+        userRole() in ['super_admin','operations_manager','service_manager','dispatcher','finance','engineer','support_agent']
+      );
+    }
+    function isManager() {
+      return activeUser() && (
+        claimRole() in ['super_admin','operations_manager','service_manager','dispatcher'] ||
+        userRole() in ['super_admin','operations_manager','service_manager','dispatcher']
+      );
+    }
+    function isEngineer() {
+      return activeUser() && (
+        claimRole() in ['super_admin','engineer'] ||
+        userRole() in ['super_admin','engineer']
+      );
+    }
+    function isFinance() {
+      return activeUser() && (claimRole() == 'finance' || userRole() == 'finance');
+    }
+    function isSuperAdmin() {
+      return activeUser() && (claimRole() == 'super_admin' || userRole() == 'super_admin');
+    }
+    function ownsTicket(data) {
+      return signedIn() && (
+        data.requesterUid == request.auth.uid ||
+        data.customerId == request.auth.uid
+      );
+    }
+    function assignedToTicket(data) {
+      return signedIn() && (
+        data.assignedEngineerId == request.auth.uid ||
+        data.assignedUid == request.auth.uid
+      );
+    }
+
+    match /tickets/{id} {
+      allow read: if isStaff() || ownsTicket(resource.data);
+      allow create: if signedIn()
+        && request.resource.data.requesterUid == request.auth.uid
+        && request.resource.data.customerId == request.auth.uid;
+      // Customer sign-off is intentionally NOT a direct Firestore write.
+      // It is performed by the authenticated Netlify function using a
+      // one-time token, so customers cannot alter status/sign-off fields.
+      allow update: if isManager()
+        || (isStaff() && assignedToTicket(resource.data))
+        || (ownsTicket(resource.data)
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+              'preferredDate','preferredTime','address','attachments','updatedAt'
+            ]));
+      allow delete: if isSuperAdmin();
+
+      match /timeEntries/{entryId} {
+        allow read: if isStaff() && (isManager() || assignedToTicket(get(/databases/$(database)/documents/tickets/$(id)).data));
+        allow create: if isStaff() && (isManager() || assignedToTicket(get(/databases/$(database)/documents/tickets/$(id)).data));
+        allow update, delete: if isManager();
+      }
+      match /photos/{photoId} {
+        allow read: if isStaff() || ownsTicket(get(/databases/$(database)/documents/tickets/$(id)).data);
+        allow create: if isStaff() || ownsTicket(get(/databases/$(database)/documents/tickets/$(id)).data);
+        allow update, delete: if isManager() || assignedToTicket(get(/databases/$(database)/documents/tickets/$(id)).data);
+      }
+    }
+
+    match /users/{id} {
+      allow read: if isStaff() && (id == request.auth.uid || isManager());
+      allow create: if isSuperAdmin() || (signedIn() && id == request.auth.uid && request.resource.data.role == 'customer');
+      allow update: if isSuperAdmin() || (signedIn() && id == request.auth.uid && request.resource.data.role == resource.data.role);
+      allow delete: if isSuperAdmin();
+    }
+    match /customers/{id} {
+      allow read: if isStaff() || (signedIn() && id == request.auth.uid);
+      allow create: if signedIn() && id == request.auth.uid;
+      allow update: if isManager() || (signedIn() && id == request.auth.uid);
+      allow delete: if isSuperAdmin();
+    }
+    match /engineers/{id} {
+      allow read: if isStaff() && (isManager() || id == request.auth.uid);
+      allow create, update: if isManager();
+      allow delete: if isSuperAdmin();
+    }
+    match /mgmt_staff/{id} {
+      allow read: if isStaff() && (isManager() || resource.data.uid == request.auth.uid || id == request.auth.uid);
+      allow create, update: if isManager();
+      allow delete: if isSuperAdmin();
+    }
+    match /jobs/{id} {
+      allow read: if isStaff();
+      allow create: if isManager();
+      allow update: if isManager() || (isEngineer() && assignedToTicket(resource.data));
+      allow delete: if isSuperAdmin();
+    }
+    match /assets/{id} {
+      allow read: if isStaff();
+      allow create, update: if isManager() || (isEngineer() && assignedToTicket(resource.data));
+      allow delete: if isManager();
+    }
+    match /quotes/{id} {
+      allow read: if isStaff();
+      allow create, update: if isManager() || isFinance();
+      allow delete: if isManager();
+    }
+    match /client_signoffs/{id} {
+      allow read: if isStaff();
+      // Created by the secured Netlify function only (Admin SDK bypasses rules).
+      allow create: if false;
+      allow update, delete: if isSuperAdmin();
+    }
+    match /auditLogs/{id} {
+      allow read: if isManager();
+      // Audit records are server-created; clients cannot forge them.
+      allow create, update, delete: if false;
+    }
+    match /notifications/{id} {
+      allow read: if isStaff() && (resource.data.recipientUid == request.auth.uid || isManager());
+      allow update: if isStaff() && resource.data.recipientUid == request.auth.uid;
+      allow create, delete: if isManager();
+    }
+    match /timeEntries/{id} {
+      allow read: if isStaff();
+      allow write: if isManager();
+    }
+    match /slaPolicies/{id} { allow read: if isStaff(); allow write: if isManager(); }
+    match /automationEscalations/{id} { allow read: if isStaff(); allow write: if isManager(); }
+    match /automations/{id} { allow read: if isStaff(); allow write: if isManager(); }
+    match /meta/{id} { allow read: if isStaff(); allow write: if false; }
+    match /mail/{id} { allow read: if isStaff(); allow create: if false; allow update, delete: if isSuperAdmin(); }
+
+    match /{document=**} { allow read, write: if false; }
+  }
+}

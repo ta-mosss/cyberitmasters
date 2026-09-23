@@ -1,0 +1,1 @@
+{"name":"sla-monitor","version":"1.0.0","private":true,"dependencies":{"firebase-admin":"^12.0.0","resend":"^4.0.0"}}

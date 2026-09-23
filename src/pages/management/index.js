@@ -1,0 +1,12 @@
+export { default as ManagementDashboardPage } from './ManagementDashboardPage';
+export { default as ManagementTicketsPage } from './ManagementTicketsPage';
+export { default as ManagementJobsPage } from './ManagementJobsPage';
+export { default as ManagementDispatchPage } from './ManagementDispatchPage';
+export { default as ManagementEngineersPage } from './ManagementEngineersPage';
+export { default as ManagementCustomersPage } from './ManagementCustomersPage';
+export { default as ManagementAssetsPage } from './ManagementAssetsPage';
+export { default as ManagementQuotesPage } from './ManagementQuotesPage';
+export { default as ManagementSlaPage } from './ManagementSlaPage';
+export { default as ManagementReportsPage } from './ManagementReportsPage';
+export { default as ManagementAuditPage } from './ManagementAuditPage';
+export { default as ManagementSettingsPage } from './ManagementSettingsPage';
