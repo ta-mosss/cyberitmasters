@@ -11,6 +11,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -329,6 +330,33 @@ body.light .theme-toggle::after{left:19px;}
 .notification-empty{padding:44px 20px;text-align:center;color:var(--text4);font-size:12px;}
 @media(max-width:900px){.notification-panel-grid{grid-template-columns:1fr!important;}.notification-side{display:none!important;}}
 
+
+/* ── EMAIL THREAD ── */
+.email-panel{display:flex;flex-direction:column;height:100%;min-height:0;background:var(--card);}
+.email-head{padding:12px 16px;border-bottom:1px solid var(--border);background:var(--bg2);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-shrink:0;}
+.email-thread{flex:1;overflow-y:auto;padding:14px 16px;min-height:0;}
+.email-empty{text-align:center;color:var(--text4);font-size:12px;padding:36px 12px;line-height:1.7;}
+.email-message{border:1px solid var(--border);border-radius:10px;padding:11px 13px;margin-bottom:10px;background:var(--bg3);}
+.email-message.outbound{background:rgba(0,200,150,.055);border-color:rgba(0,200,150,.22);}
+.email-message.inbound{background:var(--bg3);}
+.email-message-head{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+.email-direction{font-size:9px;font-weight:800;padding:2px 7px;border-radius:10px;text-transform:uppercase;letter-spacing:.06em;}
+.email-direction.in{background:rgba(59,130,246,.14);color:#3B82F6;}
+.email-direction.out{background:rgba(0,200,150,.14);color:#00C896;}
+.email-message-from{font-size:11px;font-weight:700;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.email-message-date{font:9px 'IBM Plex Mono',monospace;color:var(--text4);white-space:nowrap;}
+.email-subject{font-size:11px;color:var(--text3);font-style:italic;margin-bottom:5px;}
+.email-body{font-size:12px;color:var(--text2);line-height:1.6;white-space:pre-wrap;word-break:break-word;}
+.email-attachments{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;}
+.email-attachment{display:inline-flex;align-items:center;gap:5px;padding:5px 8px;border:1px solid var(--border);border-radius:7px;background:var(--bg);font-size:10px;color:var(--text2);max-width:100%;}
+.email-compose{border-top:1px solid var(--border);padding:12px 14px;background:var(--card);flex-shrink:0;}
+.email-template-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
+.email-compose-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;}
+.email-attachment-list{display:flex;flex-wrap:wrap;gap:5px;margin:5px 0 7px;}
+.email-file-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 7px;border:1px solid var(--border);border-radius:6px;background:var(--bg);font-size:10px;color:var(--text2);}
+.email-file-remove{border:0;background:transparent;color:var(--text4);padding:0 2px;font-size:12px;cursor:pointer;}
+@media(max-width:600px){.email-compose-grid{grid-template-columns:1fr;}.email-message-date{display:none;}}
+
 /* ── PRINT STYLES ── */
 @media print{
   body *{visibility:hidden;}
@@ -428,6 +456,7 @@ firebase.initializeApp(firebaseConfig);
 const db=firebase.firestore();
 const rtdb=firebase.database();
 const auth=firebase.auth();
+const storage=firebase.storage();
 </script>
 
 <script type="text/babel">
@@ -500,6 +529,62 @@ const SVCS=[
   {id:"remote",   label:"Remote Support",    icon:"🌐"},
   {id:"onsite",   label:"On-Site Support",   icon:"🔧"},
 ];
+
+/* ════════════════════════════════════════════════════
+   ENTERPRISE SERVICE CATALOG
+   Legacy SVCS is retained so historical tickets remain readable.
+════════════════════════════════════════════════════ */
+const SERVICE_CATALOG=[
+  {id:"managed-it",label:"Managed IT Support",icon:"🛠️",desc:"Endpoint, desktop, printer, application and user support",items:[
+    {id:"endpoint-desktop",label:"Desktop / Laptop",icon:"💻"},{id:"endpoint-printer",label:"Printer / Scanner",icon:"🖨️"},{id:"endpoint-mobile",label:"Mobile / Tablet",icon:"📱"},{id:"app-support",label:"Application Support",icon:"📦"},{id:"email-m365",label:"Email / Microsoft 365",icon:"📧"},{id:"user-admin",label:"User & Account Administration",icon:"👤"}
+  ]},
+  {id:"cybersecurity",label:"Cybersecurity",icon:"🛡️",desc:"Security operations, endpoint protection, identity and email security",items:[
+    {id:"firewall",label:"Firewall / UTM",icon:"🧱"},{id:"edr",label:"Endpoint Protection / EDR",icon:"🦠"},{id:"email-sec",label:"Email Security",icon:"✉️"},{id:"iam",label:"Identity & Access Management",icon:"🔐"},{id:"awareness",label:"Security Awareness",icon:"🎓"},{id:"pentest",label:"Vulnerability / Pen Test",icon:"🔍"}
+  ]},
+  {id:"infrastructure",label:"Infrastructure & Network",icon:"🌐",desc:"Networks, servers, Wi-Fi, cabling, internet and power",items:[
+    {id:"network",label:"Network (LAN / WAN)",icon:"🔌"},{id:"wifi",label:"Wi-Fi / Wireless",icon:"📶"},{id:"server",label:"Server Administration",icon:"🖥️"},{id:"cabling",label:"Structured Cabling",icon:"🧵"},{id:"isp",label:"Internet / ISP",icon:"🌍"},{id:"ups",label:"Power / UPS",icon:"🔋"}
+  ]},
+  {id:"cloud",label:"Cloud & Hosting",icon:"☁️",desc:"Microsoft 365, cloud platforms, hosting, backup and recovery",items:[
+    {id:"m365",label:"Microsoft 365",icon:"🟦"},{id:"azure",label:"Azure / AWS",icon:"☁️"},{id:"backup",label:"Backup & Recovery",icon:"💾"},{id:"dr",label:"Disaster Recovery",icon:"🚨"},{id:"hosting",label:"Web / App Hosting",icon:"🌐"}
+  ]},
+  {id:"physical",label:"Physical Security & Building",icon:"🏢",desc:"CCTV, access control, alarms and building systems",items:[
+    {id:"cctv",label:"CCTV / Surveillance",icon:"📷"},{id:"access",label:"Access Control",icon:"🚪"},{id:"alarm",label:"Alarm Systems",icon:"🔔"},{id:"intercom",label:"Intercom / PA",icon:"📢"},{id:"bms",label:"Building Management",icon:"🏗️"}
+  ]},
+  {id:"sales",label:"Sales & Procurement",icon:"🛒",desc:"Hardware, software licensing, procurement and project consultation",items:[
+    {id:"quote-hardware",label:"Hardware Quote",icon:"💻"},{id:"quote-software",label:"Software / Licensing",icon:"📄"},{id:"project",label:"New Project Consultation",icon:"📐"},{id:"procurement",label:"Procurement / Order",icon:"📦"}
+  ]},
+  {id:"onsite",label:"On-Site Visits",icon:"🚗",desc:"Engineer visits, installations, repairs and site surveys",items:[
+    {id:"onsite-install",label:"Installation",icon:"🔧"},{id:"onsite-repair",label:"Repair / Replacement",icon:"🛠️"},{id:"onsite-survey",label:"Site Survey / Audit",icon:"📋"}
+  ]},
+  {id:"general",label:"General / Other",icon:"💬",desc:"General ticket logging, enquiries, feedback and other requirements",items:[
+    {id:"general-enquiry",label:"General Enquiry",icon:"❓"},{id:"general-feedback",label:"Feedback / Complaint",icon:"💭"},{id:"general-other",label:"Other",icon:"📌"}
+  ]}
+];
+const CHANNELS=[
+  {id:"whatsapp",label:"WhatsApp",icon:"💬",hint:"Client receives an instant WhatsApp notification"},
+  {id:"email",label:"Email",icon:"✉️",hint:"Client receives a formal email notification"}
+];
+const DEVICE_SUBS=new Set(["endpoint-desktop","endpoint-printer","endpoint-mobile","server","network","wifi","cabling","ups","isp","cctv","access","alarm","intercom","bms","onsite-install","onsite-repair","onsite-survey","quote-hardware"]);
+function ticketCategory(ticket){
+  if(!ticket)return null;
+  if(ticket.serviceCategory)return SERVICE_CATALOG.find(c=>c.id===ticket.serviceCategory)||null;
+  const legacy=SVCS.find(s=>s.id===ticket.serviceType);
+  return legacy?{id:legacy.id,label:legacy.label,icon:legacy.icon}:null;
+}
+function ticketSubLabel(ticket){
+  if(!ticket)return "—";
+  if(ticket.serviceSubCategoryLabel)return ticket.serviceSubCategoryLabel;
+  if(ticket.serviceSubCategory){for(const c of SERVICE_CATALOG){const i=c.items.find(x=>x.id===ticket.serviceSubCategory);if(i)return i.label;}}
+  const legacy=SVCS.find(s=>s.id===ticket.serviceType);
+  return legacy?legacy.label:(ticket.serviceType||"—");
+}
+function serviceLabel(ticket){
+  if(!ticket)return "—";
+  const c=ticketCategory(ticket), sub=ticketSubLabel(ticket);
+  if(c&&ticket.serviceCategory)return `${c.label} › ${sub}`;
+  return c?.label||sub;
+}
+function serviceIcon(ticket){return ticketCategory(ticket)?.icon||"🔧";}
 const PRIS=["Low","Medium","High","Urgent"];
 const DEVT=["Laptop","Desktop","All-in-One PC","Tablet","Smartphone","Server","Printer / Peripheral","Networking Device","Other"];
 const WARR=["Under Warranty","Out of Warranty","Unknown"];
@@ -749,7 +834,7 @@ function waUrl(phone,msg){
 
 /* ── MESSAGE BUILDERS ── */
 function buildCustomerMsg(t){
-  const svc=SVCS.find(s=>s.id===t.serviceType)?.label||t.serviceType;
+  const svc=serviceLabel(t);
   return(
 `Hello ${t.clientName||t.name} 👋
 
@@ -770,7 +855,7 @@ _${CFG.bizName} — ${CFG.tagline}_`
 
 function buildStatusUpdateMsg(t,newStatus,statement){
   const statusLabel=ST[newStatus]?.l||newStatus;
-  const svc=SVCS.find(s=>s.id===t.serviceType)?.label||t.serviceType||"—";
+  const svc=serviceLabel(t);
   const emoji={
     resolved:"✅",
     closed:"🔒",
@@ -834,7 +919,7 @@ _${CFG.bizName} — ${CFG.tagline}_`
 }
 
 function buildBusinessMsg(t){
-  const svc=SVCS.find(s=>s.id===t.serviceType)?.label||t.serviceType;
+  const svc=serviceLabel(t);
   return(
 `🔔 *NEW TICKET — ${t.ref}*
 
@@ -1011,7 +1096,7 @@ The ${CFG.bizName} Team
   if(w){ w.opener = null; w.document.write(html); w.document.close(); }
 }
 function generateJobCard(ticket){
-  const svc=SVCS.find(s=>s.id===ticket.serviceType)?.label||ticket.serviceType||"—";
+  const svc=serviceLabel(ticket);
   const html=`<!DOCTYPE html>
 <html><head><meta charset="UTF-8"/>
 <style>
@@ -1802,65 +1887,30 @@ function Toast({msg,type}){if(!msg)return null;return<div className={`toast ${ty
 const fi={className:"field-input"};
 
 /* ── STATUS UPDATE MODAL ── */
+async function notifyClient({ticket,newStatus,statement,actor,showToast}){
+  const channels=Array.isArray(ticket.channels)&&ticket.channels.length?ticket.channels:["whatsapp"];
+  const body=buildStatusUpdateMsg(ticket,newStatus,statement);
+  const result={whatsapp:null,email:null};
+  if(channels.includes("whatsapp")&&ticket.phone){
+    const url=waUrl(ticket.phone,body);
+    try{window.open(url,"_blank","noopener,noreferrer");result.whatsapp="opened";}catch(e){result.whatsapp="failed";}
+  }
+  if(channels.includes("email")&&ticket.email){
+    try{
+      const token=auth.currentUser?await auth.currentUser.getIdToken():null;
+      const res=await fetch("/.netlify/functions/send-ticket-email",{method:"POST",headers:{"Content-Type":"application/json",...(token?{"Authorization":`Bearer ${token}`}:{})},body:JSON.stringify({ticketId:ticket.ref,to:ticket.email,subject:`Ticket ${ticket.ref} — ${ST[newStatus]?.l||newStatus}`,body,attachments:[],threadId:ticket.ref,staffName:actor?.name||"Cyber I.T Masters Support",staffEmail:actor?.email||null,replyTo:`tickets+${ticket.ref}@mbulahenigroup.co.za`})});
+      const json=await res.json().catch(()=>({})); if(!res.ok||!json.success)throw new Error(json.error||`Email failed (${res.status})`); result.email="sent";
+    }catch(e){console.error("Client email notification failed",e);result.email="failed";showToast?.("Email notification failed; status was still saved","error");}
+  }
+  return result;
+}
+
 function StatusUpdateModal({ticket,newStatus,onConfirm,onCancel}){
   const [statement,setStatement]=useState("");
-  const [sendWa,setSendWa]=useState(true);
-  const needsStatement=NOTIFY_STATUSES.includes(newStatus);
-  const statusLabel=ST[newStatus]?.l||newStatus;
-  const statusColor=ST[newStatus]?.c||"#64748B";
+  const needsStatement=NOTIFY_STATUSES.includes(newStatus); const statusLabel=ST[newStatus]?.l||newStatus; const statusColor=ST[newStatus]?.c||"#64748B";
+  const channels=Array.isArray(ticket.channels)&&ticket.channels.length?ticket.channels:["whatsapp"];
   const msg=buildStatusUpdateMsg(ticket,newStatus,statement);
-  return(
-    <div className="modal-overlay" onClick={e=>{if(e.target===e.currentTarget)onCancel();}}>
-      <div className="modal-box fu">
-        <div className="modal-header">
-          <div>
-            <div style={{fontSize:16,fontWeight:700,color:"var(--text)"}}>Update Status</div>
-            <div style={{fontSize:12,color:"var(--text3)",marginTop:2}}>{ticket.ref} → <span style={{color:statusColor,fontWeight:700}}>{statusLabel}</span></div>
-          </div>
-          <button className="btn btn-ghost btn-sm" onClick={onCancel}>✕</button>
-        </div>
-        <div className="modal-body">
-          <div style={{background:"rgba(0,200,150,0.06)",border:"1px solid rgba(0,200,150,0.2)",borderRadius:8,padding:"10px 14px",marginBottom:14,fontSize:12,color:"var(--text2)"}}>
-            {needsStatement
-              ? `Changing to "${statusLabel}" will notify the client via WhatsApp. Please provide a statement below.`
-              : `Confirm status change to "${statusLabel}".`}
-          </div>
-          {needsStatement&&(
-            <>
-              <div className="form-field" style={{marginBottom:14}}>
-                <Lbl c={`Engineer Statement / Notes for Client *`}/>
-                <textarea className="field-input" style={{minHeight:100,marginTop:4}} value={statement} onChange={e=>setStatement(e.target.value)} placeholder={`e.g. "We have completed the repair and tested the device. Battery has been replaced and the device is working as expected."`} autoFocus/>
-              </div>
-              {statement.trim()&&(
-                <div style={{marginBottom:14}}>
-                  <div style={{fontSize:10,fontWeight:700,color:"var(--text3)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>WhatsApp Preview</div>
-                  <div className="wa-preview"><div className="wa-bubble">{msg}</div></div>
-                </div>
-              )}
-              <label style={{display:"flex",alignItems:"center",gap:8,cursor:"pointer",marginBottom:16}}>
-                <div style={{width:18,height:18,borderRadius:4,border:`2px solid ${sendWa?"#00C896":"var(--border2)"}`,background:sendWa?"#00C896":"transparent",display:"flex",alignItems:"center",justifyContent:"center",transition:"all 0.2s",flexShrink:0}} onClick={()=>setSendWa(!sendWa)}>
-                  {sendWa&&<span style={{color:"#050810",fontSize:11,fontWeight:700}}>✓</span>}
-                </div>
-                <span style={{fontSize:13,color:"var(--text2)"}}>Open WhatsApp to notify client after saving</span>
-              </label>
-            </>
-          )}
-          <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}>
-            <button className="btn btn-secondary" onClick={onCancel}>Cancel</button>
-            {needsStatement&&sendWa&&statement.trim()?(
-              <a href={waUrl(ticket.phone,msg)} target="_blank" rel="noreferrer">
-                <button className="btn btn-wa" onClick={()=>onConfirm(statement)}>✓ Save & Send WA</button>
-              </a>
-            ):(
-              <button className="btn btn-primary" onClick={()=>onConfirm(statement)} disabled={needsStatement&&!statement.trim()&&newStatus==="resolved"}>
-                ✓ Confirm Update
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  return <div className="modal-overlay" onClick={e=>{if(e.target===e.currentTarget)onCancel();}}><div className="modal-box fu"><div className="modal-header"><div><div style={{fontSize:16,fontWeight:700,color:"var(--text)"}}>Update Status</div><div style={{fontSize:12,color:"var(--text3)",marginTop:2}}>{ticket.ref} → <span style={{color:statusColor,fontWeight:700}}>{statusLabel}</span></div></div><button className="btn btn-ghost btn-sm" onClick={onCancel}>✕</button></div><div className="modal-body"><div style={{background:"rgba(0,200,150,.06)",border:"1px solid rgba(0,200,150,.2)",borderRadius:8,padding:"10px 14px",marginBottom:14,fontSize:12,color:"var(--text2)"}}>{needsStatement?`This update will notify the client using their selected channel${channels.length>1?"s":""}: ${channels.join(" + ")}.`:`Confirm status change to "${statusLabel}".`}</div>{needsStatement&&<><div className="form-field" style={{marginBottom:14}}><Lbl c="Engineer Statement / Notes for Client *"/><textarea className="field-input" style={{minHeight:100,marginTop:4}} value={statement} onChange={e=>setStatement(e.target.value)} placeholder="Explain what was completed, what is pending, or what the client needs to do next." autoFocus/></div>{statement.trim()&&<div style={{marginBottom:14}}><div style={{fontSize:10,fontWeight:700,color:"var(--text3)",textTransform:"uppercase",letterSpacing:".08em",marginBottom:8}}>Notification Preview</div><div className="wa-preview"><div className="wa-bubble">{msg}</div></div></div>}</>}{channels.includes("email")&&!ticket.email&&<div style={{color:"#F59E0B",fontSize:11,marginBottom:12}}>Email is selected for this ticket, but no client email address is stored. The update will still be saved and WhatsApp will be used if selected.</div>}<div style={{display:"flex",gap:8,justifyContent:"flex-end"}}><button className="btn btn-secondary" onClick={onCancel}>Cancel</button><button className="btn btn-primary" onClick={()=>onConfirm(statement)} disabled={needsStatement&&!statement.trim()}>✓ Save & Notify</button></div></div></div></div>;
 }
 
 /* ── PARTS MODAL ── */
@@ -1931,7 +1981,7 @@ function ClientHistoryModal({ticket,allTickets,onClose}){
                 <StatusBadge status={t.status}/>
               </div>
               <div className="history-issue">{t.issueTitle||t.problemDescription||"—"}</div>
-              <div style={{fontSize:10,color:"var(--text3)",marginTop:3,fontFamily:"'IBM Plex Mono',monospace"}}>{new Date(t.createdAt).toLocaleDateString("en-ZA")} · {SVCS.find(s=>s.id===t.serviceType)?.label||t.serviceType}</div>
+              <div style={{fontSize:10,color:"var(--text3)",marginTop:3,fontFamily:"'IBM Plex Mono',monospace"}}>{new Date(t.createdAt).toLocaleDateString("en-ZA")} · {serviceLabel(t)}</div>
             </div>
           ))}
           <div style={{textAlign:"right",marginTop:12}}>
@@ -2028,6 +2078,270 @@ function FollowUpModal({tickets,onClose}){
 /* ════════════════════════════════════════════════════
    LIVE CHAT COMPONENT
 ════════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════════
+   EMAIL TAB — ticket-scoped outbound + inbound thread
+   Outbound messages are sent through the Netlify function and then
+   persisted to the ticket's emailThread array in Firestore.
+   Inbound messages are displayed automatically when the email webhook
+   writes them into the same emailThread array.
+════════════════════════════════════════════════════ */
+const EMAIL_MAX_ATTACHMENTS=5;
+const EMAIL_MAX_ATTACHMENT_BYTES=5*1024*1024;
+
+function emailUnreadCount(ticket){
+  if(!ticket) return 0;
+  if(Number.isFinite(Number(ticket.emailUnreadCount))) return Math.max(0,Number(ticket.emailUnreadCount));
+  const lastRead=new Date(ticket.emailLastReadAt||0).getTime();
+  return (Array.isArray(ticket.emailThread)?ticket.emailThread:[]).filter(m=>{
+    if(m.direction!=="inbound") return false;
+    const at=new Date(m.receivedAt||m.sentAt||0).getTime();
+    return Number.isFinite(at)&&at>lastRead;
+  }).length;
+}
+
+function EmailTab({ticket,onSent,showToast,staffName,staffEmail}){
+  const [to,setTo]=useState(ticket.email||"");
+  const [subject,setSubject]=useState(
+    ticket.emailThread&&ticket.emailThread.length
+      ? `Re: ${ticket.emailThread[0].subject||ticket.issueTitle||ticket.ref}`
+      : `Re: ${ticket.issueTitle||ticket.ref}`
+  );
+  const [body,setBody]=useState("");
+  const [attachments,setAttachments]=useState([]);
+  const [sending,setSending]=useState(false);
+  const [expanded,setExpanded]=useState(null);
+  const endRef=useRef(null);
+  const fileRef=useRef(null);
+  const thread=Array.isArray(ticket.emailThread)?ticket.emailThread:[];
+
+  useEffect(()=>{
+    if(endRef.current) endRef.current.scrollIntoView({behavior:"smooth"});
+  },[thread.length]);
+
+  useEffect(()=>{
+    if(!to&&ticket.email) setTo(ticket.email);
+  },[ticket.email]);
+
+  useEffect(()=>{
+    // Persist the read receipt in the same Firebase ticket document.
+    if(!ticket.ref) return;
+    const unread=emailUnreadCount(ticket);
+    if(unread>0){
+      fsUpdate(ticket.ref,{emailLastReadAt:ts(),emailUnreadCount:0}).catch(e=>console.warn("Email read receipt failed",e));
+    }
+  },[ticket.ref,detailTabKeyForEmail(ticket)]);
+
+  const addFiles=(e)=>{
+    const incoming=Array.from(e.target.files||[]);
+    if(!incoming.length) return;
+    const available=EMAIL_MAX_ATTACHMENTS-attachments.length;
+    if(available<=0){showToast(`Maximum ${EMAIL_MAX_ATTACHMENTS} attachments`,"error");e.target.value="";return;}
+    const accepted=[];
+    for(const f of incoming.slice(0,available)){
+      if(f.size>EMAIL_MAX_ATTACHMENT_BYTES){
+        showToast(`${f.name} is larger than 5 MB`,"error");
+        continue;
+      }
+      accepted.push(f);
+    }
+    setAttachments(prev=>[...prev,...accepted]);
+    e.target.value="";
+  };
+
+  const removeAttachment=(i)=>setAttachments(prev=>prev.filter((_,idx)=>idx!==i));
+
+  const uploadAttachments=async()=>{
+    const uploaded=[];
+    for(const file of attachments){
+      const safe=file.name.replace(/[^A-Za-z0-9._-]/g,"_");
+      const path=`tickets/${ticket.ref}/emailAttachments/${Date.now()}_${Math.random().toString(36).slice(2,8)}_${safe}`;
+      const snap=await storage.ref(path).put(file,{contentType:file.type||"application/octet-stream"});
+      const url=await snap.ref.getDownloadURL();
+      uploaded.push({filename:file.name,size:file.size,type:file.type||"",url,path});
+    }
+    return uploaded;
+  };
+
+  const send=async()=>{
+    if(!to.trim()){showToast("Recipient email is required","error");return;}
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to.trim())){showToast("Enter a valid recipient email","error");return;}
+    if(!subject.trim()){showToast("Subject is required","error");return;}
+    if(!body.trim()){showToast("Message body cannot be empty","error");return;}
+    setSending(true);
+    try{
+      const uploaded=attachments.length?await uploadAttachments():[];
+      const res=await fetch("/.netlify/functions/send-ticket-email",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+          ticketId:ticket.ref,
+          to:to.trim(),
+          subject:subject.trim(),
+          body,
+          attachments:uploaded,
+          threadId:ticket.ref,
+          staffName:staffName||"Engineer",
+          staffEmail:staffEmail||null,
+          replyTo:`tickets+${ticket.ref}@mbulahenigroup.co.za`
+        })
+      });
+      const json=await res.json().catch(()=>({}));
+      if(!res.ok||!json.success) throw new Error(json.error||`Send failed (${res.status})`);
+
+      const outboundMsg={
+        direction:"outbound",
+        messageId:json.messageId||null,
+        threadId:ticket.ref,
+        from:"Cyber I.T Masters Support",
+        fromEmail:staffEmail||null,
+        to:to.trim(),
+        subject:subject.trim(),
+        body,
+        html:json.html||null,
+        attachments:uploaded,
+        sentAt:new Date().toISOString(),
+        sentBy:staffName||staffEmail||"engineer"
+      };
+
+      const ticketRef=db.collection("tickets").doc(ticket.ref);
+      await db.runTransaction(async tx=>{
+        const snap=await tx.get(ticketRef);
+        if(!snap.exists) throw new Error("Ticket no longer exists.");
+        const current=snap.data()||{};
+        const currentThread=Array.isArray(current.emailThread)?current.emailThread.slice():[];
+        currentThread.push(outboundMsg);
+        tx.update(ticketRef,{
+          emailThread:currentThread.slice(-100),
+          emailLastOutboundAt:outboundMsg.sentAt,
+          emailReplyTo:`tickets+${ticket.ref}@mbulahenigroup.co.za`,
+          updatedAt:ts()
+        });
+      });
+      await fsAppendTimeline(ticket.ref,{
+        type:"email",
+        title:"Email sent to client",
+        detail:`${subject.trim()} → ${to.trim()}`,
+        actorUid:auth.currentUser?.uid||null,
+        actorEmail:staffEmail||auth.currentUser?.email||null,
+        actorName:staffName||staffEmail||"Team member"
+      });
+      setBody("");
+      setAttachments([]);
+      onSent&&onSent(outboundMsg);
+      showToast("Email sent ✓");
+    }catch(e){
+      console.error(e);
+      showToast(e.message||"Failed to send email","error");
+    }finally{setSending(false);}
+  };
+
+  const insertTemplate=(tpl)=>{
+    setBody(tpl.replace("{name}",(ticket.clientName||ticket.name||"there").split(" ")[0]));
+  };
+
+  const TEMPLATES={
+    "Acknowledge":"Hi {name},\n\nThanks for reaching out. I've picked up your ticket and will investigate right away.\n\nI'll update you as soon as I have more information.\n\nKind regards,\nCyber I.T Masters Support",
+    "Need info":"Hi {name},\n\nTo help us diagnose this, could you please provide:\n\n1. \n2. \n3. \n\nOnce we have this, we can proceed.\n\nKind regards,\nCyber I.T Masters Support",
+    "Resolved":"Hi {name},\n\nGood news — we've resolved the issue on your ticket. Please test and let us know if you notice anything else.\n\nIf all is well, you'll receive a sign-off link shortly.\n\nKind regards,\nCyber I.T Masters Support",
+    "Awaiting parts":"Hi {name},\n\nWe're waiting on parts for your repair. We'll let you know the moment they arrive and work resumes.\n\nKind regards,\nCyber I.T Masters Support"
+  };
+
+  return(
+    <div className="email-panel">
+      <div className="email-head">
+        <div>
+          <div style={{fontSize:11,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",letterSpacing:".08em"}}>✉️ Email Conversation</div>
+          <div style={{fontSize:10,color:"var(--text3)",marginTop:3}}>
+            Thread: <span className="mono" style={{color:AC}}>{ticket.ref}</span> · Reply-To: <span className="mono">tickets+{ticket.ref}@…</span>
+          </div>
+        </div>
+        <div style={{fontSize:10,color:"var(--text4)"}}>{thread.length} message{thread.length===1?"":"s"}</div>
+      </div>
+
+      <div className="email-thread">
+        {thread.length===0&&(
+          <div className="email-empty">No email on this ticket yet.<br/>Send the first message below. Client replies are threaded by ticket reference.</div>
+        )}
+        {thread.map((m,i)=>{
+          const inbound=m.direction==="inbound";
+          const fromLabel=inbound?(m.from||m.fromEmail||"Client"):(m.sentBy||m.from||"You");
+          const text=String(m.body||"");
+          const preview=text.slice(0,140);
+          const open=expanded===i;
+          const when=m.sentAt||m.receivedAt;
+          return(
+            <div key={m.messageId||i} className={`email-message ${inbound?"inbound":"outbound"}`}>
+              <div className="email-message-head">
+                <span className={`email-direction ${inbound?"in":"out"}`}>{inbound?"↓ In":"↑ Out"}</span>
+                <div className="email-message-from">{fromLabel}</div>
+                <div className="email-message-date">{when?new Date(when).toLocaleString("en-ZA"):""}</div>
+              </div>
+              {m.subject&&<div className="email-subject">{m.subject}</div>}
+              <div className="email-body">{open?text:(preview+(text.length>140?"…":""))}</div>
+              {text.length>140&&(
+                <button className="btn btn-ghost btn-sm" style={{fontSize:10,marginTop:5,padding:"2px 8px"}} onClick={()=>setExpanded(open?null:i)}>
+                  {open?"Show less":"Show full"}
+                </button>
+              )}
+              {Array.isArray(m.attachments)&&m.attachments.length>0&&(
+                <div className="email-attachments">
+                  {m.attachments.map((a,ai)=>(
+                    <a key={ai} href={a.url} target="_blank" rel="noreferrer" className="email-attachment">
+                      📎 {a.filename||"Attachment"} {a.size?`(${Math.round(a.size/1024)} KB)`:""}
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+        <div ref={endRef}/>
+      </div>
+
+      <div className="email-compose">
+        <div className="email-template-row">
+          {Object.keys(TEMPLATES).map(k=>(
+            <button key={k} className="btn btn-ghost btn-sm" style={{fontSize:10}} onClick={()=>insertTemplate(TEMPLATES[k])}>{k}</button>
+          ))}
+        </div>
+
+        <div className="email-compose-grid">
+          <input className="field-input" style={{fontSize:11}} placeholder="To (email)" value={to} onChange={e=>setTo(e.target.value)} />
+          <input className="field-input" style={{fontSize:11}} placeholder="Subject" value={subject} onChange={e=>setSubject(e.target.value)} />
+        </div>
+
+        <textarea className="field-input" rows={5} style={{fontSize:12,lineHeight:1.5,marginBottom:6,fontFamily:"inherit"}} placeholder="Type your reply… line breaks are preserved." value={body} onChange={e=>setBody(e.target.value)} />
+
+        {attachments.length>0&&(
+          <div className="email-attachment-list">
+            {attachments.map((f,i)=>(
+              <span className="email-file-chip" key={`${f.name}-${i}`}>
+                📎 {f.name} ({Math.round(f.size/1024)} KB)
+                <button className="email-file-remove" onClick={()=>removeAttachment(i)} title="Remove attachment">×</button>
+              </span>
+            ))}
+          </div>
+        )}
+
+        <input ref={fileRef} type="file" multiple onChange={addFiles} accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,.doc,.docx,.xls,.xlsx,.txt" />
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8}}>
+          <div style={{display:"flex",alignItems:"center",gap:8}}>
+            <button className="btn btn-secondary btn-sm" type="button" onClick={()=>fileRef.current&&fileRef.current.click()} disabled={sending}>📎 Attach</button>
+            <div style={{fontSize:10,color:"var(--text4)"}}>Up to {EMAIL_MAX_ATTACHMENTS} files · 5 MB each</div>
+          </div>
+          <button className="btn btn-primary btn-sm" onClick={send} disabled={sending||!body.trim()}>
+            {sending?"Sending…":"✉️ Send Email"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function detailTabKeyForEmail(ticket){
+  return ticket?.emailLastReadAt||"";
+}
+
 function TicketChat({ticket, activeEngineer, onWaForward}){
   const [msgs,setMsgs]=useState([]);
   const [input,setInput]=useState("");
@@ -2190,321 +2504,43 @@ function TicketChat({ticket, activeEngineer, onWaForward}){
 ════════════════════════════════════════════════════ */
 function TicketForm({mode,onSubmit,saving,theme,toggleTheme,engineerOptions=["Unassigned"]}){
   const isEng=mode==="engineer";
-  const [svc,setSvc]=useState("");
-  const [f,setF]=useState({
-    clientName:"",company:"",phone:"",email:"",address:"",
-    deviceType:"",manufacturer:"",modelNumber:"",serialNumber:"",operatingSystem:"",warrantyStatus:"Unknown",
-    issueTitle:"",issueDetail:"",problemDescription:"",accessories:"",
-    urgency:"Standard (3–5 days)",conditionOnArrival:"Good – No visible damage",
-    physicalDamage:"",devicePassword:"",priority:"Medium",contactMethod:"whatsapp",
-    preferredDate:"",preferredTime:"",engineerName:"",engineerNote:"",
-    assignedEngineer:"Unassigned",authorized:false,
-  });
-  const [photos,setPhotos]=useState([]);
-  const [err,setErr]=useState({});
   const [step,setStep]=useState(1);
-  const fRef=useRef();
+  const [category,setCategory]=useState("");
+  const [subService,setSubService]=useState("");
+  const [channels,setChannels]=useState(["whatsapp"]);
+  const [f,setF]=useState({clientName:"",company:"",phone:"",email:"",address:"",deviceType:"",manufacturer:"",modelNumber:"",serialNumber:"",operatingSystem:"",warrantyStatus:"Unknown",issueTitle:"",issueDetail:"",problemDescription:"",accessories:"",urgency:"Standard (3–5 days)",conditionOnArrival:"Good – No visible damage",physicalDamage:"",devicePassword:"",priority:"Medium",preferredDate:"",preferredTime:"",engineerName:"",engineerNote:"",assignedEngineer:"Unassigned",authorized:false});
+  const [photos,setPhotos]=useState([]); const [err,setErr]=useState({}); const fRef=useRef();
   const set=(k,v)=>setF(p=>({...p,[k]:v}));
-
-  const addPhotos=e=>{const files=Array.from(e.target.files||[]);Promise.all(files.slice(0,5-photos.length).map(f=>new Promise(r=>{const rd=new FileReader();rd.onload=()=>r({name:f.name,src:rd.result});rd.readAsDataURL(f);})))
-    .then(imgs=>setPhotos(p=>[...p,...imgs].slice(0,5)));};
-  const onDrop=e=>{e.preventDefault();const files=Array.from(e.dataTransfer.files||[]).filter(f=>f.type.startsWith("image/"));Promise.all(files.slice(0,5-photos.length).map(f=>new Promise(r=>{const rd=new FileReader();rd.onload=()=>r({name:f.name,src:rd.result});rd.readAsDataURL(f);})))
-    .then(imgs=>setPhotos(p=>[...p,...imgs].slice(0,5)));};
-
-  const validate=()=>{
-    const e={};
-    if(!f.clientName.trim()) e.clientName="Required";
-    if(!f.phone.trim()) e.phone="Required";
-    if(!svc) e.svc="Please select a service type";
-    if(svc==="device"){
-      if(!f.deviceType) e.deviceType="Required";
-      if(!f.manufacturer.trim()) e.manufacturer="Required";
-      if(!f.problemDescription.trim()) e.problemDescription="Required";
-      if(!f.authorized&&!isEng) e.authorized="Authorization required";
-    } else {
-      if(!f.issueTitle.trim()) e.issueTitle="Required";
-    }
-    if(isEng&&!f.engineerName.trim()) e.engineerName="Required";
-    setErr(e);return!Object.keys(e).length;
-  };
-
-  const handleSubmit=()=>{
-    if(!validate())return;
-    // Pass the full photo objects (name + base64 src) up — Root compresses and
-    // persists them; previously only filenames were kept and the image data
-    // was silently discarded.
-    onSubmit({...f,serviceType:svc,photos,loggedBy:isEng?"engineer":"customer"});
-  };
-
-  const previewTicket={ref:"CIM-XXXX",clientName:f.clientName||"Customer",name:f.clientName,phone:f.phone,email:f.email,company:f.company,priority:f.priority,serviceType:svc,issueTitle:f.issueTitle,problemDescription:f.problemDescription,issueDetail:f.issueDetail,deviceType:f.deviceType,manufacturer:f.manufacturer,modelNumber:f.modelNumber,serialNumber:f.serialNumber,address:f.address,devicePassword:f.devicePassword,loggedBy:isEng?"engineer":"customer",createdAt:new Date().toISOString()};
-
-  return(
-    <div style={{minHeight:"100vh",background:"var(--bg)"}}>
-      <header className="portal-header">
-        <div className="portal-header-inner">
-          <div style={{display:"flex",alignItems:"center",gap:10}}>
-            <div style={{width:34,height:34,borderRadius:9,background:`linear-gradient(135deg,${AC},${AC2})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>⚡</div>
-            <div>
-              <div style={{fontSize:15,fontWeight:700,color:"var(--text)",letterSpacing:"-0.01em"}}>{CFG.bizName}</div>
-              <div style={{fontSize:10,color:"var(--text3)",fontWeight:500,letterSpacing:"0.05em",textTransform:"uppercase"}}>{CFG.tagline}</div>
-            </div>
-          </div>
-          <div style={{display:"flex",gap:8,alignItems:"center"}}>
-            <button className="theme-toggle" onClick={toggleTheme} title={`Switch to ${theme==="dark"?"light":"dark"} mode`}/>
-            <a href={CFG.zoho} target="_blank" rel="noreferrer" className="btn btn-secondary btn-sm">📊 Zoho Portal</a>
-          </div>
-        </div>
-      </header>
-      <div className="ql-bar">
-        <div className="ql-inner">
-          <span style={{fontSize:10,color:"var(--text4)",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em"}}>Quick Links:</span>
-          <a href={CFG.zoho} target="_blank" rel="noreferrer" className="ql-tag" style={{background:"rgba(14,165,233,0.08)",border:"1px solid rgba(14,165,233,0.2)",color:AC2}}>📊 Invoices &amp; Quotes</a>
-          <a href={CFG.adWin} target="_blank" rel="noreferrer" className="ql-tag" style={{background:"rgba(0,200,150,0.07)",border:"1px solid rgba(0,200,150,0.2)",color:AC}}>🖥️ AnyDesk (Windows)</a>
-          <a href={CFG.adMac} target="_blank" rel="noreferrer" className="ql-tag" style={{background:"rgba(0,200,150,0.07)",border:"1px solid rgba(0,200,150,0.2)",color:AC}}>🍎 AnyDesk (macOS)</a>
-          <a href={CFG.adAndroid} target="_blank" rel="noreferrer" className="ql-tag" style={{background:"rgba(0,200,150,0.07)",border:"1px solid rgba(0,200,150,0.2)",color:AC}}>📱 AnyDesk (Android)</a>
-        </div>
-      </div>
-
-      <div className="portal-main">
-        <div style={{marginBottom:28}} className="fu">
-          <div style={{display:"inline-flex",alignItems:"center",gap:7,background:"rgba(0,200,150,0.08)",border:"1px solid rgba(0,200,150,0.2)",borderRadius:20,padding:"5px 14px",marginBottom:12}}>
-            <span style={{width:5,height:5,borderRadius:"50%",background:AC,display:"inline-block"}}/>
-            <span style={{fontSize:11,fontWeight:700,color:AC,textTransform:"uppercase",letterSpacing:"0.08em"}}>
-              {isEng?"Engineer — Log on Behalf":"Support Centre"}
-            </span>
-          </div>
-          <h1 style={{fontSize:32,fontWeight:800,letterSpacing:"-0.03em",color:"var(--text)",marginBottom:6,lineHeight:1.2}}>
-            {isEng?"Create Customer Ticket":"Log a Support Ticket"}
-          </h1>
-          <p style={{color:"var(--text3)",fontSize:14}}>
-            {isEng?"Fill in the customer's details. WhatsApp confirmation sent automatically.":"We'll reach out via WhatsApp or Email — your choice."}
-          </p>
-        </div>
-
-        {!isEng&&(
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:24}}>
-            <div style={{background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:10,padding:"12px 16px",display:"flex",alignItems:"center",gap:12}}>
-              <span style={{fontSize:22}}>🖥️</span>
-              <div style={{flex:1}}><div style={{fontSize:13,fontWeight:700,color:"var(--text)",marginBottom:2}}>Remote Support?</div><div style={{fontSize:11,color:"var(--text3)"}}>Download AnyDesk first.</div></div>
-              <div style={{display:"flex",gap:5}}>
-                <a href={CFG.adWin} target="_blank" rel="noreferrer" style={{fontSize:10,fontWeight:700,color:AC,background:"rgba(0,200,150,0.1)",border:"1px solid rgba(0,200,150,0.2)",borderRadius:5,padding:"4px 8px"}}>Win</a>
-                <a href={CFG.adMac} target="_blank" rel="noreferrer" style={{fontSize:10,fontWeight:700,color:AC,background:"rgba(0,200,150,0.1)",border:"1px solid rgba(0,200,150,0.2)",borderRadius:5,padding:"4px 8px"}}>Mac</a>
-              </div>
-            </div>
-            <div style={{background:"var(--bg2)",border:"1px solid rgba(14,165,233,0.2)",borderRadius:10,padding:"12px 16px",display:"flex",alignItems:"center",gap:12}}>
-              <span style={{fontSize:22}}>📊</span>
-              <div style={{flex:1}}><div style={{fontSize:13,fontWeight:700,color:"var(--text)",marginBottom:2}}>Invoices &amp; Quotes</div><div style={{fontSize:11,color:"var(--text3)"}}>View your billing history.</div></div>
-              <a href={CFG.zoho} target="_blank" rel="noreferrer" style={{fontSize:11,fontWeight:700,color:"#fff",background:AC2,borderRadius:6,padding:"6px 10px",whiteSpace:"nowrap"}}>Open →</a>
-            </div>
-          </div>
-        )}
-
-        <div style={{display:"flex",alignItems:"center",gap:0,marginBottom:24}}>
-          {["Service","Details","Review"].map((s,i)=>(
-            <React.Fragment key={i}>
-              <div style={{display:"flex",alignItems:"center",gap:6}}>
-                <div style={{width:26,height:26,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,fontFamily:"'IBM Plex Mono',monospace",border:`2px solid ${step>=i+1?AC:"var(--border2)"}`,background:step>i?AC:"transparent",color:step>i?"#050810":step===i+1?AC:"var(--text4)",transition:"all 0.25s",flexShrink:0}}>{step>i?"✓":i+1}</div>
-                <span style={{fontSize:12,fontWeight:600,color:step>=i+1?"var(--text2)":"var(--text4)",whiteSpace:"nowrap"}}>{s}</span>
-              </div>
-              {i<2&&<div style={{flex:1,height:1,background:step>i+1?AC:"var(--border2)",margin:"0 10px",transition:"all 0.25s",minWidth:20}}/>}
-            </React.Fragment>
-          ))}
-        </div>
-
-        {step===1&&(
-          <div className="card fu">
-            <div className="card-header"><div className="card-title">What type of support is needed?</div></div>
-            <div className="card-body">
-              {err.svc&&<div style={{color:"#F87171",fontSize:12,marginBottom:12}}>{err.svc}</div>}
-              <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:20}}>
-                {SVCS.map(sv=>(
-                  <button key={sv.id} onClick={()=>setSvc(sv.id)}
-                    style={{display:"flex",alignItems:"center",gap:14,padding:"14px 16px",borderRadius:10,border:`2px solid ${svc===sv.id?AC:"var(--border)"}`,background:svc===sv.id?"rgba(0,200,150,0.06)":"var(--bg)",cursor:"pointer",textAlign:"left",fontFamily:"inherit",position:"relative",transition:"all 0.2s"}}>
-                    <span style={{fontSize:24,flexShrink:0}}>{sv.icon}</span>
-                    <div>
-                      <div style={{fontSize:14,fontWeight:600,color:"var(--text)",marginBottom:2}}>{sv.label}</div>
-                      <div style={{fontSize:11,color:"var(--text3)"}}>
-                        {sv.id==="device"&&"Hand in a device for diagnosis & repair"}
-                        {sv.id==="remote"&&"Remote screen share / desktop assistance"}
-                        {sv.id==="onsite"&&"Engineer visits your premises"}
-                      </div>
-                    </div>
-                    {svc===sv.id&&<span style={{position:"absolute",right:14,color:AC,fontSize:18,fontWeight:700}}>✓</span>}
-                  </button>
-                ))}
-              </div>
-              <div style={{display:"flex",justifyContent:"flex-end"}}>
-                <button className="btn btn-primary" onClick={()=>{if(!svc){setErr({svc:"Please select a service"});}else{setErr({});setStep(2);}}} disabled={!svc}>Continue →</button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {step===2&&(
-          <div style={{display:"flex",flexDirection:"column",gap:14}} className="fu">
-            {isEng&&(
-              <div className="card">
-                <div className="card-header"><div className="card-title" style={{color:AC}}>👷 Engineer Information</div></div>
-                <div className="card-body">
-                  <div className="form-grid">
-                    <Field l="Engineer Name *" e={err.engineerName}><input {...fi} value={f.engineerName} onChange={e=>set("engineerName",e.target.value)} placeholder="Your name"/></Field>
-                    <Field l="Assign To">
-                      <select {...fi} value={f.assignedEngineer} onChange={e=>set("assignedEngineer",e.target.value)}>
-                        {engineerOptions.map(eng=><option key={eng}>{eng}</option>)}
-                      </select>
-                    </Field>
-                    <Field l="Internal Note (optional)" span><input {...fi} value={f.engineerNote} onChange={e=>set("engineerNote",e.target.value)} placeholder="Context for the team"/></Field>
-                  </div>
-                </div>
-              </div>
-            )}
-            <div className="card">
-              <div className="card-header"><div className="card-title">Contact Information</div></div>
-              <div className="card-body">
-                <div className="form-grid">
-                  <Field l="Company"><input {...fi} value={f.company} onChange={e=>set("company",e.target.value)} placeholder="Company name"/></Field>
-                  <Field l="Full Name *" e={err.clientName}><input {...fi} value={f.clientName} onChange={e=>set("clientName",e.target.value)} placeholder="John Doe"/></Field>
-                  <Field l="Phone / WhatsApp *" e={err.phone}><input {...fi} value={f.phone} onChange={e=>set("phone",e.target.value)} placeholder="+27 72 665 0565"/></Field>
-                  <Field l="Email Address"><input {...fi} type="email" value={f.email} onChange={e=>set("email",e.target.value)} placeholder="john@example.com"/></Field>
-                  {svc==="onsite"&&<Field l="Address" span><input {...fi} value={f.address} onChange={e=>set("address",e.target.value)} placeholder="123 Main St, Sandton"/></Field>}
-                  {svc==="onsite"&&<><Field l="Preferred Date"><input {...fi} type="date" value={f.preferredDate} onChange={e=>set("preferredDate",e.target.value)}/></Field><Field l="Preferred Time"><input {...fi} type="time" value={f.preferredTime} onChange={e=>set("preferredTime",e.target.value)}/></Field></>}
-                </div>
-              </div>
-            </div>
-            {svc==="device"&&(
-              <div className="card">
-                <div className="card-header"><div className="card-title">Device Information</div></div>
-                <div className="card-body">
-                  <div className="form-grid">
-                    <Field l="Device Type *" e={err.deviceType}><select {...fi} value={f.deviceType} onChange={e=>set("deviceType",e.target.value)}><option value="">Select type…</option>{DEVT.map(d=><option key={d}>{d}</option>)}</select></Field>
-                    <Field l="Manufacturer *" e={err.manufacturer}><input {...fi} value={f.manufacturer} onChange={e=>set("manufacturer",e.target.value)} placeholder="Dell, Apple, HP…"/></Field>
-                    <Field l="Model Number" span><input {...fi} value={f.modelNumber} onChange={e=>set("modelNumber",e.target.value)} placeholder="MacBook Pro 13″ A2251…"/></Field>
-                    <Field l="Serial Number"><input {...fi} value={f.serialNumber} onChange={e=>set("serialNumber",e.target.value)} placeholder="SN-XXXXXXX"/></Field>
-                    <Field l="OS / Version"><input {...fi} value={f.operatingSystem} onChange={e=>set("operatingSystem",e.target.value)} placeholder="Windows 11 Pro…"/></Field>
-                    <Field l="Warranty" span><div className="radio-chips">{WARR.map(w=><div key={w} className={`chip${f.warrantyStatus===w?" active":""}`} onClick={()=>set("warrantyStatus",w)}>{w}</div>)}</div></Field>
-                    <Field l="Condition" span><div className="radio-chips">{COND.map(c=><div key={c} className={`chip${f.conditionOnArrival===c?" active":""}`} onClick={()=>set("conditionOnArrival",c)}>{c}</div>)}</div></Field>
-                    <Field l="Physical Damage" span><input {...fi} value={f.physicalDamage} onChange={e=>set("physicalDamage",e.target.value)} placeholder="Describe any damage…"/></Field>
-                    <Field l="Accessories" span><input {...fi} value={f.accessories} onChange={e=>set("accessories",e.target.value)} placeholder="Charger, bag, mouse…"/></Field>
-                    <Field l="Device Password" span><input {...fi} value={f.devicePassword} onChange={e=>set("devicePassword",e.target.value)} placeholder="PIN / password (optional)"/></Field>
-                  </div>
-                </div>
-              </div>
-            )}
-            <div className="card">
-              <div className="card-header"><div className="card-title">{svc==="device"?"Problem Description":"Issue Details"}</div></div>
-              <div className="card-body">
-                <div className="form-grid">
-                  {svc==="device"
-                    ?<Field l="Problem Description *" e={err.problemDescription} span><textarea {...fi} value={f.problemDescription} onChange={e=>set("problemDescription",e.target.value)} placeholder="Describe the issue in detail…" style={{minHeight:80}}/></Field>
-                    :<>
-                      <Field l="Issue Title *" e={err.issueTitle} span><input {...fi} value={f.issueTitle} onChange={e=>set("issueTitle",e.target.value)} placeholder="e.g. Email not syncing on Outlook"/></Field>
-                      <Field l="Detailed Description" span><textarea {...fi} value={f.issueDetail} onChange={e=>set("issueDetail",e.target.value)} placeholder="Steps to reproduce, error messages…" style={{minHeight:80}}/></Field>
-                    </>
-                  }
-                  <Field l="Priority">
-                    <div className="radio-chips">{PRIS.map(p=><div key={p} className={`chip${f.priority===p?" active":""}`} onClick={()=>set("priority",p)}>{p}</div>)}</div>
-                  </Field>
-                  <Field l="Urgency">
-                    <div className="radio-chips">{URG.map(u=><div key={u} className={`chip${f.urgency===u?" active":""}`} onClick={()=>set("urgency",u)}>{u}</div>)}</div>
-                  </Field>
-                  {!isEng&&(
-                    <Field l="Preferred Contact" span>
-                      <div className="radio-chips">
-                        {[["whatsapp","💬 WhatsApp"],["email","✉️ Email"],["phone","📞 Call"]].map(([v,l])=>(
-                          <div key={v} className={`chip${f.contactMethod===v?" active":""}`} onClick={()=>set("contactMethod",v)}>{l}</div>
-                        ))}
-                      </div>
-                    </Field>
-                  )}
-                  {svc==="device"&&(
-                    <div className="form-field span2">
-                      <Lbl c="Photos (optional — up to 5)"/>
-                      <div className="photo-drop" onClick={()=>fRef.current.click()} onDragOver={e=>{e.preventDefault();e.currentTarget.classList.add("over");}} onDragLeave={e=>e.currentTarget.classList.remove("over")} onDrop={e=>{e.currentTarget.classList.remove("over");onDrop(e);}}>
-                        <input type="file" ref={fRef} accept="image/*" multiple onChange={addPhotos}/>
-                        {photos.length===0?<span style={{fontSize:12,color:"var(--text4)"}}>Drag &amp; drop or click to upload device photos</span>:(
-                          <div className="photo-grid">
-                            {photos.map((p,i)=>(
-                              <div key={i} className="photo-thumb">
-                                <img src={p.src} alt={p.name}/>
-                                <button className="photo-rm" onClick={e=>{e.stopPropagation();setPhotos(ps=>ps.filter((_,j)=>j!==i));}}>✕</button>
-                              </div>
-                            ))}
-                            {photos.length<5&&<div style={{width:72,height:72,border:"1px dashed var(--border2)",borderRadius:7,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,color:"var(--text4)",cursor:"pointer"}}>+</div>}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-            {!isEng&&svc==="device"&&(
-              <div className="card">
-                <div className="card-body">
-                  <label style={{display:"flex",gap:10,cursor:"pointer",alignItems:"flex-start"}}>
-                    <div style={{width:18,height:18,borderRadius:4,border:`2px solid ${f.authorized?"#00C896":"var(--border2)"}`,background:f.authorized?"#00C896":"transparent",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:1,transition:"all 0.2s"}} onClick={()=>set("authorized",!f.authorized)}>
-                      {f.authorized&&<span style={{color:"#050810",fontSize:11,fontWeight:700}}>✓</span>}
-                    </div>
-                    <div>
-                      <div style={{fontSize:13,color:"var(--text)",fontWeight:600,marginBottom:2}}>I authorise {CFG.bizName} to diagnose and assess my device *</div>
-                      <div style={{fontSize:11,color:"var(--text3)"}}>A quotation will be provided before any repair work begins.</div>
-                    </div>
-                  </label>
-                  {err.authorized&&<div style={{color:"#F87171",fontSize:11,marginTop:8}}>{err.authorized}</div>}
-                </div>
-              </div>
-            )}
-            {step===2&&(
-              <div style={{display:"flex",gap:10,justifyContent:"space-between"}}>
-                <button className="btn btn-secondary" onClick={()=>setStep(1)}>← Back</button>
-                <button className="btn btn-primary" onClick={()=>{if(validate())setStep(3);}} disabled={saving}>Review →</button>
-              </div>
-            )}
-          </div>
-        )}
-
-        {step===3&&(
-          <div className="fu">
-            <div className="card" style={{marginBottom:14}}>
-              <div className="card-header"><div className="card-title">📋 Review & Confirm</div></div>
-              <div className="card-body">
-                <div style={{marginBottom:16}}>
-                  <div style={{fontSize:10,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:10}}>WhatsApp Preview — Customer Confirmation</div>
-                  <div className="wa-preview"><div className="wa-bubble">{buildCustomerMsg(previewTicket)}</div></div>
-                </div>
-                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,fontSize:12,marginBottom:16}}>
-                  {[
-                    ["Name",f.clientName],["Phone",f.phone],
-                    f.email&&["Email",f.email],f.company&&["Company",f.company],
-                    ["Service",SVCS.find(s=>s.id===svc)?.label],["Priority",f.priority],
-                    svc==="device"&&f.manufacturer&&["Device",`${f.manufacturer} ${f.modelNumber}`],
-                    svc==="device"&&["Issue",f.problemDescription],
-                    svc!=="device"&&["Issue",f.issueTitle],
-                  ].filter(Boolean).map(([k,v],i)=>(
-                    <div key={i} style={{padding:"6px 8px",background:"var(--bg3)",borderRadius:6}}>
-                      <div style={{fontSize:9,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",marginBottom:2}}>{k}</div>
-                      <div style={{color:"var(--text2)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{v||"—"}</div>
-                    </div>
-                  ))}
-                </div>
-                <div style={{display:"flex",gap:10,justifyContent:"space-between"}}>
-                  <button className="btn btn-secondary" onClick={()=>setStep(2)}>← Edit</button>
-                  <button className="btn btn-primary" onClick={handleSubmit} disabled={saving}>
-                    {saving?"Creating ticket…":"✓ Submit Ticket"}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+  const cat=SERVICE_CATALOG.find(c=>c.id===category); const sub=cat?.items.find(i=>i.id===subService); const needsDevice=DEVICE_SUBS.has(subService);
+  const toggleChannel=id=>setChannels(prev=>{const n=prev.includes(id)?prev.filter(x=>x!==id):[...prev,id];return n.length?n:["whatsapp"];});
+  const readImages=files=>Promise.all(Array.from(files).slice(0,5-photos.length).map(file=>new Promise(resolve=>{const rd=new FileReader();rd.onload=()=>resolve({name:file.name,src:rd.result});rd.readAsDataURL(file);}))).then(imgs=>setPhotos(p=>[...p,...imgs].slice(0,5)));
+  const addPhotos=e=>readImages(e.target.files||[]); const onDrop=e=>{e.preventDefault();readImages(Array.from(e.dataTransfer.files||[]).filter(x=>x.type.startsWith("image/")));};
+  const validate=()=>{const e={};if(!category)e.category="Please select a service category";if(!subService)e.subService="Please select a specific service";if(!f.clientName.trim())e.clientName="Required";if(!f.phone.trim())e.phone="Required";if(!f.email.trim()&&channels.includes("email"))e.email="Email is required when Email notifications are selected";if(!f.issueTitle.trim()&&!f.problemDescription.trim())e.issue="Please describe the requirement or issue";if(needsDevice&&!f.deviceType)e.deviceType="Required";if(isEng&&!f.engineerName.trim())e.engineerName="Required";if(!isEng&&needsDevice&&!f.authorized)e.authorized="Authorization required";setErr(e);return !Object.keys(e).length;};
+  const submit=()=>{if(!validate()){setStep(3);return;}onSubmit({...f,serviceCategory:category,serviceCategoryLabel:cat?.label||category,serviceSubCategory:subService,serviceSubCategoryLabel:sub?.label||subService,channels,serviceType:category,photos,loggedBy:isEng?"engineer":"customer"});};
+  const preview={...f,serviceCategory:category,serviceCategoryLabel:cat?.label,serviceSubCategory:subService,serviceSubCategoryLabel:sub?.label,serviceType:category,channels};
+  const back=()=>setStep(s=>Math.max(1,s-1));
+  return <div style={{minHeight:"100vh",background:"var(--bg)"}}>
+    <header className="portal-header"><div className="portal-header-inner"><div style={{display:"flex",alignItems:"center",gap:10}}><div style={{width:34,height:34,borderRadius:9,background:`linear-gradient(135deg,${AC},${AC2})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>⚡</div><div><div style={{fontSize:15,fontWeight:700,color:"var(--text)"}}>{CFG.bizName}</div><div style={{fontSize:10,color:"var(--text3)",textTransform:"uppercase",letterSpacing:".05em"}}>{CFG.tagline}</div></div></div><button className="theme-toggle" onClick={toggleTheme}/></div></header>
+    <div className="portal-main">
+      <div className="fu" style={{marginBottom:24}}><div style={{fontSize:11,fontWeight:700,color:AC,textTransform:"uppercase",letterSpacing:".08em",marginBottom:8}}>{isEng?"Engineer — Log on Behalf":"Support Centre"}</div><h1 style={{fontSize:32,fontWeight:800,color:"var(--text)",marginBottom:6}}>{isEng?"Create Customer Ticket":"Log a Support Ticket"}</h1><p style={{fontSize:13,color:"var(--text3)"}}>Select the service, capture the requirement and choose how the client should be notified.</p></div>
+      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:20}}>{["Category","Service","Details","Review"].map((x,i)=><React.Fragment key={x}><div style={{display:"flex",alignItems:"center",gap:6}}><div style={{width:27,height:27,borderRadius:"50%",border:`2px solid ${step>i?AC:step===i+1?AC:"var(--border2)"}`,background:step>i?AC:"transparent",color:step>i?"#050810":step===i+1?AC:"var(--text4)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:800}}>{step>i?"✓":i+1}</div><span style={{fontSize:11,color:step>=i+1?"var(--text2)":"var(--text4)"}}>{x}</span></div>{i<3&&<div style={{flex:1,height:1,background:step>i+1?AC:"var(--border2)"}}/>}</React.Fragment>)}</div>
+      {step===1&&<div className="card fu"><div className="card-header"><div className="card-title">1. Select a service category</div></div><div className="card-body">{err.category&&<div className="field-error" style={{marginBottom:10}}>{err.category}</div>}<div style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:10}}>{SERVICE_CATALOG.map(c=><button key={c.id} onClick={()=>{setCategory(c.id);setSubService("");setErr({});setStep(2);}} style={{textAlign:"left",padding:16,borderRadius:11,border:`1px solid ${category===c.id?AC:"var(--border)"}`,background:category===c.id?"rgba(0,200,150,.07)":"var(--bg)",color:"var(--text)",fontFamily:"inherit"}}><div style={{fontSize:24,marginBottom:8}}>{c.icon}</div><div style={{fontSize:14,fontWeight:700}}>{c.label}</div><div style={{fontSize:11,color:"var(--text3)",marginTop:4,lineHeight:1.45}}>{c.desc}</div></button>)}</div></div></div>}
+      {step===2&&cat&&<div className="card fu"><div className="card-header"><div><div className="card-title">2. Select the specific service</div><div style={{fontSize:11,color:"var(--text3)",marginTop:3}}>{cat.icon} {cat.label}</div></div></div><div className="card-body"><div style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:9}}>{cat.items.map(i=><button key={i.id} onClick={()=>{setSubService(i.id);setErr({});setStep(3);}} style={{textAlign:"left",padding:"13px 14px",borderRadius:9,border:`1px solid ${subService===i.id?AC:"var(--border)"}`,background:subService===i.id?"rgba(0,200,150,.07)":"var(--bg)",color:"var(--text)",fontFamily:"inherit"}}><span style={{fontSize:18,marginRight:8}}>{i.icon}</span><span style={{fontSize:12,fontWeight:700}}>{i.label}</span></button>)}</div>{err.subService&&<div className="field-error" style={{marginTop:10}}>{err.subService}</div>}<button className="btn btn-ghost" onClick={()=>setStep(1)} style={{marginTop:14}}>← Back</button></div></div>}
+      {step===3&&cat&&sub&&<div className="fu" style={{display:"flex",flexDirection:"column",gap:14}}>
+        {isEng&&<div className="card"><div className="card-header"><div className="card-title">👷 Engineer Information</div></div><div className="card-body"><div className="form-grid"><Field l="Engineer Name *" e={err.engineerName}><input {...fi} value={f.engineerName} onChange={e=>set("engineerName",e.target.value)}/></Field><Field l="Assign To"><select {...fi} value={f.assignedEngineer} onChange={e=>set("assignedEngineer",e.target.value)}>{engineerOptions.map(x=><option key={x}>{x}</option>)}</select></Field><Field l="Internal Note" span><input {...fi} value={f.engineerNote} onChange={e=>set("engineerNote",e.target.value)} placeholder="Internal context for the team"/></Field></div></div></div>}
+        <div className="card"><div className="card-header"><div className="card-title">Contact Information</div></div><div className="card-body"><div className="form-grid"><Field l="Company"><input {...fi} value={f.company} onChange={e=>set("company",e.target.value)}/></Field><Field l="Full Name *" e={err.clientName}><input {...fi} value={f.clientName} onChange={e=>set("clientName",e.target.value)}/></Field><Field l="Phone / WhatsApp *" e={err.phone}><input {...fi} value={f.phone} onChange={e=>set("phone",e.target.value)}/></Field><Field l="Email Address" e={err.email}><input {...fi} type="email" value={f.email} onChange={e=>set("email",e.target.value)}/></Field>{category==="onsite"&&<Field l="Site Address" span><input {...fi} value={f.address} onChange={e=>set("address",e.target.value)} placeholder="Address for engineer visit"/></Field>}{category==="onsite"&&<><Field l="Preferred Date"><input {...fi} type="date" value={f.preferredDate} onChange={e=>set("preferredDate",e.target.value)}/></Field><Field l="Preferred Time"><input {...fi} type="time" value={f.preferredTime} onChange={e=>set("preferredTime",e.target.value)}/></Field></>}</div></div></div>
+        {needsDevice&&<div className="card"><div className="card-header"><div className="card-title">Device / Asset Information</div></div><div className="card-body"><div className="form-grid"><Field l="Device Type *" e={err.deviceType}><select {...fi} value={f.deviceType} onChange={e=>set("deviceType",e.target.value)}><option value="">Select type…</option>{DEVT.map(d=><option key={d}>{d}</option>)}</select></Field><Field l="Manufacturer"><input {...fi} value={f.manufacturer} onChange={e=>set("manufacturer",e.target.value)}/></Field><Field l="Model Number"><input {...fi} value={f.modelNumber} onChange={e=>set("modelNumber",e.target.value)}/></Field><Field l="Serial Number"><input {...fi} value={f.serialNumber} onChange={e=>set("serialNumber",e.target.value)}/></Field><Field l="Operating System"><input {...fi} value={f.operatingSystem} onChange={e=>set("operatingSystem",e.target.value)}/></Field><Field l="Warranty"><div className="radio-chips">{WARR.map(w=><div key={w} className={`chip${f.warrantyStatus===w?" active":""}`} onClick={()=>set("warrantyStatus",w)}>{w}</div>)}</div></Field><Field l="Condition" span><div className="radio-chips">{COND.map(c=><div key={c} className={`chip${f.conditionOnArrival===c?" active":""}`} onClick={()=>set("conditionOnArrival",c)}>{c}</div>)}</div></Field><Field l="Physical Damage"><input {...fi} value={f.physicalDamage} onChange={e=>set("physicalDamage",e.target.value)}/></Field><Field l="Accessories"><input {...fi} value={f.accessories} onChange={e=>set("accessories",e.target.value)}/></Field><Field l="Device Password / PIN"><input {...fi} type="password" value={f.devicePassword} onChange={e=>set("devicePassword",e.target.value)}/></Field></div></div></div>}
+        <div className="card"><div className="card-header"><div className="card-title">Requirement Details</div></div><div className="card-body"><div className="form-grid"><Field l="Issue / Requirement Title" e={err.issue} span><input {...fi} value={f.issueTitle} onChange={e=>set("issueTitle",e.target.value)} placeholder="What do you need help with?"/></Field><Field l="Detailed Description" span><textarea {...fi} value={f.problemDescription||f.issueDetail} onChange={e=>{set("problemDescription",e.target.value);set("issueDetail",e.target.value)}} placeholder="Describe the issue, request, error message, project requirement or desired outcome…"/></Field><Field l="Priority"><div className="radio-chips">{PRIS.map(x=><div key={x} className={`chip${f.priority===x?" active":""}`} onClick={()=>set("priority",x)}>{x}</div>)}</div></Field><Field l="Urgency"><div className="radio-chips">{URG.map(x=><div key={x} className={`chip${f.urgency===x?" active":""}`} onClick={()=>set("urgency",x)}>{x}</div>)}</div></Field></div></div></div>
+        <div className="card"><div className="card-header"><div className="card-title">Client Communication Channels</div></div><div className="card-body"><div style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:10}}>{CHANNELS.map(ch=><button key={ch.id} onClick={()=>toggleChannel(ch.id)} style={{textAlign:"left",padding:14,borderRadius:10,border:`2px solid ${channels.includes(ch.id)?(ch.id==="whatsapp"?"#25D366":"#3B82F6"):"var(--border)"}`,background:channels.includes(ch.id)?"rgba(59,130,246,.06)":"var(--bg)",color:"var(--text)",fontFamily:"inherit"}}><div style={{fontSize:15,fontWeight:800}}>{ch.icon} {ch.label} {channels.includes(ch.id)&&<span style={{float:"right",color:AC}}>✓</span>}</div><div style={{fontSize:10,color:"var(--text3)",marginTop:5}}>{ch.hint}</div></button>)}</div><div style={{fontSize:10,color:"var(--text4)",marginTop:8}}>Select WhatsApp, Email, or both. Legacy tickets without a channel value default to WhatsApp.</div></div></div>
+        <div className="card"><div className="card-header"><div className="card-title">Photos / Evidence <span style={{fontSize:10,color:"var(--text4)"}}>(optional, up to 5)</span></div></div><div className="card-body"><input ref={fRef} type="file" accept="image/*" multiple onChange={addPhotos}/><div className="photo-drop" onClick={()=>fRef.current?.click()} onDragOver={e=>e.preventDefault()} onDrop={onDrop}><div style={{fontSize:22}}>📷</div><div style={{fontSize:12,color:"var(--text2)",marginTop:5}}>Click or drag photos here</div></div>{photos.length>0&&<div className="photo-grid" style={{marginTop:10}}>{photos.map((x,i)=><div key={i} className="photo-thumb"><img src={x.src}/><button className="photo-rm" onClick={()=>setPhotos(p=>p.filter((_,j)=>j!==i))}>×</button></div>)}</div>}</div></div>
+        {!isEng&&needsDevice&&<label style={{display:"flex",gap:9,alignItems:"flex-start",padding:12,background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:9}}><input type="checkbox" checked={f.authorized} onChange={e=>set("authorized",e.target.checked)} style={{marginTop:2}}/><span style={{fontSize:11,color:"var(--text2)"}}>I authorise Cyber I.T Masters to inspect and work on the submitted device/asset. {err.authorized&&<span style={{color:"#F87171"}}>{err.authorized}</span>}</span></label>}
+        <div style={{display:"flex",justifyContent:"space-between"}}><button className="btn btn-ghost" onClick={()=>setStep(2)}>← Back</button><button className="btn btn-primary" onClick={()=>{if(validate())setStep(4)}}>Review Ticket →</button></div>
+      </div>}
+      {step===4&&<div className="card fu"><div className="card-header"><div className="card-title">4. Review & Confirm</div></div><div className="card-body"><div style={{background:"var(--bg)",border:"1px solid var(--border)",borderRadius:10,padding:16}}><div style={{fontSize:11,color:"var(--text3)",textTransform:"uppercase",letterSpacing:".08em",marginBottom:6}}>Service</div><div style={{fontSize:15,fontWeight:800,color:"var(--text)",marginBottom:12}}>{cat.icon} {cat.label} › {sub.label}</div><div className="detail-row"><div className="detail-key">Client</div><div className="detail-val">{f.clientName} {f.company&&`· ${f.company}`}</div></div><div className="detail-row"><div className="detail-key">Contact</div><div className="detail-val">{f.phone} {f.email&&`· ${f.email}`}</div></div><div className="detail-row"><div className="detail-key">Priority</div><div className="detail-val">{f.priority}</div></div><div className="detail-row"><div className="detail-key">Channels</div><div className="detail-val">{channels.map(x=>CHANNELS.find(c=>c.id===x)?.label).join(" + ")}</div></div><div className="detail-row"><div className="detail-key">Requirement</div><div className="detail-val">{f.issueTitle||f.problemDescription}</div></div>{category==="onsite"&&<div className="detail-row"><div className="detail-key">Visit</div><div className="detail-val">{f.address||"Address to be confirmed"}{f.preferredDate&&` · ${f.preferredDate}`} {f.preferredTime&&` ${f.preferredTime}`}</div></div>}</div><div style={{display:"flex",justifyContent:"space-between",marginTop:16}}><button className="btn btn-ghost" onClick={()=>setStep(3)}>← Edit</button><button className="btn btn-primary" onClick={submit} disabled={saving}>{saving?"Creating…":"✓ Create Ticket"}</button></div></div></div>}
     </div>
-  );
+  </div>;
 }
 
-/* ════════════════════════════════════════════════════
-   SUCCESS SCREEN
-════════════════════════════════════════════════════ */
 function SuccessScreen({ticket,onBack}){
   const [copied,setCopied]=useState(false);
   const copy=()=>{try{navigator.clipboard.writeText(ticket.ref);}catch{}setCopied(true);setTimeout(()=>setCopied(false),2000);};
@@ -2644,7 +2680,7 @@ function AnalyticsDashboard({tickets,onExport}){
   })();
 
   const statusData=Object.entries(ST).map(([key,v])=>({label:v.l,value:data.filter(t=>t.status===key).length,color:v.c})).filter(x=>x.value);
-  const serviceData=SVCS.map(s=>({label:s.label,value:data.filter(t=>t.serviceType===s.id).length})).filter(x=>x.value);
+  const serviceData=SERVICE_CATALOG.map(s=>({label:s.label,value:data.filter(t=>t.serviceCategory===s.id||(!t.serviceCategory&&t.serviceType===s.id)).length})).filter(x=>x.value);
   const ratingData=[5,4,3,2,1].map(r=>({label:`${r} ★`,value:signed.filter(t=>Number(t.serviceRating)===r).length}));
   const engineerMap={};
   data.forEach(t=>{
@@ -3388,7 +3424,13 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
   const [onlineEngineers,setOnlineEngineers]=useState({});
   const [chatCounts,setChatCounts]=useState({});
   const [lastRead,setLastRead]=useState({});
+  const [emailUnread,setEmailUnread]=useState({});
   const [notificationCount,setNotificationCount]=useState(0);
+  useEffect(()=>{
+    const next={};
+    tickets.forEach(t=>{next[t.ref]=emailUnreadCount(t);});
+    setEmailUnread(next);
+  },[tickets]);
   useEffect(()=>{
     const names=teamEngineers.map(e=>e.name);
     if(!names.includes(activeEngineer)) setActiveEngineer(names[0]||"Unassigned");
@@ -3422,6 +3464,13 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
     }).catch(e=>console.warn("Team engineer list unavailable",e));
     return()=>{cancelled=true;};
   },[authed,role]);
+
+  useEffect(()=>{
+    if(detailTab!=="email"||!sel||!tk) return;
+    if(emailUnreadCount(tk)>0){
+      fsUpdate(tk.ref,{emailLastReadAt:ts(),emailUnreadCount:0}).catch(e=>console.warn("Email read receipt failed",e));
+    }
+  },[detailTab,sel,tickets.length]);
 
   const [visibleCount,setVisibleCount]=useState(50);
   const [statusModal,setStatusModal]=useState(null);
@@ -3663,7 +3712,11 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
 
   const filtered=tickets.filter(t=>{
     if(fSt!=="all"&&t.status!==fSt)return false;
-    if(fTy!=="all"&&t.serviceType!==fTy)return false;
+    if(fTy!=="all") {
+      const legacyMap={"__legacy_device":"device","__legacy_remote":"remote","__legacy_onsite":"onsite"};
+      const wanted=legacyMap[fTy]||fTy;
+      if(t.serviceCategory!==wanted&&t.serviceType!==wanted)return false;
+    }
     if(fEng!=="all"&&(t.assignedEngineer||"Unassigned")!==fEng)return false;
     const hay=`${t.ref} ${t.clientName||""} ${t.name||""} ${t.issueTitle||""} ${t.problemDescription||""} ${t.phone||""} ${t.company||""}`.toLowerCase();
     if(srch&&!hay.includes(srch.toLowerCase()))return false;
@@ -3702,11 +3755,17 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
 
   const confirmStatusUpdate=async(statement)=>{
     const {ticket,newStatus}=statusModal;
+    const channels=Array.isArray(ticket.channels)&&ticket.channels.length?ticket.channels:["whatsapp"];
     await onUpdate(ticket.ref,{status:newStatus});
-    if(statement.trim()){
-      await onAddNote(ticket.ref,`[Status → ${ST[newStatus]?.l}] ${statement}`,"engineer-note","");
-    }
+    if(statement.trim()) await onAddNote(ticket.ref,`[Status → ${ST[newStatus]?.l}] ${statement}`,"engineer-note","");
     try{await sendSysMsg(ticket.ref,`Status updated to "${ST[newStatus]?.l}" by ${activeEngineer}${statement?` · ${statement.slice(0,80)}`:""}`)}catch(e){}
+    if(NOTIFY_STATUSES.includes(newStatus)){
+      const result=await notifyClient({ticket,newStatus,statement,actor:{name:activeEngineer,email:adminUser?.email},showToast});
+      if(result.email==="sent"&&result.whatsapp==="opened")showToast("Client notified via WhatsApp + Email ✓");
+      else if(result.email==="sent")showToast("Client notified via Email ✓");
+      else if(result.whatsapp==="opened")showToast("WhatsApp opened — send the message to complete ✓");
+      else if(channels.includes("email")&&!ticket.email)showToast("Status saved; client email is missing","error");
+    }
     setStatusModal(null);
   };
 
@@ -3898,8 +3957,11 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
                     <input className="field-input" placeholder="Search ref, name, phone, issue…" value={srch} onChange={e=>setSrch(e.target.value)}/>
                   </div>
                   <select className="field-input" style={{width:"auto"}} value={fTy} onChange={e=>setFTy(e.target.value)}>
-                    <option value="all">All Types</option>
-                    {SVCS.map(s=><option key={s.id} value={s.id}>{s.label}</option>)}
+                    <option value="all">All Service Categories</option>
+                    {SERVICE_CATALOG.map(s=><option key={s.id} value={s.id}>{s.label}</option>)}
+                    <option value="__legacy_device">Legacy · Device Drop-off</option>
+                    <option value="__legacy_remote">Legacy · Remote Support</option>
+                    <option value="__legacy_onsite">Legacy · On-Site Support</option>
                   </select>
                   <select className="field-input" style={{width:"auto"}} value={fEng} onChange={e=>setFEng(e.target.value)}>
                     <option value="all">All Engineers</option>
@@ -3938,7 +4000,7 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
                                 {t.quotationRef&&<span style={{marginLeft:6,fontSize:9,fontWeight:700,color:AC2,background:"rgba(14,165,233,0.1)",border:"1px solid rgba(14,165,233,0.2)",borderRadius:4,padding:"1px 5px"}}>QUO</span>}
                               </td>
                               <td><div style={{fontSize:13,fontWeight:600,color:"var(--text)"}}>{t.clientName||t.name||"—"}</div><div style={{fontSize:11,color:"var(--text3)"}}>{t.phone||""}</div></td>
-                              <td>{SVCS.find(s=>s.id===t.serviceType)?.icon} <span style={{fontSize:12}}>{SVCS.find(s=>s.id===t.serviceType)?.label||t.serviceType}</span></td>
+                              <td>{serviceIcon(t)} <span style={{fontSize:12}}>{serviceLabel(t)}</span></td>
                               <td style={{maxWidth:200,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{t.issueTitle||t.problemDescription||"—"}</td>
                               <td><SLABadge ticket={t}/></td>
                               <td><span style={{fontSize:11,fontWeight:600,color:t.priority==="Urgent"?"#EF4444":t.priority==="High"?"#F59E0B":"var(--text3)"}}>{t.priority}</span></td>
@@ -3996,6 +4058,10 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
                       🕘 Timeline
                       {Array.isArray(tk.timeline)&&tk.timeline.length>0&&<span style={{fontSize:9,color:"var(--text4)",marginLeft:3}}>({tk.timeline.length})</span>}
                     </button>
+                    <button className={`detail-tab${detailTab==="email"?" active":""}`} onClick={()=>setDetailTab("email")}>
+                      ✉️ Email
+                      {emailUnread[tk.ref]>0&&<span className="detail-tab-badge">{emailUnread[tk.ref]}</span>}
+                    </button>
                     <button className={`detail-tab${detailTab==="chat"?" active":""}`} onClick={openChatTab}>
                       💬 Chat
                       {(chatCounts[tk.ref]||0)>0&&<span className="detail-tab-new">{chatCounts[tk.ref]}</span>}
@@ -4046,7 +4112,7 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
                       <div className="divider"/>
                       <div style={{fontSize:10,fontWeight:700,color:"var(--text4)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Ticket Details</div>
                       {[
-                        ["Service",SVCS.find(s=>s.id===tk.serviceType)?.label],
+                        ["Service",serviceLabel(tk)],
                         ["Logged by",tk.loggedBy==="engineer"?`Engineer: ${tk.engineerName||""}`: "Customer (self)"],
                         tk.company&&["Company",tk.company],
                         ["Priority",tk.priority],
@@ -4100,6 +4166,16 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
                   )}
 
                   {detailTab==="timeline"&&<TicketTimeline ticket={tk} showToast={showToast}/>}
+
+                  {detailTab==="email"&&(
+                    <EmailTab
+                      ticket={tk}
+                      onSent={()=>{}}
+                      showToast={showToast}
+                      staffName={activeEngineer}
+                      staffEmail={adminUser?.email}
+                    />
+                  )}
 
                   {detailTab==="chat"&&(
                     <div style={{flex:1,display:"flex",flexDirection:"column",minHeight:0,height:"calc(100vh - 200px)"}}>
@@ -4402,7 +4478,7 @@ function Root(){
         if(result.saved) await fsUpdate(ref,{photoCount:result.saved});
         if(result.skipped) showToast(`${result.saved} photo(s) saved, ${result.skipped} too large and skipped`,result.saved?"ok":"error");
       }
-      try{await sendSysMsg(ref,`Ticket ${ref} created — ${SVCS.find(s=>s.id===form.serviceType)?.label||form.serviceType}`);}catch(e){}
+      try{await sendSysMsg(ref,`Ticket ${ref} created — ${serviceLabel(form)}`);}catch(e){}
       setLastTicket(ticket);
       if(view==="admin")showToast(`Ticket ${ref} created ✓`);
       else setView("success");
