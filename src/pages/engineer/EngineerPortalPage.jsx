@@ -47,7 +47,7 @@ export default function EngineerPortalPage() {
     assigned: tickets.length,
     active: tickets.filter((ticket) => ACTIVE_ENGINEER_STATUSES.includes(ticket.status)).length,
     urgent: tickets.filter((ticket) => ticket.priority === 'urgent').length,
-    inProgress: tickets.filter((ticket) => ticket.status === 'in_progress').length,
+    inProgress: tickets.filter((ticket) => ticket.status === 'in-progress').length,
     resolved: tickets.filter((ticket) => ticket.status === 'resolved').length,
   }), [tickets]);
 

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { PortalFrame, LegacyPortalButton } from '../../components/portal/PortalFrame';
+import { PortalFrame } from '../../components/portal/PortalFrame';
 import { useAuth } from '../../hooks/useAuth';
 import { getRoleLabel } from '../../permissions/roles';
 
@@ -37,14 +37,9 @@ export default function WorkspacePage() {
 
       <section className="portal-migration-card">
         <div>
-          <p className="portal-kicker">MIGRATION BRIDGE</p>
-          <h2>Legacy operational portals are still preserved.</h2>
-          <p>This lets us migrate functionality progressively instead of cutting over the service desk in one risky release.</p>
-        </div>
-        <div className="portal-button-row">
-          <LegacyPortalButton href="management.html" label="Legacy management" />
-          <LegacyPortalButton href="engineer.html" label="Legacy engineer" />
-          <LegacyPortalButton href="client.html" label="Legacy customer" />
+          <p className="portal-kicker">PHASE 3 CUTOVER</p>
+          <h2>Legacy portals are no longer exposed.</h2>
+          <p>Staff workflows now use the protected React/Vite routes. Legacy HTML portals remain outside the public build for rollback/reference only.</p>
         </div>
       </section>
     </PortalFrame>

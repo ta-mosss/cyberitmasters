@@ -10,7 +10,7 @@ const MANAGER_ROLES = new Set(['super_admin','operations_manager','service_manag
 function initAdmin() {
   if (!getApps().length) {
     const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-    initializeApp({ credential: cert(serviceAccount), projectId: 'test-bot-49f99' });
+    initializeApp({ credential: cert(serviceAccount), projectId: process.env.FIREBASE_PROJECT_ID });
   }
   return { auth: getAuth(), db: getFirestore() };
 }

@@ -107,7 +107,7 @@ export default function EngineerWorkPage() {
     setBusy('timer-start');
     try {
       const changes = { workStartedAt: startedAt };
-      if (selected.status !== 'in_progress') Object.assign(changes, { status: 'in_progress', engineerStatus: 'in_progress', engineerId, engineerName });
+      if (selected.status !== 'in-progress') Object.assign(changes, { status: 'in-progress', engineerStatus: 'in-progress', engineerId, engineerName });
       await updateEngineerTicket(selected.id, changes);
       setWorking({ startedAt });
       mergeTicket(selected.id, changes);

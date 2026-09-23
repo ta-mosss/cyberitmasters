@@ -19,6 +19,12 @@ function headers(event) {
 function json(statusCode, body, event) { return { statusCode, headers: headers(event), body: JSON.stringify(body) }; }
 function sha256(value) { return crypto.createHash('sha256').update(value).digest('hex'); }
 function randomToken() { return crypto.randomBytes(32).toString('base64url'); }
+function validatePngDataUrl(value, maxChars = 350000) {
+  const input = String(value || '').trim();
+  if (!input || input.length > maxChars) return null;
+  if (!/^data:image\/png;base64,[A-Za-z0-9+/]+={0,2}$/.test(input)) return null;
+  return input;
+}
 function publicTicket(data, id) {
   const safe = {};
   const keys = ['ref','ticketNumber','clientName','name','company','phone','email','address','deviceType','manufacturer','modelNumber','serialNumber','operatingSystem','serviceCategoryLabel','serviceSubCategoryLabel','issueTitle','issueDetail','problemDescription','priority','status','assignedEngineer','preferredDate','preferredTime'];
@@ -103,12 +109,25 @@ exports.handler = async (event) => {
         const snap = await tx.get(ref);
         if (!snap.exists) throw Object.assign(new Error('Ticket not found.'), { statusCode: 404 });
         const ticket = snap.data();
+        const assignedEngineer = ticket.assignedEngineerId || ticket.assignedUid;
+        const isAssignedEngineer = staff.role === 'engineer' && assignedEngineer === staff.decoded.uid;
+        const isManager = ['super_admin','operations_manager','service_manager','dispatcher'].includes(staff.role);
+        if (!isManager && !isAssignedEngineer) {
+          throw Object.assign(new Error('Only management or the assigned engineer may record staff authorisation.'), { statusCode: 403 });
+        }
+        if (!['resolved','awaiting-signoff'].includes(ticket.status)) {
+          throw Object.assign(new Error('Ticket must be resolved or awaiting sign-off before authorisation.'), { statusCode: 409 });
+        }
+        const safeSignature = validatePngDataUrl(signature);
+        if (!safeSignature) {
+          throw Object.assign(new Error('Signature must be a valid PNG data URL.'), { statusCode: 400 });
+        }
         if (ticket.status === 'closed') throw Object.assign(new Error('Ticket is already closed.'), { statusCode: 409 });
         tx.update(ref, {
           authorized: true,
-          authorisationName: name,
-          authorisationPosition: String(body.position || ''),
-          authorisationSignature: signature,
+          authorisationName: name.slice(0, 160),
+          authorisationPosition: String(body.position || '').trim().slice(0, 160),
+          authorisationSignature: safeSignature,
           authorisationSignedAt: FieldValue.serverTimestamp(),
           updatedAt: FieldValue.serverTimestamp(),
         });
@@ -127,7 +146,7 @@ exports.handler = async (event) => {
       signedAt: FieldValue.serverTimestamp(),
       clientName: String(body.clientName || result.data.clientName || result.data.name || 'Client').trim().slice(0, 160),
       clientPosition: String(body.clientPosition || '').trim().slice(0, 160),
-      signatureImage: String(body.signature || '').slice(0, 700000),
+      signatureImage: validatePngDataUrl(body.signature),
       feedback: {
         q1_resolved: String(body.q1_resolved || ''),
         q2_timeframe: String(body.q2_timeframe || ''),
@@ -140,6 +159,9 @@ exports.handler = async (event) => {
         timestamp: FieldValue.serverTimestamp(),
       },
     };
+    if (!signoff.signatureImage) {
+      return json(400, { error: 'Signature must be a valid PNG data URL.' }, event);
+    }
     await db.runTransaction(async tx => {
       const snap = await tx.get(result.refDoc);
       if (!snap.exists) throw Object.assign(new Error('Ticket not found.'), { statusCode: 404 });

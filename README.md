@@ -56,3 +56,7 @@ npm run dev
 Then open `/login` for the shared application login. `/portal`, `/admin`, `/management`, `/engineer` and `/customer` are protected migration routes.
 
 The existing HTML portals under `public/` remain available during the migration and are intentionally not removed yet. See `PHASE3_MIGRATION.md` and `MIGRATION_STATUS.md`.
+
+## Deployment target
+
+The React/Vite frontend is configured for GitHub Pages. The legacy standalone HTML portals are archived under `legacy-portals/` and are not copied into `dist/`.

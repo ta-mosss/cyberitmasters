@@ -8,18 +8,18 @@ import {
   onSnapshot,
   query,
   setDoc,
+  serverTimestamp,
   updateDoc,
   where,
 } from 'firebase/firestore';
 import { getDownloadURL, ref as storageRef, uploadBytes } from 'firebase/storage';
 import { db, storage } from '../firebase/app';
 
-const STATUS_ORDER = ['open', 'in-progress', 'awaiting', 'awaiting-parts', 'awaiting-authorisation', 'awaiting-payment', 'quoted', 'resolved', 'awaiting-signoff', 'closed'];
+const STATUS_ORDER = ['open', 'in-progress', 'awaiting-parts', 'awaiting-authorisation', 'awaiting-payment', 'quoted', 'resolved', 'awaiting-signoff', 'closed'];
 
 export const STATUS_META = {
   open: { label: 'Open', tone: 'blue', icon: '●', description: 'Your request has been logged and is in our service queue.' },
   'in-progress': { label: 'In Progress', tone: 'amber', icon: '◐', description: 'An engineer is actively working on your request.' },
-  awaiting: { label: 'Awaiting Parts', tone: 'purple', icon: '◇', description: 'Work is waiting for parts or equipment.' },
   'awaiting-parts': { label: 'Awaiting Parts', tone: 'purple', icon: '◇', description: 'Work is waiting for parts or equipment.' },
   'awaiting-authorisation': { label: 'Awaiting Authorisation', tone: 'purple', icon: '□', description: 'We are waiting for approval to proceed.' },
   'awaiting-payment': { label: 'Awaiting Payment', tone: 'purple', icon: '◌', description: 'We are waiting for payment before proceeding.' },
@@ -148,7 +148,7 @@ export async function createCustomerTicket({ user, profile, form, files = [] }) 
   if (!form.channels?.length) throw new Error('Select at least one communication channel.');
 
   const ref = ticketRef();
-  const now = new Date().toISOString();
+  const clientNow = new Date().toISOString();
   const ticket = {
     ref,
     ticketNumber: ref,
@@ -169,7 +169,8 @@ export async function createCustomerTicket({ user, profile, form, files = [] }) 
     issueTitle: form.issueTitle.trim().slice(0, 240),
     issueDetail: (form.issueDetail || '').trim().slice(0, 6000),
     problemDescription: (form.issueDetail || '').trim().slice(0, 6000),
-    priority: form.priority || 'Medium',
+    // Customer input never sets SLA priority; management assigns it after intake.
+    priority: 'medium',
     urgency: form.urgency || 'Standard (3–5 days)',
     address: (form.address || '').trim().slice(0, 500),
     preferredDate: form.preferredDate || '',
@@ -184,8 +185,8 @@ export async function createCustomerTicket({ user, profile, form, files = [] }) 
     attachments: [],
     status: 'open',
     assignedEngineer: 'Unassigned',
-    createdAt: now,
-    updatedAt: now,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
     notes: [],
     quotationRef: '',
     parts: [],
@@ -198,14 +199,14 @@ export async function createCustomerTicket({ user, profile, form, files = [] }) 
     if (attachments.length) {
       ticket.attachments = attachments;
       ticket.updatedAt = new Date().toISOString();
-      await updateDoc(doc(db, 'tickets', ref), { attachments, updatedAt: ticket.updatedAt });
+      await updateDoc(doc(db, 'tickets', ref), { attachments, updatedAt: serverTimestamp() });
     }
   } catch (error) {
     // The ticket remains valid even if an optional attachment upload fails.
     console.error('Attachment upload failed', error);
   }
 
-  return { ...ticket, id: ref };
+  return { ...ticket, id: ref, createdAt: clientNow, updatedAt: clientNow };
 }
 
 export function ticketProgress(status) {

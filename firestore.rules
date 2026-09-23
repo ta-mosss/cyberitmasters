@@ -9,30 +9,35 @@ service cloud.firestore {
         : {};
     }
     function userRole() { return signedIn() ? userDoc().role : null; }
-    function activeUser() { return signedIn() && userDoc().active != false; }
+
+    // A role stored in Firestore is authoritative, but a stale token claim must
+    // never grant a role that no longer matches the profile. Tokens without a
+    // role claim remain supported until claims are provisioned.
+    function roleConsistent() {
+      return claimRole() == null || claimRole() == userRole();
+    }
+    function activeUser() {
+      return signedIn() && userDoc().active != false && roleConsistent();
+    }
     function isStaff() {
-      return activeUser() && (
-        claimRole() in ['super_admin','operations_manager','service_manager','dispatcher','finance','engineer','support_agent'] ||
-        userRole() in ['super_admin','operations_manager','service_manager','dispatcher','finance','engineer','support_agent']
-      );
+      return activeUser() && userRole() in [
+        'super_admin','operations_manager','service_manager','dispatcher',
+        'finance','engineer','support_agent'
+      ];
     }
     function isManager() {
-      return activeUser() && (
-        claimRole() in ['super_admin','operations_manager','service_manager','dispatcher'] ||
-        userRole() in ['super_admin','operations_manager','service_manager','dispatcher']
-      );
+      return activeUser() && userRole() in [
+        'super_admin','operations_manager','service_manager','dispatcher'
+      ];
     }
     function isEngineer() {
-      return activeUser() && (
-        claimRole() in ['super_admin','engineer'] ||
-        userRole() in ['super_admin','engineer']
-      );
+      return activeUser() && userRole() in ['super_admin','engineer'];
     }
     function isFinance() {
-      return activeUser() && (claimRole() == 'finance' || userRole() == 'finance');
+      return activeUser() && userRole() == 'finance';
     }
     function isSuperAdmin() {
-      return activeUser() && (claimRole() == 'super_admin' || userRole() == 'super_admin');
+      return activeUser() && userRole() == 'super_admin';
     }
     function ownsTicket(data) {
       return signedIn() && (
@@ -46,21 +51,59 @@ service cloud.firestore {
         data.assignedUid == request.auth.uid
       );
     }
+    function canonicalTicketStatus(value) {
+      return value in [
+        'open','new','assigned','in-progress','awaiting-customer','awaiting-parts',
+        'scheduled','en-route','onsite','pending','awaiting-authorisation',
+        'awaiting-payment','quoted','resolved','awaiting-signoff','closed'
+      ];
+    }
+    function canonicalJobStatus(value) {
+      return value in ['scheduled','dispatched','en-route','onsite','in-progress','awaiting-parts','completed','cancelled'];
+    }
 
     match /tickets/{id} {
-      allow read: if isStaff() || ownsTicket(resource.data);
+      allow read: if isManager() || (isStaff() && (
+        userRole() != 'engineer' || assignedToTicket(resource.data)
+      )) || ownsTicket(resource.data);
+
+      // Customer-created tickets cannot choose workflow state, assignment or
+      // the SLA start time. createdAt/updatedAt must be server timestamps.
       allow create: if signedIn()
         && request.resource.data.requesterUid == request.auth.uid
-        && request.resource.data.customerId == request.auth.uid;
-      // Customer sign-off is intentionally NOT a direct Firestore write.
-      // It is performed by the authenticated Netlify function using a
-      // one-time token, so customers cannot alter status/sign-off fields.
-      allow update: if isManager()
-        || (isStaff() && assignedToTicket(resource.data))
+        && request.resource.data.customerId == request.auth.uid
+        && request.resource.data.status == 'open'
+        && request.resource.data.priority == 'medium'
+        && request.resource.data.assignedEngineer == 'Unassigned'
+        && !request.resource.data.keys().hasAny([
+          'assignedEngineerId','assignedUid','signoffTokenHash','signoffTokenExpiresAt',
+          'clientSignoff','authorized','closedAt','signoffUsedAt',
+          'slaDueAt','slaStatus','slaTargetMinutes','slaElapsedBusinessMinutes'
+        ])
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time;
+
+      // Managers may edit the full ticket. Engineers may only update fields
+      // needed to perform assigned work; sign-off/authorization fields are
+      // explicitly excluded and must be written by trusted functions.
+      allow update: if (isManager() && request.resource.data.updatedAt == request.time)
+        || (isStaff() && userRole() == 'engineer' && assignedToTicket(resource.data)
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+              'status','notes','attachments','timeSpentMinutes',
+              'workLastStoppedAt','workStartedAt','updatedAt'
+            ])
+            && request.resource.data.status in [
+              'open','assigned','in-progress','on-hold','awaiting-customer',
+              'awaiting-parts','scheduled','en-route','onsite','pending',
+              'awaiting-authorisation','resolved'
+            ]
+            && canonicalTicketStatus(request.resource.data.status)
+            && request.resource.data.updatedAt == request.time)
         || (ownsTicket(resource.data)
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
               'preferredDate','preferredTime','address','attachments','updatedAt'
-            ]));
+            ])
+            && request.resource.data.updatedAt == request.time);
       allow delete: if isSuperAdmin();
 
       match /timeEntries/{entryId} {
@@ -78,52 +121,86 @@ service cloud.firestore {
     match /users/{id} {
       allow read: if isStaff() && (id == request.auth.uid || isManager());
       allow create: if isSuperAdmin() || (signedIn() && id == request.auth.uid && request.resource.data.role == 'customer');
-      allow update: if isSuperAdmin() || (signedIn() && id == request.auth.uid && request.resource.data.role == resource.data.role);
+      // Self-service profile edits cannot change identity, role or activation.
+      allow update: if isSuperAdmin() || (
+        signedIn() && id == request.auth.uid
+        && request.resource.data.role == resource.data.role
+        && request.resource.data.active == resource.data.active
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'displayName','name','phone','photoURL','updatedAt'
+        ])
+      );
       allow delete: if isSuperAdmin();
     }
+
     match /customers/{id} {
-      allow read: if isStaff() || (signedIn() && id == request.auth.uid);
+      allow read: if isManager() || (isStaff() && userRole() != 'engineer') || (signedIn() && id == request.auth.uid);
       allow create: if signedIn() && id == request.auth.uid;
-      allow update: if isManager() || (signedIn() && id == request.auth.uid);
+      allow update: if (isManager() && request.resource.data.updatedAt == request.time) || (
+        signedIn() && id == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'customerId','name','company','phone','email','address','updatedAt'
+        ])
+      );
       allow delete: if isSuperAdmin();
     }
+
     match /engineers/{id} {
       allow read: if isStaff() && (isManager() || id == request.auth.uid);
       allow create, update: if isManager();
       allow delete: if isSuperAdmin();
     }
+
     match /mgmt_staff/{id} {
       allow read: if isStaff() && (isManager() || resource.data.uid == request.auth.uid || id == request.auth.uid);
       allow create, update: if isManager();
       allow delete: if isSuperAdmin();
     }
+
     match /jobs/{id} {
-      allow read: if isStaff();
+      allow read: if isManager() || (isStaff() && (userRole() != 'engineer' || assignedToTicket(resource.data)));
       allow create: if isManager();
-      allow update: if isManager() || (isEngineer() && assignedToTicket(resource.data));
+      allow update: if isManager() || (
+        isEngineer() && userRole() == 'engineer' && assignedToTicket(resource.data)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'status','lastNote','updatedAt'
+        ])
+        && canonicalJobStatus(request.resource.data.status)
+        && request.resource.data.updatedAt == request.time
+      );
       allow delete: if isSuperAdmin();
     }
+
     match /assets/{id} {
-      allow read: if isStaff();
-      allow create, update: if isManager() || (isEngineer() && assignedToTicket(resource.data));
+      allow read: if isManager() || (isStaff() && (userRole() != 'engineer' || resource.data.assignedEngineerId == request.auth.uid));
+      allow create, update: if isManager() || (isEngineer() && resource.data.assignedEngineerId == request.auth.uid);
       allow delete: if isManager();
     }
+
     match /quotes/{id} {
       allow read: if isStaff();
       allow create, update: if isManager() || isFinance();
       allow delete: if isManager();
     }
+
     match /client_signoffs/{id} {
       allow read: if isStaff();
-      // Created by the secured Netlify function only (Admin SDK bypasses rules).
       allow create: if false;
       allow update, delete: if isSuperAdmin();
     }
+
     match /auditLogs/{id} {
       allow read: if isManager();
-      // Audit records are server-created; clients cannot forge them.
-      allow create, update, delete: if false;
+      // Management mutations are client-initiated, so the audit entry is
+      // allowed only in the same manager session and only for ticket/job edits.
+      allow create: if isManager()
+        && request.resource.data.actorUid == request.auth.uid
+        && request.resource.data.actorRole == userRole()
+        && request.resource.data.action in ['ticket.updated','job.updated']
+        && request.resource.data.createdAt == request.time;
+      allow update, delete: if false;
     }
+
     match /notifications/{id} {
       allow read: if isStaff() && (resource.data.recipientUid == request.auth.uid || isManager());
       allow update: if isStaff() && resource.data.recipientUid == request.auth.uid;

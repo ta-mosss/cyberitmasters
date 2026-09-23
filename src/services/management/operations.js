@@ -12,9 +12,10 @@ import {
 import { auth, db, assertFirebase } from '../firebase/app';
 
 export const MANAGEMENT_TICKET_STATUSES = [
-  'open', 'assigned', 'in_progress', 'in-progress', 'on_hold', 'on-hold',
-  'awaiting_customer', 'awaiting-customer', 'awaiting_parts', 'awaiting-parts',
-  'awaiting_authorisation', 'awaiting-authorisation', 'resolved', 'awaiting-signoff', 'closed',
+  'open', 'new', 'assigned', 'in-progress', 'on-hold',
+  'awaiting-customer', 'awaiting-parts', 'scheduled', 'en-route', 'onsite',
+  'pending', 'awaiting-authorisation', 'awaiting-payment', 'quoted',
+  'resolved', 'awaiting-signoff', 'closed',
 ];
 
 export const MANAGEMENT_JOB_STATUSES = [
@@ -55,12 +56,12 @@ function mapSnapshot(snapshot) {
 export function subscribeToOperationsData(callbacks, onError) {
   assertFirebase();
   const sources = [
-    ['tickets', query(collection(db, 'tickets'), limit(500))],
-    ['jobs', query(collection(db, 'jobs'), limit(500))],
-    ['engineers', query(collection(db, 'users'), limit(500))],
-    ['customers', query(collection(db, 'customers'), limit(500))],
-    ['assets', query(collection(db, 'assets'), limit(500))],
-    ['quotes', query(collection(db, 'quotes'), limit(500))],
+    ['tickets', query(collection(db, 'tickets'), orderBy('updatedAt', 'desc'), limit(500))],
+    ['jobs', query(collection(db, 'jobs'), orderBy('updatedAt', 'desc'), limit(500))],
+    ['engineers', query(collection(db, 'users'), orderBy('updatedAt', 'desc'), limit(500))],
+    ['customers', query(collection(db, 'customers'), orderBy('updatedAt', 'desc'), limit(500))],
+    ['assets', query(collection(db, 'assets'), orderBy('updatedAt', 'desc'), limit(500))],
+    ['quotes', query(collection(db, 'quotes'), orderBy('updatedAt', 'desc'), limit(500))],
     ['auditLogs', query(collection(db, 'auditLogs'), orderBy('createdAt', 'desc'), limit(250))],
   ];
 
@@ -68,6 +69,7 @@ export function subscribeToOperationsData(callbacks, onError) {
     source,
     (snapshot) => {
       let rows = mapSnapshot(snapshot);
+      if (snapshot.size === 500) console.warn(`[management] ${key} feed reached the 500-row live window; use reporting/export pagination for older records.`);
       if (key === 'engineers') rows = rows.filter((person) => STAFF_ROLES.has(person.role) && person.role !== 'customer');
       callbacks[key]?.(rows);
     },

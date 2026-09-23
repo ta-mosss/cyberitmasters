@@ -1,7 +1,18 @@
 const { FieldValue } = require('firebase-admin/firestore');
+const { getStorage } = require('firebase-admin/storage');
 const { Resend } = require('resend');
 const { verifyStaff } = require('../_lib/auth');
 
+function cleanHtml(value) {
+  return String(value || '')
+    .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '')
+    .replace(/\\son[a-z]+\\s*=\\s*(?:"[^"]*"|'[^']*'|[^\\s>]+)/gi, '')
+    .replace(/javascript:/gi, '');
+}
+function normaliseEmail(value) {
+  const match = String(value || '').match(/<([^>]+)>/);
+  return (match ? match[1] : String(value || '')).trim().toLowerCase();
+}
 function response(event, statusCode, body) {
   const origin = event.headers?.origin || event.headers?.Origin || '';
   const allowed = String(process.env.ALLOWED_ORIGINS || '').split(',').map(x => x.trim()).filter(Boolean);
@@ -15,21 +26,31 @@ exports.handler = async (event) => {
     const staff = await verifyStaff(event);
     const { ticketId, to, subject, body, attachments = [] } = JSON.parse(event.body || '{}');
     if (!ticketId || !to || !body) return response(event, 400, { error: 'ticketId, to and body are required.' });
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) return response(event, 400, { error: 'Invalid recipient email.' });
+    const recipient = normaliseEmail(to);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipient)) return response(event, 400, { error: 'Invalid recipient email.' });
 
     const ticketRef = staff.db.collection('tickets').doc(ticketId);
     const ticketSnap = await ticketRef.get();
     if (!ticketSnap.exists) return response(event, 404, { error: 'Ticket not found.' });
     const ticketData = ticketSnap.data();
+    const allowedRecipients = new Set([
+      normaliseEmail(ticketData.email),
+      normaliseEmail(ticketData.requesterEmail),
+      normaliseEmail(ticketData.contactEmail),
+    ].filter(Boolean));
+    const internalDomain = String(process.env.INTERNAL_EMAIL_DOMAIN || 'mbulahenigroup.co.za').toLowerCase();
+    if (!allowedRecipients.has(recipient) && !recipient.endsWith(`@${internalDomain}`)) {
+      return response(event, 403, { error: 'Recipient is not associated with this ticket.' });
+    }
 
     const resend = new Resend(process.env.RESEND_API_KEY);
     const thread = Array.isArray(ticketData.emailThread) ? ticketData.emailThread : [];
     const replyTo = `tickets+${ticketId}@${process.env.TICKETS_DOMAIN}`;
     const sendPayload = {
       from: process.env.TICKETS_FROM_EMAIL,
-      to,
+      to: recipient,
       subject: subject || `Re: ${ticketData.subject || ticketData.issueTitle || 'Your ticket'}`,
-      html: body,
+      html: cleanHtml(body),
       replyTo,
     };
     const lastMessageId = thread.length ? thread[thread.length - 1].messageId : null;
@@ -38,17 +59,26 @@ exports.handler = async (event) => {
     // Only accept attachment descriptors that point to our own ticket storage path.
     const safeAttachments = (Array.isArray(attachments) ? attachments : []).filter(a => a && typeof a.path === 'string' && a.path.startsWith(`tickets/${ticketId}/emailAttachments/`)).slice(0, 10);
     if (safeAttachments.length) {
-      // The existing UI already uploads the files to Firebase Storage. Keep this
-      // function focused on authorization/threading; attachment transport can be
-      // extended without trusting arbitrary external URLs.
-      console.warn(`Email ${ticketId}: ${safeAttachments.length} attachment(s) uploaded; provider attachment transport is not enabled in this phase.`);
+      const bucket = getStorage().bucket();
+      const providerAttachments = [];
+      for (const attachment of safeAttachments) {
+        const file = bucket.file(attachment.path);
+        const [exists] = await file.exists();
+        if (!exists) continue;
+        const [bytes] = await file.download();
+        providerAttachments.push({
+          filename: String(attachment.name || attachment.path.split('/').pop()).slice(0, 180),
+          content: bytes.toString('base64'),
+        });
+      }
+      if (providerAttachments.length) sendPayload.attachments = providerAttachments;
     }
 
     const { data, error } = await resend.emails.send(sendPayload);
     if (error) throw new Error(error.message);
     const entry = {
-      direction: 'outbound', messageId: data.id, from: process.env.TICKETS_FROM_EMAIL, to,
-      subject: sendPayload.subject, body, sentAt: new Date().toISOString(),
+      direction: 'outbound', messageId: data.id, from: process.env.TICKETS_FROM_EMAIL, to: recipient,
+      subject: sendPayload.subject, body: sendPayload.html, sentAt: new Date().toISOString(),
       sentByUid: staff.decoded.uid, sentByEmail: staff.decoded.email || null, sentByRole: staff.role,
     };
     await ticketRef.update({

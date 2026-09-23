@@ -56,14 +56,10 @@ for (const file of sourceFiles) {
   assert(!/cdnjs\.cloudflare\.com.*react|unpkg\.com\/react|gstatic\.com\/firebasejs/i.test(content), `CDN React/Firebase reference remains in ${path.relative(root, file)}`);
 }
 
-for (const file of fs.readdirSync(path.join(root, 'public')).filter((name) => name.endsWith('.html'))) {
-  const full = path.join(root, 'public', file);
-  const content = fs.readFileSync(full, 'utf8');
-  if (/babel-standalone|gstatic\.com\/firebasejs|cdnjs\.cloudflare\.com.*react|unpkg\.com\/react/i.test(content)) {
-    warnings.push(`Legacy portal retained intentionally for migration: public/${file}`);
-  }
+for (const file of ['admin.html','super.html','client.html','engineer.html','support.html','management.html','clientsignoff.html','authorisation.html']) {
+  assert(!fs.existsSync(path.join(root, 'public', file)), `Legacy portal remains publicly deployed: public/${file}`);
+  assert(fs.existsSync(path.join(root, 'legacy-portals', file)), `Legacy portal rollback copy is missing: legacy-portals/${file}`);
 }
-
 if (failures.length) {
   console.error('Phase 3 check FAILED');
   for (const failure of failures) console.error(`- ${failure}`);
@@ -77,7 +73,4 @@ console.log(`- React Router DOM: ${packageJson.dependencies['react-router-dom']}
 console.log(`- Source files checked: ${sourceFiles.length}`);
 console.log('- Customer portal migration: present');
 console.log('- Secure sign-off route/function: present');
-if (warnings.length) {
-  console.log('\nLegacy migration inventory (expected at this stage):');
-  for (const warning of warnings) console.log(`- ${warning}`);
-}
+console.log('- Legacy standalone portals removed from public build and archived for rollback.');

@@ -21,7 +21,7 @@ const service = read('src/services/tickets/engineer.js');
 const work = read('src/pages/engineer/EngineerWorkPage.jsx');
 const storageRules = read('storage.rules');
 const firestoreRules = read('firestore.rules');
-const legacy = read('public/engineer.html');
+const legacy = read('legacy-portals/engineer.html');
 
 assert(router.includes('EngineerPortalPage'), 'Engineer route is not connected to EngineerPortalPage.');
 assert(router.includes('path="schedule"') && router.includes('path="history"') && router.includes('path="profile"'), 'Engineer child routes are incomplete.');
@@ -35,7 +35,7 @@ assert(firestoreRules.includes('match /timeEntries/{entryId}'), 'Nested ticket t
 assert(firestoreRules.includes('assignedToTicket(resource.data)'), 'Ticket update security must remain assignment-bound.');
 assert(storageRules.includes('match /ticket-attachments/{ticketRef}/{allPaths=**}'), 'Ticket attachment storage scope is missing.');
 assert(storageRules.includes('assigned(ticketRef)'), 'Engineer ticket attachment access must remain assignment-bound.');
-assert(/firebasejs|babel-standalone|ReactDOM\.createRoot/.test(legacy), 'Legacy engineer portal reference unexpectedly disappeared; keep it for rollback until cutover.');
+assert(/firebasejs|babel-standalone|ReactDOM\.createRoot/.test(legacy), 'Legacy engineer portal reference is missing from the rollback archive.');
 
 if (failures.length) {
   console.error('Engineer portal check FAILED');
@@ -49,4 +49,4 @@ console.log('- UID + legacy name-based assignment queries: present');
 console.log('- Auditable ticket timeEntries: present');
 console.log('- Assignment-bound ticket/storage security: present');
 console.log('- Secure server-authorised sign-off integration: present');
-console.log('- Legacy engineer portal retained for rollback: present');
+console.log('- Legacy engineer portal retained outside public build for rollback: present');

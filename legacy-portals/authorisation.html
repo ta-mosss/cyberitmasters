@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Authorisation – Cyber I.T Masters</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-functions-compat.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Plus Jakarta Sans',sans-serif;background:#050810;color:#E2E8F0;display:flex;min-height:100vh;align-items:center;justify-content:center;padding:20px;}
+  .card{background:#080D18;border:1px solid #0F1C2E;border-radius:16px;max-width:700px;width:100%;padding:32px;box-shadow:0 20px 60px rgba(0,0,0,0.8);}
+  .header{display:flex;align-items:center;gap:12px;margin-bottom:24px;border-bottom:1px solid #0F1C2E;padding-bottom:16px;}
+  .logo{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#00C896,#0EA5E9);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+  .brand{font-size:20px;font-weight:800;letter-spacing:-0.02em;color:#fff;}
+  .brand span{color:#00C896;}
+  .sub{font-size:11px;color:#94A3B8;font-weight:500;margin-top:2px;}
+  .ref-badge{display:inline-block;background:rgba(0,200,150,0.12);border:1px solid rgba(0,200,150,0.25);border-radius:20px;padding:4px 14px;font-size:12px;font-weight:700;color:#00C896;font-family:monospace;margin-bottom:20px;}
+  .ticket-info{background:#0D1624;border-radius:10px;padding:12px 16px;margin-bottom:20px;border:1px solid #0F1C2E;font-size:13px;color:#94A3B8;}
+  .ticket-info strong{color:#E2E8F0;font-weight:600;}
+  .tc-box{background:#0D1624;border:1px solid #0F1C2E;border-radius:10px;padding:16px;margin-bottom:20px;max-height:320px;overflow-y:auto;font-size:13px;line-height:1.7;color:#94A3B8;}
+  .tc-box strong{color:#E2E8F0;}
+  .tc-box h3{color:#00C896;font-size:14px;margin-bottom:8px;}
+  .field-group{margin-bottom:16px;}
+  .label{font-size:11px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;display:block;}
+  .field-input{width:100%;background:#050810;border:1px solid #0F1C2E;border-radius:8px;padding:10px 14px;color:#E2E8F0;font-size:14px;transition:border 0.2s;}
+  .field-input:focus{outline:none;border-color:#00C896;box-shadow:0 0 0 3px rgba(0,200,150,0.1);}
+  .field-input::placeholder{color:#475569;}
+  .signature-area{margin-bottom:20px;}
+  .signature-area canvas{
+    width:100%;
+    border:1px solid #0F1C2E;
+    border-radius:10px;
+    background:#fff;
+    touch-action:none;
+    display:block;
+    height:150px;
+    cursor:crosshair;
+  }
+  .sig-actions{display:flex;gap:8px;margin-top:8px;}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:none;border-radius:8px;font-weight:600;font-family:inherit;cursor:pointer;transition:all 0.2s;padding:10px 20px;font-size:14px;}
+  .btn-secondary{background:transparent;border:1px solid #0F1C2E;color:#94A3B8;}
+  .btn-secondary:hover{border-color:#334155;color:#E2E8F0;}
+  .btn-primary{background:linear-gradient(135deg,#00C896,#0EA5E9);color:#050810;}
+  .btn-primary:hover{transform:scale(1.02);box-shadow:0 4px 15px rgba(0,200,150,0.3);}
+  .btn-primary:disabled{opacity:0.4;cursor:not-allowed;transform:none;}
+  .btn-success{background:#10B981;color:#fff;}
+  .error-text{color:#F87171;font-size:12px;margin-top:4px;}
+  .success-box{background:rgba(16,185,129,0.1);border:1px solid #10B981;border-radius:10px;padding:16px;text-align:center;}
+  .success-box h2{color:#10B981;margin-bottom:6px;}
+  .footer{text-align:center;font-size:11px;color:#475569;margin-top:24px;border-top:1px solid #0F1C2E;padding-top:16px;}
+  .spinner{width:24px;height:24px;border-radius:50%;border:3px solid rgba(0,200,150,0.1);border-top-color:#00C896;animation:spin 0.8s linear infinite;margin:20px auto;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .flex-row{display:flex;gap:12px;}
+  .flex-row .field-group{flex:1;}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+const CFG = {
+  bizName: "Cyber I.T Masters",
+  tagline: "Professional I.T Solutions",
+  bridgeEndpoint: "https://cimop-portal-auth.mosesanza.workers.dev/"
+};
+</script>
+<script type="text/babel">
+const { useState, useEffect, useRef, forwardRef, useImperativeHandle } = React;
+
+
+
+// ── SIGNATURE PAD COMPONENT ──
+const SignaturePad = forwardRef((props, ref) => {
+  const canvasRef = useRef(null);
+  const ctxRef = useRef(null);
+  const isDrawing = useRef(false);
+
+  useImperativeHandle(ref, () => ({
+    getImageData: () => {
+      const canvas = canvasRef.current;
+      if (!canvas) return null;
+      return canvas.toDataURL("image/png");
+    },
+    isEmpty: () => {
+      const canvas = canvasRef.current;
+      if (!canvas) return true;
+      const ctx = canvas.getContext("2d");
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
+      for (let i = 0; i < data.length; i += 4) {
+        if (data[i] < 255 || data[i+1] < 255 || data[i+2] < 255) return false;
+      }
+      return true;
+    },
+    clear: () => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+  }));
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    canvas.width = 600;
+    canvas.height = 150;
+    const ctx = canvas.getContext("2d");
+    ctx.lineWidth = 3;
+    ctx.lineCap = "round";
+    ctx.strokeStyle = "#00C896";
+    ctxRef.current = ctx;
+
+    const getPos = (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      return {
+        x: (clientX - rect.left) * scaleX,
+        y: (clientY - rect.top) * scaleY
+      };
+    };
+
+    const startDraw = (e) => {
+      e.preventDefault();
+      isDrawing.current = true;
+      const pos = getPos(e);
+      ctx.beginPath();
+      ctx.moveTo(pos.x, pos.y);
+    };
+
+    const draw = (e) => {
+      e.preventDefault();
+      if (!isDrawing.current) return;
+      const pos = getPos(e);
+      ctx.lineTo(pos.x, pos.y);
+      ctx.stroke();
+    };
+
+    const stopDraw = (e) => {
+      e.preventDefault();
+      isDrawing.current = false;
+    };
+
+    canvas.addEventListener('mousedown', startDraw);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDraw);
+    canvas.addEventListener('mouseleave', stopDraw);
+    canvas.addEventListener('touchstart', startDraw, { passive: false });
+    canvas.addEventListener('touchmove', draw, { passive: false });
+    canvas.addEventListener('touchend', stopDraw);
+    canvas.addEventListener('touchcancel', stopDraw);
+
+    ctx.fillStyle = "#00C896";
+    ctx.fillRect(5, 5, 5, 5);
+
+    return () => {
+      canvas.removeEventListener('mousedown', startDraw);
+      canvas.removeEventListener('mousemove', draw);
+      canvas.removeEventListener('mouseup', stopDraw);
+      canvas.removeEventListener('mouseleave', stopDraw);
+      canvas.removeEventListener('touchstart', startDraw);
+      canvas.removeEventListener('touchmove', draw);
+      canvas.removeEventListener('touchend', stopDraw);
+      canvas.removeEventListener('touchcancel', stopDraw);
+    };
+  }, []);
+
+  return (
+    <div className="signature-area">
+      <label className="label">Client Digital Signature *</label>
+      <canvas ref={canvasRef} />
+      <div className="sig-actions">
+        <button
+          className="btn btn-secondary btn-sm"
+          style={{padding:'6px 12px',fontSize:12}}
+          onClick={() => {
+            const canvas = canvasRef.current;
+            if (canvas) {
+              const ctx = canvas.getContext("2d");
+              ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+          }}
+        >
+          🗑 Clear Signature
+        </button>
+        <span style={{fontSize:11,color:'#64748B',marginLeft:'auto'}}>Draw with mouse or finger</span>
+      </div>
+    </div>
+  );
+});
+
+// ── MAIN APP ──
+function App() {
+  const params = new URLSearchParams(window.location.search);
+  const ticketRef = params.get('ticketId') || "";
+  
+  const [ticket, setTicket] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [success, setSuccess] = useState(false);
+  
+  const [clientName, setClientName] = useState("");
+  const [clientPosition, setClientPosition] = useState("");
+  
+  const padRef = useRef(null);
+
+  // Fetch ticket through the shared Cloudflare bridge.
+  // This page never reads Firestore directly.
+  useEffect(() => {
+    let cancelled = false;
+    const loadTicket = async () => {
+      if (!ticketRef) {
+        setError("No ticket reference provided. Please use ?ticketId=CIM-XXXX");
+        setLoading(false);
+        return;
+      }
+      try {
+        const response = await fetch(CFG.bridgeEndpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ bridgeAction: "authorisation.get", ticketId: ticketRef })
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok || !result.success || !result.ticket) {
+          throw new Error(result.message || `Authorisation bridge returned ${response.status}`);
+        }
+        if (cancelled) return;
+        const data = result.ticket;
+        setTicket(data);
+        setClientName(data.clientName || "");
+        setClientPosition(data.authorisationPosition || "");
+      } catch (err) {
+        console.error("❌ Authorisation ticket load failed:", err);
+        if (!cancelled) setError(err.message || "Error fetching ticket. Please try again.");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    loadTicket();
+    return () => { cancelled = true; };
+  }, [ticketRef]);
+
+  const handleSubmit = async () => {
+  if (!clientName.trim()) {
+    alert("Please enter the client's full name.");
+    return;
+  }
+  if (!padRef.current || padRef.current.isEmpty()) {
+    alert("Please draw a signature in the box above.");
+    return;
+  }
+  setSubmitting(true);
+  try {
+    const imgData = padRef.current.getImageData();
+    
+    console.log('📤 Sending authorisation through CIMOP Cloudflare bridge:', ticketRef);
+
+    const response = await fetch(CFG.bridgeEndpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        bridgeAction: 'authorisation.submit',
+        ticketId: ticketRef,
+        name: clientName.trim(),
+        position: (clientPosition || '').trim(),
+        signature: imgData
+      })
+    });
+
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok || !result.success) {
+      if (result.alreadyAuthorised) {
+        setTicket(prev => prev ? {...prev, authorized:true, authorisationName:result.authorisationName || prev.authorisationName} : prev);
+      }
+      throw new Error(result.message || `Authorisation bridge returned ${response.status}`);
+    }
+
+    console.log('✅ Authorisation saved through Cloudflare:', result);
+    setSuccess(true);
+    
+  } catch (err) {
+    console.error('❌ Authorisation failed:', err);
+    alert(`Authorisation failed: ${err.message || 'Please try again.'}`);
+  }
+  setSubmitting(false);
+};
+
+  // ── Rendering states ──
+  if (loading) {
+    return (
+      <div className="card" style={{textAlign:'center',padding:48}}>
+        <div className="spinner"/>
+        <p style={{color:'#94A3B8'}}>Loading ticket...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="card" style={{textAlign:'center',padding:48}}>
+        <div style={{fontSize:48,marginBottom:16}}>⚠️</div>
+        <h2 style={{color:'#F87171',marginBottom:8}}>Something went wrong</h2>
+        <p style={{color:'#94A3B8'}}>{error}</p>
+        <button className="btn btn-secondary" style={{marginTop:16}} onClick={()=>window.history.back()}>← Go Back</button>
+      </div>
+    );
+  }
+
+  if (success) {
+    return (
+      <div className="card">
+        <div className="success-box">
+          <div style={{fontSize:48,marginBottom:8}}>✅</div>
+          <h2>Authorisation Complete!</h2>
+          <p style={{color:'#94A3B8',marginBottom:4}}>Client <strong>{clientName}</strong> has signed the diagnostic T&Cs for ticket <strong>{ticketRef}</strong>.</p>
+          <p style={{fontSize:13,color:'#64748B',marginTop:8}}>The admin panel has been updated. You may close this window.</p>
+          <button className="btn btn-primary" style={{marginTop:16}} onClick={()=>window.close()}>Close Window</button>
+        </div>
+      </div>
+    );
+  }
+
+  if (ticket && ticket.authorized === true) {
+    return (
+      <div className="card">
+        <div style={{background:'rgba(16,185,129,0.08)',border:'1px solid #10B981',borderRadius:10,padding:16,textAlign:'center'}}>
+          <div style={{fontSize:40,marginBottom:8}}>📋</div>
+          <h2 style={{color:'#10B981'}}>Already Authorised</h2>
+          <p style={{color:'#94A3B8'}}>
+            This ticket (<strong>{ticketRef}</strong>) was already signed by <strong>{ticket.authorisationName}</strong> 
+            on {ticket.authorisationSignedAt ? new Date(ticket.authorisationSignedAt).toLocaleString('en-ZA') : 'N/A'}.
+          </p>
+          <button className="btn btn-secondary" style={{marginTop:12}} onClick={()=>window.close()}>Close</button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Main Form ──
+  return (
+    <div className="card">
+      <div className="header">
+        <div className="logo">⚡</div>
+        <div>
+          <div className="brand">Cyber I.T <span>Masters</span></div>
+          <div className="sub">{CFG.tagline}</div>
+        </div>
+      </div>
+
+      <div className="ref-badge">📋 {ticketRef}</div>
+      
+      <div className="ticket-info">
+        <strong>{ticket.clientName || ticket.name || "Client"}</strong> 
+        {ticket.phone && <span> · {ticket.phone}</span>}
+        <br/>
+        Device: {ticket.manufacturer || ""} {ticket.modelNumber || ""} ({ticket.deviceType || "N/A"})
+      </div>
+
+      <h3 style={{color:'#00C896',fontSize:16,marginBottom:12}}>✍️ Diagnostic Authorisation</h3>
+      
+      <div className="tc-box">
+        <h3>TERMS & CONDITIONS FOR DIAGNOSTIC SERVICE</h3>
+        <p>
+          1. <strong>Diagnostic Fee</strong>: A fee of <strong>R350 (incl. VAT)</strong> is payable to commence diagnostic work. This fee is <strong>non-refundable</strong> as it covers our technical time, expertise, and bench usage.<br/><br/>
+          2. <strong>Fee Deductibility</strong>: If you approve the subsequent repair quote, this R350 fee will be <strong>fully deducted</strong> from your final repair invoice.<br/><br/>
+          3. <strong>No Unauthorised Repairs</strong>: No repair work will commence without your separate written approval of the official quote we will provide after diagnosis.<br/><br/>
+          4. <strong>Turnaround Time</strong>: Diagnostic results will be provided within <strong>2–3 business days</strong>. You will receive a separate quote for any recommended repairs.<br/><br/>
+          5. <strong>Data Loss Disclaimer</strong>: We are <strong>not responsible for any data loss</strong> that may occur during diagnostics. Please ensure you have a recent backup.<br/><br/>
+          6. <strong>Latent Defects</strong>: We take extreme care but are not liable for pre-existing dormant issues that may fail during diagnosis.<br/><br/>
+          7. <strong>Collection</strong>: If you decline the repair quote, you must collect your device within 7 business days. A storage fee of R50/day may apply thereafter. Uncollected items after 30 days may be disposed of to cover costs.<br/><br/>
+          <em>By signing below, you authorise {CFG.bizName} to perform the diagnostic assessment. You understand this fee is non-refundable, deductible from the repair cost, and that no repair work will commence without your separate approval of the repair quote.</em>
+        </p>
+      </div>
+
+      <div className="flex-row">
+        <div className="field-group">
+          <label className="label">Full Name *</label>
+          <input className="field-input" type="text" value={clientName} onChange={e=>setClientName(e.target.value)} placeholder="e.g. John Doe" />
+        </div>
+        <div className="field-group">
+          <label className="label">Position / Designation</label>
+          <input className="field-input" type="text" value={clientPosition} onChange={e=>setClientPosition(e.target.value)} placeholder="e.g. IT Manager" />
+        </div>
+      </div>
+
+      <SignaturePad ref={padRef} />
+
+      <button className="btn btn-primary" style={{width:'100%'}} onClick={handleSubmit} disabled={submitting}>
+        {submitting ? "Submitting..." : "✅ Submit Authorisation"}
+      </button>
+
+      <div className="footer">
+        {CFG.bizName} · {CFG.tagline} · This authorisation is digitally recorded and stored securely.
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.render(<App/>, document.getElementById('root'));
+</script>
+</body>
+</html>

@@ -36,13 +36,18 @@ assert(ops.includes("collection(db, 'users')"), 'Management service does not sub
 assert(ops.includes("collection(db, 'customers')"), 'Management service does not subscribe to customers.');
 assert(ops.includes("collection(db, 'auditLogs')"), 'Management service does not subscribe to audit logs.');
 assert(ops.includes('writeBatch(db)'), 'Management ticket/job mutations must use a batch with audit logging.');
+assert(rules.includes("request.resource.data.action in ['ticket.updated','job.updated']"), 'Audit log writes are not constrained to manager-generated ticket/job mutations.');
+assert(rules.includes("request.resource.data.actorUid == request.auth.uid"), 'Audit logs do not bind the actor to the authenticated manager.');
+assert(!ops.includes("'in_progress'") && !ops.includes("'awaiting_authorisation'"), 'Management status aliases must use the canonical hyphenated status set.');
 assert(ops.includes("/.netlify/functions/create-job"), 'Management job creation must use the trusted create-job function.');
 assert(ticket.includes('updateManagementTicket'), 'Management ticket editor is not connected to the write service.');
 assert(jobs.includes('createJobCard'), 'Management job creator is not connected to the trusted job function.');
 assert(rules.includes('function isManager()'), 'Manager security helper is missing.');
 assert(rules.includes('allow update: if isManager()'), 'Manager ticket/job update enforcement is missing from Firestore rules.');
-const legacy = read('public/management.html');
-assert(/firebasejs|babel-standalone|ReactDOM\.createRoot/.test(legacy), 'Legacy management portal reference unexpectedly disappeared; retain it for rollback.');
+for (const legacyFile of ['admin.html','super.html','client.html','engineer.html','support.html','management.html','clientsignoff.html']) {
+  assert(!fs.existsSync(path.join(root, 'public', legacyFile)), `Legacy portal remains publicly deployed: ${legacyFile}`);
+}
+assert(fs.existsSync(path.join(root, 'legacy-portals', 'management.html')), 'Legacy management portal was not preserved outside the public build.');
 for (const file of files.filter((f) => f.endsWith('.jsx') || f.endsWith('.js'))) {
   const source = read(file);
   assert(!/cdnjs\.cloudflare\.com.*react|unpkg\.com\/react|gstatic\.com\/firebasejs/i.test(source), `CDN dependency remains in ${file}`);
@@ -54,4 +59,4 @@ console.log('- Live tickets/jobs/staff/customers/assets/quotes/audit feeds: pres
 console.log('- Batched mutation + audit logging: present');
 console.log('- Trusted job creation: present');
 console.log('- Existing backend manager security enforcement: verified');
-console.log('- Legacy management portal retained for rollback: present');
+console.log('- Legacy standalone portals removed from public build and retained under legacy-portals/: verified');
