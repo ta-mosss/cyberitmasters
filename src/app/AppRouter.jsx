@@ -31,7 +31,7 @@ import AuthorisationPage from '../pages/authorisation/AuthorisationPage';
 import '../styles/portal.css';
 
 export default function AppRouter() {
-  return <BrowserRouter><AuthProvider><Routes>
+  return <BrowserRouter basename={import.meta.env.BASE_URL}><AuthProvider><Routes>
     <Route path="/" element={<App />} />
     <Route path="/login" element={<LoginPage />} />
     <Route path="/signoff" element={<CustomerSignoffPage />} />
