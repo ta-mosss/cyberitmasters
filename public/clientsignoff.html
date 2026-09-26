@@ -196,6 +196,10 @@
 </div>
 
 <script>
+  // Absolute base for Netlify Functions so this page still works when served
+  // from a different origin (e.g. GitHub Pages during a Netlify outage).
+  // Set to "" once this HTML is served from the Netlify site itself again.
+  const FUNCTIONS_BASE = "https://cyberit.mbulahenigroup.co.za";
   // Phase 1: customer sign-off is server-authorised by an expiring one-time token.
   const params = new URLSearchParams(window.location.search);
   const ticketToken = params.get('token') || '';
@@ -381,7 +385,7 @@
     submitBtn.innerHTML = '<span class="loading-spinner"></span> Submitting secure sign-off...';
 
     try {
-      const res = await fetch('/.netlify/functions/authorise', {
+      const res = await fetch(`${FUNCTIONS_BASE}/.netlify/functions/authorise`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...formData, mode: 'customer-signoff' })
