@@ -26,6 +26,8 @@ import CustomerAssetsPage from '../pages/customer/CustomerAssetsPage';
 import CustomerBillingPage from '../pages/customer/CustomerBillingPage';
 import CustomerProfilePage from '../pages/customer/CustomerProfilePage';
 import CustomerSignoffPage from '../pages/signoff/CustomerSignoffPage';
+import PublicTicketPage from '../pages/support/PublicTicketPage';
+import AuthorisationPage from '../pages/authorisation/AuthorisationPage';
 import '../styles/portal.css';
 
 export default function AppRouter() {
@@ -33,6 +35,8 @@ export default function AppRouter() {
     <Route path="/" element={<App />} />
     <Route path="/login" element={<LoginPage />} />
     <Route path="/signoff" element={<CustomerSignoffPage />} />
+    <Route path="/support" element={<PublicTicketPage />} />
+    <Route path="/authorise" element={<AuthorisationPage />} />
 
     <Route element={<RequireAuth />}>
       <Route path="/portal" element={<WorkspacePage />} />
