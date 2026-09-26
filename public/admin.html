@@ -1554,6 +1554,44 @@ async function teamApi(action,payload={}){
 }
 
 
+
+async function listTeamUsersFromFirestore(){
+  const snap=await db.collection("users").limit(500).get();
+  return snap.docs.map(d=>{
+    const x=d.data()||{};
+    return {
+      uid:d.id,
+      displayName:x.displayName||x.name||"",
+      email:x.email||"",
+      phone:x.phone||"",
+      jobTitle:x.jobTitle||"",
+      department:x.department||"",
+      role:normaliseRole(x.role||"support_agent"),
+      status:x.active===false?"disabled":"active",
+      active:x.active!==false,
+      createdAt:x.createdAt||null,
+      updatedAt:x.updatedAt||null
+    };
+  });
+}
+
+async function loadTeamUsers(){
+  // Team listing is a Firestore read and should not depend on the separate
+  // Cloudflare Worker. The worker is still used for create/update operations.
+  // This also prevents a Worker CORS outage from blanking Team & Access.
+  try{
+    return await listTeamUsersFromFirestore();
+  }catch(firestoreErr){
+    try{
+      const d=await teamApi("list");
+      return d.users||[];
+    }catch(workerErr){
+      const detail=workerErr?.message||firestoreErr?.message||"Team service unavailable";
+      throw new Error(detail);
+    }
+  }
+}
+
 function TeamAccess({adminUser,showToast,onEngineersChanged}){
   const [users,setUsers]=useState([]);
   const [loading,setLoading]=useState(true);
@@ -1570,9 +1608,20 @@ function TeamAccess({adminUser,showToast,onEngineersChanged}){
 
   const load=async()=>{
     setLoading(true);
-    try{const d=await teamApi("list");setUsers(d.users||[]);onEngineersChanged&&onEngineersChanged([{name:"Unassigned",uid:"",email:""},...(d.users||[]).filter(u=>u.status==="active"&&u.role==="engineer").map(u=>({name:(u.displayName||u.email||"Unnamed Engineer").trim(),uid:u.uid||"",email:u.email||""})).filter(u=>u.name)]);}
-    catch(e){console.error(e);showToast(e.message||"Failed to load team","error");}
-    finally{setLoading(false);}
+    try{
+      const rows=await loadTeamUsers();
+      setUsers(rows);
+      onEngineersChanged&&onEngineersChanged([
+        {name:"Unassigned",uid:"",email:""},
+        ...rows
+          .filter(u=>u&&u.status==="active"&&normaliseRole(u.role)==="engineer")
+          .map(u=>({name:(u.displayName||u.email||"Unnamed Engineer").trim(),uid:u.uid||"",email:u.email||""}))
+          .filter(u=>u.name)
+      ]);
+    }catch(e){
+      console.error("Team list unavailable",e);
+      showToast(e.message||"Failed to load team","error");
+    }finally{setLoading(false);}
   };
   useEffect(()=>{load();},[]);
 
@@ -3451,9 +3500,9 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
     // assignment/write permission must receive the live Team & Access list.
     if(!authed||!canAny(role,"tickets.assign","tickets.write")) return;
     let cancelled=false;
-    teamApi("list").then(d=>{
+    loadTeamUsers().then(rows=>{
       if(cancelled) return;
-      const engineers=[{name:"Unassigned",uid:"",email:""},...(d.users||[])
+      const engineers=[{name:"Unassigned",uid:"",email:""},...(rows||[])
         .filter(u=>u&&u.status==="active"&&normaliseRole(u.role)==="engineer")
         .map(u=>({
           name:(u.displayName||u.email||"Unnamed Engineer").trim(),
