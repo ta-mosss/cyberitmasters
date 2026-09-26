@@ -15,7 +15,7 @@ import ManagementPortalPage from '../pages/management/ManagementPortalPage';
 import {
   ManagementDashboardPage, ManagementTicketsPage, ManagementJobsPage, ManagementDispatchPage,
   ManagementEngineersPage, ManagementCustomersPage, ManagementAssetsPage, ManagementQuotesPage,
-  ManagementSlaPage, ManagementReportsPage, ManagementAuditPage, ManagementSettingsPage,
+  ManagementSlaPage, ManagementReportsPage, ManagementAuditPage, ManagementStaffPage, ManagementSettingsPage,
 } from '../pages/management';
 import CustomerPortalPage from '../pages/customer/CustomerPortalPage';
 import CustomerOverviewPage from '../pages/customer/CustomerOverviewPage';
@@ -37,7 +37,7 @@ export default function AppRouter() {
     <Route element={<RequireAuth />}>
       <Route path="/portal" element={<WorkspacePage />} />
       <Route element={<RequireRole roles={PORTAL_ROLES.admin} />}><Route path="/admin" element={<ModulePage type="admin" />} /></Route>
-      <Route element={<RequireRole roles={PORTAL_ROLES.management} />}><Route path="/management" element={<ManagementPortalPage />}><Route index element={<ManagementDashboardPage />} /><Route path="tickets" element={<ManagementTicketsPage />} /><Route path="jobs" element={<ManagementJobsPage />} /><Route path="dispatch" element={<ManagementDispatchPage />} /><Route path="engineers" element={<ManagementEngineersPage />} /><Route path="customers" element={<ManagementCustomersPage />} /><Route path="assets" element={<ManagementAssetsPage />} /><Route path="quotes" element={<ManagementQuotesPage />} /><Route path="sla" element={<ManagementSlaPage />} /><Route path="reports" element={<ManagementReportsPage />} /><Route path="audit" element={<ManagementAuditPage />} /><Route path="settings" element={<ManagementSettingsPage />} /></Route></Route>
+      <Route element={<RequireRole roles={PORTAL_ROLES.management} />}><Route path="/management" element={<ManagementPortalPage />}><Route index element={<ManagementDashboardPage />} /><Route path="tickets" element={<ManagementTicketsPage />} /><Route path="jobs" element={<ManagementJobsPage />} /><Route path="dispatch" element={<ManagementDispatchPage />} /><Route path="engineers" element={<ManagementEngineersPage />} /><Route path="customers" element={<ManagementCustomersPage />} /><Route path="assets" element={<ManagementAssetsPage />} /><Route path="quotes" element={<ManagementQuotesPage />} /><Route path="sla" element={<ManagementSlaPage />} /><Route path="reports" element={<ManagementReportsPage />} /><Route path="audit" element={<ManagementAuditPage />} /><Route path="staff" element={<ManagementStaffPage />} /><Route path="settings" element={<ManagementSettingsPage />} /></Route></Route>
       <Route element={<RequireRole roles={PORTAL_ROLES.engineer} />}><Route path="/engineer" element={<EngineerPortalPage />}><Route index element={<EngineerWorkPage />} /><Route path="schedule" element={<EngineerSchedulePage />} /><Route path="history" element={<EngineerHistoryPage />} /><Route path="profile" element={<EngineerProfilePage />} /></Route></Route>
       <Route element={<RequireRole roles={PORTAL_ROLES.customer} />}><Route path="/customer" element={<CustomerPortalPage />}>
         <Route index element={<CustomerOverviewPage />} />
