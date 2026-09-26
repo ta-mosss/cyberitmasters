@@ -34,6 +34,7 @@ export const MANAGEMENT_NAV = [
   { key: 'sla', label: 'SLA & Escalations', icon: '⏱' },
   { key: 'reports', label: 'Reports', icon: '📊' },
   { key: 'audit', label: 'Audit Log', icon: '🧾' },
+  { key: 'staff', label: 'Staff & Access', icon: '🔑' },
   { key: 'settings', label: 'Settings', icon: '⚙' },
 ];
 
@@ -142,6 +143,21 @@ export async function createJobCard(payload) {
   });
   const result = await response.json().catch(() => ({}));
   if (!response.ok || !result.success) throw new Error(result.error || 'Could not create job card.');
+  return result;
+}
+
+export async function updateStaffAccount(uid, { role, active }) {
+  assertFirebase();
+  const current = auth?.currentUser;
+  if (!current) throw new Error('Your session has expired. Please sign in again.');
+  const token = await current.getIdToken();
+  const response = await fetch('/.netlify/functions/admin-users', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ uid, role, active }),
+  });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok || !result.success) throw new Error(result.error || 'Could not update staff account.');
   return result;
 }
 
