@@ -1,11 +1,11 @@
 import fs from 'node:fs';
-import { beforeAll, afterAll, beforeEach, describe, test } from 'node:test';
+import { before, after, beforeEach, describe, test } from 'node:test';
 import { assertFails, assertSucceeds, initializeTestEnvironment } from '@firebase/rules-unit-testing';
 import { doc, getDoc, setDoc, updateDoc, writeBatch, serverTimestamp } from 'firebase/firestore';
 
 let testEnv;
 
-beforeAll(async () => {
+before(async () => {
   testEnv = await initializeTestEnvironment({
     projectId: 'cyber-it-masters-rules-test',
     firestore: {
@@ -14,7 +14,7 @@ beforeAll(async () => {
   });
 });
 
-afterAll(async () => {
+after(async () => {
   await testEnv.cleanup();
 });
 
