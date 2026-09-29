@@ -146,18 +146,24 @@ export async function createJobCard(payload) {
   return result;
 }
 
-export async function updateStaffAccount(uid, { role, active }) {
+// Staff administration runs through the CIMOP Team & Access Worker (Cloudflare),
+// which is reachable from any origin it allows (Netlify domain and GitHub Pages).
+const TEAM_ADMIN_URL = import.meta.env.VITE_TEAM_ADMIN_URL || 'https://cimop-portal-auth.mosesanza.workers.dev/';
+
+export async function teamAdminRequest(action, payload = {}) {
   assertFirebase();
   const current = auth?.currentUser;
   if (!current) throw new Error('Your session has expired. Please sign in again.');
-  const token = await current.getIdToken();
-  const response = await fetch('/.netlify/functions/admin-users', {
+  const token = await current.getIdToken(true);
+  const response = await fetch(TEAM_ADMIN_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ uid, role, active }),
+    body: JSON.stringify({ action, ...payload }),
   });
   const result = await response.json().catch(() => ({}));
-  if (!response.ok || !result.success) throw new Error(result.error || 'Could not update staff account.');
+  if (!response.ok || result.ok === false || result.success === false) {
+    throw new Error(result.message || result.error || 'Team administration request failed.');
+  }
   return result;
 }
 
