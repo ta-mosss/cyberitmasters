@@ -474,6 +474,10 @@ const CFG={
   // security on its own no matter what it checks client-side.
   adminEmails:["admin@mbulahenigroup.co.za","ronewa@cyberit.co.za"],
   teamApi:"https://cimop-portal-auth.mosesanza.workers.dev/",
+  // Absolute base for Netlify Functions so this page still works when served
+  // from a different origin (e.g. GitHub Pages during a Netlify outage).
+  // Set to "" once this HTML is served from the Netlify site itself again.
+  functionsBase:"https://cyberit.mbulahenigroup.co.za",
   zoho:"https://books.zohosecure.com/portal/mbulahenigroup/signin",
   adWin:"https://download.anydesk.com/AnyDesk.exe",
   adMac:"https://download.anydesk.com/anydesk.dmg",
@@ -660,6 +664,10 @@ function escapeHtml(v){
   return String(v==null?"":v)
     .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
     .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+}
+function safeSignatureImage(value){
+  const v=String(value||"").trim();
+  return /^data:image\/png;base64,[A-Za-z0-9+/]+={0,2}$/.test(v) && v.length<=350000 ? v : "";
 }
 
 /* ── PHOTO STORAGE (base64 in Firestore — no Firebase Storage/Blaze plan needed) ──
@@ -1066,7 +1074,7 @@ The ${CFG.bizName} Team
 
 <h2>Client Signature</h2>
 <div class="sig-box">
-  ${ticket.authorisationSignature ? `<img src="${ticket.authorisationSignature}" alt="Client Signature"/>` : "<p style='color:#999;'>No signature captured</p>"}
+  ${safeSignatureImage(ticket.authorisationSignature) ? `<img src="${safeSignatureImage(ticket.authorisationSignature)}" alt="Client Signature"/>` : "<p style='color:#999;'>No signature captured</p>"}
   <div style="margin-top:8px;font-size:11px;color:#666;">
     <strong>${escapeHtml(ticket.authorisationName || "Client")}</strong>
     ${ticket.authorisationPosition ? ` · ${escapeHtml(ticket.authorisationPosition)}` : ""}
@@ -1178,7 +1186,7 @@ function generateJobCard(ticket){
     <p style="font-size:11px;color:#444;margin-bottom:2px;">Name: ${escapeHtml(ticket.clientSignoff?.clientName||"")}</p>
     <p style="font-size:11px;color:#444;margin-bottom:2px;">Position: ${escapeHtml(ticket.clientSignoff?.clientPosition||"")}</p>
     <p style="font-size:11px;color:#444;margin-bottom:6px;">Signed: ${ticket.clientSignoff?.signedAt?new Date(ticket.clientSignoff.signedAt).toLocaleString("en-ZA"):""}</p>
-    ${ticket.clientSignoff?.signatureImage?`<img src="${ticket.clientSignoff.signatureImage}" style="height:60px;border:1px solid #ddd;border-radius:4px;"/>`:
+    ${safeSignatureImage(ticket.clientSignoff?.signatureImage)?`<img src="${safeSignatureImage(ticket.clientSignoff.signatureImage)}" style="height:60px;border:1px solid #ddd;border-radius:4px;"/>`:
     `<div style="border-bottom:1px solid #333;height:40px;margin-bottom:4px;"></div><div style="font-size:10px;color:#666;">Client Signature &amp; Date (Device Collection)</div>`}
   </div>
 </div>
@@ -1546,6 +1554,44 @@ async function teamApi(action,payload={}){
 }
 
 
+
+async function listTeamUsersFromFirestore(){
+  const snap=await db.collection("users").limit(500).get();
+  return snap.docs.map(d=>{
+    const x=d.data()||{};
+    return {
+      uid:d.id,
+      displayName:x.displayName||x.name||"",
+      email:x.email||"",
+      phone:x.phone||"",
+      jobTitle:x.jobTitle||"",
+      department:x.department||"",
+      role:normaliseRole(x.role||"support_agent"),
+      status:x.active===false?"disabled":"active",
+      active:x.active!==false,
+      createdAt:x.createdAt||null,
+      updatedAt:x.updatedAt||null
+    };
+  });
+}
+
+async function loadTeamUsers(){
+  // Team listing is a Firestore read and should not depend on the separate
+  // Cloudflare Worker. The worker is still used for create/update operations.
+  // This also prevents a Worker CORS outage from blanking Team & Access.
+  try{
+    return await listTeamUsersFromFirestore();
+  }catch(firestoreErr){
+    try{
+      const d=await teamApi("list");
+      return d.users||[];
+    }catch(workerErr){
+      const detail=workerErr?.message||firestoreErr?.message||"Team service unavailable";
+      throw new Error(detail);
+    }
+  }
+}
+
 function TeamAccess({adminUser,showToast,onEngineersChanged}){
   const [users,setUsers]=useState([]);
   const [loading,setLoading]=useState(true);
@@ -1562,9 +1608,20 @@ function TeamAccess({adminUser,showToast,onEngineersChanged}){
 
   const load=async()=>{
     setLoading(true);
-    try{const d=await teamApi("list");setUsers(d.users||[]);onEngineersChanged&&onEngineersChanged([{name:"Unassigned",uid:"",email:""},...(d.users||[]).filter(u=>u.status==="active"&&u.role==="engineer").map(u=>({name:(u.displayName||u.email||"Unnamed Engineer").trim(),uid:u.uid||"",email:u.email||""})).filter(u=>u.name)]);}
-    catch(e){console.error(e);showToast(e.message||"Failed to load team","error");}
-    finally{setLoading(false);}
+    try{
+      const rows=await loadTeamUsers();
+      setUsers(rows);
+      onEngineersChanged&&onEngineersChanged([
+        {name:"Unassigned",uid:"",email:""},
+        ...rows
+          .filter(u=>u&&u.status==="active"&&normaliseRole(u.role)==="engineer")
+          .map(u=>({name:(u.displayName||u.email||"Unnamed Engineer").trim(),uid:u.uid||"",email:u.email||""}))
+          .filter(u=>u.name)
+      ]);
+    }catch(e){
+      console.error("Team list unavailable",e);
+      showToast(e.message||"Failed to load team","error");
+    }finally{setLoading(false);}
   };
   useEffect(()=>{load();},[]);
 
@@ -1898,7 +1955,7 @@ async function notifyClient({ticket,newStatus,statement,actor,showToast}){
   if(channels.includes("email")&&ticket.email){
     try{
       const token=auth.currentUser?await auth.currentUser.getIdToken():null;
-      const res=await fetch("/.netlify/functions/send-ticket-email",{method:"POST",headers:{"Content-Type":"application/json",...(token?{"Authorization":`Bearer ${token}`}:{})},body:JSON.stringify({ticketId:ticket.ref,to:ticket.email,subject:`Ticket ${ticket.ref} — ${ST[newStatus]?.l||newStatus}`,body,attachments:[],threadId:ticket.ref,staffName:actor?.name||"Cyber I.T Masters Support",staffEmail:actor?.email||null,replyTo:`tickets+${ticket.ref}@mbulahenigroup.co.za`})});
+      const res=await fetch(`${CFG.functionsBase}/.netlify/functions/send-ticket-email`,{method:"POST",headers:{"Content-Type":"application/json",...(token?{"Authorization":`Bearer ${token}`}:{})},body:JSON.stringify({ticketId:ticket.ref,to:ticket.email,subject:`Ticket ${ticket.ref} — ${ST[newStatus]?.l||newStatus}`,body,attachments:[],threadId:ticket.ref,staffName:actor?.name||"Cyber I.T Masters Support",staffEmail:actor?.email||null,replyTo:`tickets+${ticket.ref}@mbulahenigroup.co.za`})});
       const json=await res.json().catch(()=>({})); if(!res.ok||!json.success)throw new Error(json.error||`Email failed (${res.status})`); result.email="sent";
     }catch(e){console.error("Client email notification failed",e);result.email="failed";showToast?.("Email notification failed; status was still saved","error");}
   }
@@ -2173,7 +2230,7 @@ function EmailTab({ticket,onSent,showToast,staffName,staffEmail}){
       const currentStaff=auth.currentUser;
       const idToken=currentStaff?await currentStaff.getIdToken(true):null;
       if(!idToken) throw new Error("Your staff session has expired. Please sign in again.");
-      const res=await fetch("/.netlify/functions/send-ticket-email",{
+      const res=await fetch(`${CFG.functionsBase}/.netlify/functions/send-ticket-email`,{
         method:"POST",
         headers:{"Content-Type":"application/json","Authorization":`Bearer ${idToken}`},
         body:JSON.stringify({
@@ -3443,9 +3500,9 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
     // assignment/write permission must receive the live Team & Access list.
     if(!authed||!canAny(role,"tickets.assign","tickets.write")) return;
     let cancelled=false;
-    teamApi("list").then(d=>{
+    loadTeamUsers().then(rows=>{
       if(cancelled) return;
-      const engineers=[{name:"Unassigned",uid:"",email:""},...(d.users||[])
+      const engineers=[{name:"Unassigned",uid:"",email:""},...(rows||[])
         .filter(u=>u&&u.status==="active"&&normaliseRole(u.role)==="engineer")
         .map(u=>({
           name:(u.displayName||u.email||"Unnamed Engineer").trim(),
@@ -3605,7 +3662,7 @@ function Admin({tickets,loading,authed,adminUser,userProfile,assets,assetDbError
       const u=auth.currentUser;
       if(!u) throw new Error("Your staff session has expired. Please sign in again.");
       const token=await u.getIdToken(true);
-      const res=await fetch("/.netlify/functions/authorise",{
+      const res=await fetch(`${CFG.functionsBase}/.netlify/functions/authorise`,{
         method:"POST",
         headers:{"Content-Type":"application/json","Authorization":`Bearer ${token}`},
         body:JSON.stringify({
