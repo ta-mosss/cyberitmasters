@@ -19,12 +19,46 @@ export default function PublicTicketPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [created, setCreated] = useState(null);
+  
+  // NEW: State for file uploads
+  const [files, setFiles] = useState([]);
 
   const category = useMemo(() => SERVICE_CATALOG.find((entry) => entry.id === form.serviceCategory), [form.serviceCategory]);
   const deviceFields = DEVICE_SUBS.has(form.serviceSubCategory);
   const onsiteFields = form.serviceCategory === ONSITE_CATEGORY;
   const update = (key, value) => setForm((current) => ({ ...current, [key]: value }));
   const toggleChannel = (channel) => setForm((current) => ({ ...current, channels: current.channels.includes(channel) ? current.channels.filter((value) => value !== channel) : [...current.channels, channel] }));
+
+  // NEW: Handle file selection
+  const handleFileChange = (e) => {
+    if (e.target.files) {
+      setFiles(Array.from(e.target.files));
+    }
+  };
+
+  // NEW: Upload to Cloudflare R2 function
+  const uploadFileToR2 = async (file) => {
+    // 1. Get presigned URL from Netlify
+    const response = await fetch('/.netlify/functions/get-upload-url', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fileName: file.name, fileType: file.type })
+    });
+    
+    if (!response.ok) throw new Error("Failed to get upload URL");
+    const { uploadUrl, publicUrl } = await response.json();
+
+    // 2. Upload to R2
+    const uploadResponse = await fetch(uploadUrl, {
+      method: 'PUT',
+      body: file,
+      headers: { 'Content-Type': file.type }
+    });
+
+    if (!uploadResponse.ok) throw new Error("Failed to upload file to Cloudflare");
+    
+    return publicUrl; // Return the final link to save in the database
+  };
 
   const next = () => {
     setError('');
@@ -39,8 +73,18 @@ export default function PublicTicketPage() {
     setBusy(true);
     setError('');
     try {
+      // NEW: Upload files to R2 first
+      const uploadedAttachments = [];
+      if (files.length > 0) {
+        for (const file of files) {
+          const url = await uploadFileToR2(file);
+          uploadedAttachments.push(url);
+        }
+      }
+
       const category = SERVICE_CATALOG.find((entry) => entry.id === form.serviceCategory);
       const sub = category?.items.find(([id]) => id === form.serviceSubCategory);
+      
       const response = await fetch('/.netlify/functions/create-ticket', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -49,8 +93,10 @@ export default function PublicTicketPage() {
           serviceCategoryLabel: category?.label || '',
           serviceSubCategoryLabel: sub?.[1] || '',
           renderedAt,
+          attachments: uploadedAttachments, // Pass the R2 URLs to the backend
         }),
       });
+      
       const result = await response.json().catch(() => ({}));
       if (!response.ok || !result.success) throw new Error(result.error || 'Could not create your ticket.');
       setCreated({ ref: result.ticketRef, ...form });
@@ -75,7 +121,7 @@ export default function PublicTicketPage() {
         <a className="portal-button portal-button-secondary" href={waUrl(WA_NUMBER, businessMsg)} target="_blank" rel="noreferrer">📲 Notify Cyber I.T Masters</a>
         {created.email && <a className="portal-button portal-button-secondary" href={`mailto:${created.email}?subject=Support Ticket ${created.ref}&body=Hi ${created.clientName},%0D%0A%0D%0AYour ticket ${created.ref} has been received.`}>✉️ Email confirmation</a>}
       </div>
-      <button type="button" className="portal-button portal-button-secondary" style={{ marginTop: 16 }} onClick={() => { setCreated(null); setForm(INITIAL); setStep(1); }}>Log another ticket</button>
+      <button type="button" className="portal-button portal-button-secondary" style={{ marginTop: 16 }} onClick={() => { setCreated(null); setForm(INITIAL); setStep(1); setFiles([]); }}>Log another ticket</button>
     </div></div>;
   }
 
@@ -101,6 +147,14 @@ export default function PublicTicketPage() {
     {step === 4 && <div className="customer-request-pane"><h3>Tell us about the issue</h3><div className="signoff-two-col">
       <div className="signoff-field" style={{ gridColumn: '1 / -1' }}><label>Issue / request title *</label><input value={form.issueTitle} onChange={(e) => update('issueTitle', e.target.value)} placeholder="e.g. Laptop will not turn on" /></div>
       <div className="signoff-field" style={{ gridColumn: '1 / -1' }}><label>Describe the problem</label><textarea rows={5} value={form.issueDetail} onChange={(e) => update('issueDetail', e.target.value)} placeholder="Include any error messages or what you already tried." /></div>
+      
+      {/* NEW: File Upload Input */}
+      <div className="signoff-field" style={{ gridColumn: '1 / -1' }}>
+        <label>Attach photos (optional)</label>
+        <input type="file" multiple accept="image/*,.pdf" onChange={handleFileChange} style={{ padding: '10px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }} />
+        {files.length > 0 && <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '4px', display: 'block' }}>{files.length} file(s) selected.</span>}
+      </div>
+
       {deviceFields && <>
         <div className="signoff-field"><label>Device type</label><input value={form.deviceType} onChange={(e) => update('deviceType', e.target.value)} placeholder="e.g. Laptop" /></div>
         <div className="signoff-field"><label>Manufacturer</label><input value={form.manufacturer} onChange={(e) => update('manufacturer', e.target.value)} /></div>
@@ -121,13 +175,14 @@ export default function PublicTicketPage() {
       <div className="customer-review-item"><small>Phone</small><strong>{form.phone}</strong></div>
       <div className="customer-review-item"><small>Notification</small><strong>{form.channels.join(' + ') || '—'}</strong></div>
       <div className="customer-review-item full"><small>Issue</small><strong>{form.issueTitle}</strong></div>
+      {files.length > 0 && <div className="customer-review-item full"><small>Attachments</small><strong>{files.length} file(s) ready to upload</strong></div>}
     </div></div>}
 
     {error && <div className="customer-alert error" role="alert">{error}</div>}
     <div className="customer-request-footer">
       {step > 1 && <button type="button" className="portal-button portal-button-secondary" onClick={() => setStep((value) => value - 1)}>← Back</button>}
       <span />
-      {step < 5 ? <button type="button" className="portal-button" onClick={next}>Continue →</button> : <button type="button" className="portal-button" onClick={submit} disabled={busy}>{busy ? 'Submitting…' : 'Submit Ticket'}</button>}
+      {step < 5 ? <button type="button" className="portal-button" onClick={next}>Continue →</button> : <button type="button" className="portal-button" onClick={submit} disabled={busy}>{busy ? 'Uploading & Submitting…' : 'Submit Ticket'}</button>}
     </div>
     <p className="signoff-footer">Cyber I.T Masters · This form is written securely to our service desk - no account required.</p>
   </div></div>;
