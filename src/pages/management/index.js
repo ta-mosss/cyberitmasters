@@ -9,4 +9,5 @@ export { default as ManagementQuotesPage } from './ManagementQuotesPage';
 export { default as ManagementSlaPage } from './ManagementSlaPage';
 export { default as ManagementReportsPage } from './ManagementReportsPage';
 export { default as ManagementAuditPage } from './ManagementAuditPage';
+export { default as ManagementStaffPage } from './ManagementStaffPage';
 export { default as ManagementSettingsPage } from './ManagementSettingsPage';

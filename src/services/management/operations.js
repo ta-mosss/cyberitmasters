@@ -34,6 +34,7 @@ export const MANAGEMENT_NAV = [
   { key: 'sla', label: 'SLA & Escalations', icon: '⏱' },
   { key: 'reports', label: 'Reports', icon: '📊' },
   { key: 'audit', label: 'Audit Log', icon: '🧾' },
+  { key: 'staff', label: 'Staff & Access', icon: '🔑' },
   { key: 'settings', label: 'Settings', icon: '⚙' },
 ];
 
@@ -142,6 +143,57 @@ export async function createJobCard(payload) {
   });
   const result = await response.json().catch(() => ({}));
   if (!response.ok || !result.success) throw new Error(result.error || 'Could not create job card.');
+  return result;
+}
+
+// Sends email through the app's own secured backend (Resend) so staff never
+// have to leave the app for Gmail/Outlook/Zoho. Scoped to one ticket by
+// design: the function only allows sending to that ticket's own contact
+// email or an internal staff address, which is what keeps this from being an
+// open mail relay. A true send-to-anyone composer would need a separate,
+// more heavily rate-limited endpoint - ask if that's actually needed.
+export async function sendTicketEmail({ ticketId, to, subject, body }) {
+  assertFirebase();
+  const current = auth?.currentUser;
+  if (!current) throw new Error('Your session has expired. Please sign in again.');
+  const token = await current.getIdToken();
+  const response = await fetch('/.netlify/functions/send-ticket-email', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ ticketId, to, subject, body }),
+  });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok || !result.success) throw new Error(result.error || 'Could not send email.');
+  return result;
+}
+
+export const STATUS_EMAIL_TEMPLATES = {
+  'open': { label: 'Acknowledged', subject: (t) => `We've received your ticket ${t.ref || ''}`, body: (t) => `Hi ${t.clientName || t.name || 'there'},\n\nThanks for reaching out. We've logged your request "${t.issueTitle || ''}" under reference ${t.ref || ''} and a technician will be in touch shortly.\n\n— Cyber I.T Masters` },
+  'in-progress': { label: 'Work started', subject: (t) => `Update on ticket ${t.ref || ''}`, body: (t) => `Hi ${t.clientName || t.name || 'there'},\n\nJust letting you know we've started working on ticket ${t.ref || ''} ("${t.issueTitle || ''}"). We'll update you again once there's progress to share.\n\n— Cyber I.T Masters` },
+  'awaiting-customer': { label: 'Need more info', subject: (t) => `We need a bit more information - ${t.ref || ''}`, body: (t) => `Hi ${t.clientName || t.name || 'there'},\n\nTo continue with ticket ${t.ref || ''}, we need some more information from you. Please reply here or WhatsApp us with the details.\n\n— Cyber I.T Masters` },
+  'awaiting-parts': { label: 'Awaiting parts', subject: (t) => `Update on ticket ${t.ref || ''} - awaiting parts`, body: (t) => `Hi ${t.clientName || t.name || 'there'},\n\nWe're currently waiting on parts for ticket ${t.ref || ''}. We'll notify you as soon as they arrive and work can continue.\n\n— Cyber I.T Masters` },
+  'resolved': { label: 'Resolved', subject: (t) => `Your ticket ${t.ref || ''} has been resolved`, body: (t) => `Hi ${t.clientName || t.name || 'there'},\n\nGood news - ticket ${t.ref || ''} ("${t.issueTitle || ''}") has been resolved. Please let us know if anything else comes up.\n\n— Cyber I.T Masters` },
+  'closed': { label: 'Closed', subject: (t) => `Your ticket ${t.ref || ''} is now closed`, body: (t) => `Hi ${t.clientName || t.name || 'there'},\n\nTicket ${t.ref || ''} has now been closed. Thank you for choosing Cyber I.T Masters - reach out any time if you need us again.\n\n— Cyber I.T Masters` },
+};
+
+// Staff administration runs through the CIMOP Team & Access Worker (Cloudflare),
+// which is reachable from any origin it allows (Netlify domain and GitHub Pages).
+const TEAM_ADMIN_URL = import.meta.env.VITE_TEAM_ADMIN_URL || 'https://cimop-portal-auth.mosesanza.workers.dev/';
+
+export async function teamAdminRequest(action, payload = {}) {
+  assertFirebase();
+  const current = auth?.currentUser;
+  if (!current) throw new Error('Your session has expired. Please sign in again.');
+  const token = await current.getIdToken(true);
+  const response = await fetch(TEAM_ADMIN_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ action, ...payload }),
+  });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok || result.ok === false || result.success === false) {
+    throw new Error(result.message || result.error || 'Team administration request failed.');
+  }
   return result;
 }
 
