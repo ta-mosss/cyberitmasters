@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en-ZA">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Black Friday Tech Revival | Cyber I.T Masters</title>
+<meta name="description" content="Your computer isn't old, it's just slow. Special Black Friday pricing on SSD and RAM upgrades, new laptops, desktops and printers, and Wi-Fi fixes. Offer ends Monday, 30 November 2026.">
+<meta name="theme-color" content="#0b1a3a">
+<link rel="canonical" href="https://cyberit.mbulahenigroup.co.za/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://cyberit.mbulahenigroup.co.za/">
+<meta property="og:title" content="Your computer isn't old. It's just slow. | Black Friday at Cyber I.T Masters">
+<meta property="og:description" content="Special Black Friday pricing on upgrades and equipment. SSD upgrades from R999. Ends Monday, 30 November 2026.">
+<meta property="og:image" content="https://cyberit.mbulahenigroup.co.za/og-image.jpg">
+<link rel="icon" type="image/png" href="favicon.png">
+<style>
+:root{
+  --navy:#0b1a3a; --navy-2:#12255a; --blue:#2f5bff; --blue-2:#1b3fbf; --cyan:#00b8f0; --cyan-2:#0090d0;
+  --lime:#9fe640; --orange:#ff6a1a; --orange-dark:#b34700; --yellow:#ffd23f; --ink:#0b1a3a; --muted:#5a6685; --line:#dfe6f7; --bg:#f2f6ff; --white:#fff;
+  --ok:#25b24c; --bad:#e04b4b;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
+img{max-width:100%;display:block}
+a{color:inherit}
+h1,h2,h3,p{margin:0}
+h1,h2,h3{line-height:1.15;letter-spacing:-.02em}
+.wrap{width:100%;max-width:1080px;margin:0 auto;padding:0 24px}
+.band{padding:72px 0}
+.center,.text-center{text-align:center}
+:focus-visible{outline:3px solid var(--lime);outline-offset:3px}
+section[id],div[id]{scroll-margin-top:84px}
+.hidden{display:none!important}
+
+.eyebrow{font-size:12px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;margin-bottom:12px}
+.h2{font-size:clamp(30px,5vw,46px);font-weight:800;margin-bottom:14px}
+.lead{font-size:18px;line-height:1.6}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;cursor:pointer;text-decoration:none;font:inherit;font-weight:800;font-size:16px;letter-spacing:.02em;padding:16px 30px;border-radius:999px;transition:transform .15s,box-shadow .15s,filter .15s;min-height:52px}
+.btn:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(0,0,0,.22);filter:brightness(1.04)}
+.btn-lime{background:var(--lime);color:var(--navy)}
+.btn-yellow{background:var(--yellow);color:var(--navy)}
+.btn-navy{background:var(--navy);color:var(--lime)}
+.btn-blue{background:var(--blue-2);color:#fff}
+.btn-white{background:#fff;color:var(--navy)}
+.btn-orange{background:var(--orange);color:var(--navy)}
+.btn-cyan{background:var(--cyan);color:var(--navy)}
+.btn-wa{background:#25d366;color:#06301a}
+.btn-ghost{background:transparent;color:#fff;box-shadow:inset 0 0 0 2px rgba(255,255,255,.55)}
+.btn-block{display:flex;width:100%}
+
+.strip{background:var(--lime);color:var(--navy);text-align:center;padding:10px 14px;font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
+header.site{position:sticky;top:0;z-index:50;background:rgba(11,26,58,.96);backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,.08)}
+.nav{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 24px;max-width:1080px;margin:0 auto}
+.nav img{width:48px;height:auto;border-radius:10px}
+.nav .brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:#fff;font-weight:800;letter-spacing:.06em;font-size:15px;text-transform:uppercase}
+.nav .brand span{color:var(--lime)}
+.nav-actions{display:flex;align-items:center;gap:10px}
+.nav-call{color:#fff;text-decoration:none;font-weight:700;font-size:15px;padding:8px 10px}
+.nav .btn{padding:10px 20px;min-height:42px;font-size:14px}
+
+.hero{position:relative;background:var(--navy);background-image:radial-gradient(900px 500px at 85% -10%,rgba(47,91,255,.55),transparent 60%),radial-gradient(700px 400px at -10% 110%,rgba(0,184,240,.25),transparent 60%),linear-gradient(160deg,#0b1a3a 0%,#12307f 100%);color:#fff;padding:56px 0 72px;overflow:hidden}
+.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:44px;align-items:start}
+.badge{display:inline-block;background:var(--orange-dark);color:#fff;border-radius:999px;padding:8px 18px;font-size:12px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;margin-bottom:22px}
+.hero h1{font-size:clamp(38px,6.2vw,64px);font-weight:800;letter-spacing:-.035em;margin-bottom:18px}
+.hero h1 em{font-style:normal;color:var(--lime)}
+.hero .lead{color:#c9d6ff;margin-bottom:18px}
+.quote{font-style:italic;font-weight:700;font-size:18px;line-height:1.5;color:#fff;border-left:4px solid var(--lime);padding:2px 0 2px 16px;margin:0 0 26px}
+.loadbar{margin:0 0 26px;max-width:460px}
+.loadbar small{display:block;color:#c9d6ff;font-weight:700;font-size:13px;margin-bottom:8px}
+.loadbar .segs{display:flex;gap:6px}
+.loadbar .segs i{flex:1;height:12px;border-radius:6px;background:#1c2f66}
+.loadbar .segs i.on{background:var(--orange)}
+.loadbar span{display:block;color:#8fa3d9;font-size:12px;margin-top:6px}
+.ticks{list-style:none;padding:0;margin:0 0 6px;display:grid;gap:8px}
+.ticks li{display:flex;gap:10px;align-items:flex-start;color:#e3eaff;font-size:16px}
+.ticks li::before{content:"✓";color:var(--lime);font-weight:800}
+
+.cd{display:flex;gap:10px}
+.cd div{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:14px;min-width:70px;padding:10px 8px;text-align:center}
+.cd b{display:block;font-size:28px;line-height:1;color:var(--yellow);font-variant-numeric:tabular-nums}
+.cd small{display:block;margin-top:4px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#c9d6ff}
+.cd-wrap{margin-top:0}
+.cd-wrap > p{font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#c9d6ff;margin-bottom:8px}
+.ended{background:rgba(255,106,26,.15);border:1px solid var(--orange);border-radius:14px;padding:14px 16px;font-weight:700;color:#fff;width:100%}
+
+.card-form{background:#fff;color:var(--ink);border-radius:24px;padding:28px;box-shadow:0 30px 60px rgba(0,0,0,.35);border-top:6px solid var(--lime);margin-top:20px}
+.card-form h2{font-size:26px;font-weight:800;margin-bottom:4px}
+.card-form .sub{color:var(--muted);font-size:15px;margin-bottom:18px}
+.field{margin-bottom:14px}
+.field label{display:block;font-weight:700;font-size:14px;margin-bottom:6px}
+.field input[type=text],.field input[type=tel],.field input[type=email],.field select{width:100%;min-height:50px;padding:12px 14px;border:2px solid var(--line);border-radius:12px;font:inherit;font-size:16px;color:var(--ink);background:#fff;transition:border-color .15s,box-shadow .15s}
+.field input:focus,.field select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 4px rgba(47,91,255,.15)}
+.field input:user-invalid,.field select:user-invalid{border-color:var(--bad)}
+.more{margin:2px 0 14px;border:2px dashed var(--line);border-radius:12px;padding:0 14px}
+.more summary{cursor:pointer;font-weight:700;font-size:14px;padding:12px 0;color:var(--blue-2);list-style:none}
+.more summary::-webkit-details-marker{display:none}
+.more summary::before{content:"+ ";font-weight:800}
+.more[open] summary::before{content:"– "}
+.more .field:last-child{margin-bottom:14px}
+.consent{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--muted);margin:4px 0 16px;line-height:1.5}
+.consent input{margin-top:3px;width:18px;height:18px;flex:none;accent-color:var(--blue)}
+.consent a{color:var(--blue-2)}
+.hp{position:absolute!important;left:-9999px!important;width:1px;height:1px;overflow:hidden}
+.form-note{font-size:12px;color:var(--muted);text-align:center;margin-top:12px}
+.success{text-align:center;padding:8px 0}
+.success .big{font-size:54px;line-height:1}
+.success h3{font-size:26px;font-weight:800;margin:8px 0}
+.success p{color:var(--muted);margin-bottom:18px}
+
+.offer{background:var(--orange);color:var(--navy);padding:40px 0;text-align:center}
+.offer .eyebrow{margin-bottom:6px}
+.offer .price{font-size:clamp(54px,11vw,104px);font-weight:800;line-height:1;color:var(--navy);letter-spacing:-.04em;margin:4px 0 8px;text-shadow:0 4px 0 rgba(255,255,255,.25)}
+.offer .price small{font-size:.32em;letter-spacing:0;margin-right:10px;text-transform:uppercase;text-shadow:none}
+.offer p{max-width:640px;margin:0 auto;font-weight:700}
+.offer .code{margin-top:16px;font-weight:700}
+.offer .code b{background:var(--navy);color:var(--lime);padding:3px 12px;border-radius:8px;letter-spacing:.18em}
+.offer .fine{font-size:13px;font-weight:600;margin-top:10px}
+
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.pain{display:block;text-decoration:none;background:#fff4ec;border:2px solid #ffd9c2;border-radius:22px;padding:28px 20px;text-align:center;transition:transform .15s,box-shadow .15s}
+.pain:hover{transform:translateY(-4px);box-shadow:0 14px 30px rgba(255,106,26,.18)}
+.pain .em{font-size:44px;line-height:1.1;display:block;margin-bottom:8px}
+.pain h3{font-size:20px;font-weight:800;margin-bottom:6px}
+.pain p{color:var(--muted);font-size:15px}
+.pain b{display:inline-block;margin-top:12px;color:var(--orange-dark);font-size:14px}
+
+.fix1{background:var(--blue);background-image:linear-gradient(160deg,var(--blue) 0%,var(--blue-2) 100%);color:#fff}
+.fix1 .eyebrow{color:var(--yellow)}
+.fix1 .lead{color:#e3eaff;max-width:700px}
+.ba{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:32px 0 20px;text-align:left}
+.ba>div{border-radius:20px;padding:22px}
+.ba .before{background:#1a2f8f;border:2px solid #3d58c9;color:#dfe7ff}
+.ba .after{background:#fff;border:2px solid var(--lime);color:var(--navy)}
+.ba h3{font-size:13px;letter-spacing:.2em;text-transform:uppercase;font-weight:800;margin-bottom:14px}
+.ba ul{list-style:none;padding:0;margin:0;display:grid;gap:10px;font-size:16px}
+.ba li{display:flex;gap:10px}
+.ba .before li::before{content:"✕";color:#ff8a8a;font-weight:800}
+.ba .after li::before{content:"✓";color:var(--ok);font-weight:800}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px;text-align:left}
+.tile{background:#fff;color:var(--ink);border-radius:20px;padding:22px}
+.tile .n{display:inline-grid;place-items:center;width:36px;height:36px;border-radius:50%;background:var(--orange-dark);color:#fff;font-weight:800;margin-bottom:12px}
+.tile h3{font-size:18px;font-weight:800;margin-bottom:6px}
+.tile p{color:var(--muted);font-size:14.5px;line-height:1.55}
+.safe{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.25);border-radius:18px;padding:18px 20px;margin-bottom:26px;text-align:center}
+.safe .eyebrow{color:var(--yellow);margin-bottom:10px}
+.safe div.row{display:flex;flex-wrap:wrap;justify-content:center;gap:10px 28px;font-weight:700}
+.safe span::before{content:"✓ ";color:var(--lime);font-weight:800}
+.pricechip{display:inline-block;background:var(--yellow);color:var(--navy);font-weight:800;border-radius:999px;padding:8px 18px;margin-bottom:22px;font-size:15px}
+
+.fresh{background:var(--yellow);background-image:linear-gradient(160deg,#ffd23f,#ffb703)}
+.fresh .eyebrow{color:#8f3200}
+.fresh .lead{color:#4a3b00;max-width:680px;margin:0 auto 28px}
+.devs{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px}
+.dev{background:#fff;border-radius:20px;padding:26px 16px}
+.dev .em{font-size:48px;line-height:1.1}
+.dev h3{font-size:20px;font-weight:800;margin:6px 0 4px}
+.dev p{color:var(--muted);font-size:15px}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px}
+.steps div{background:var(--navy);color:#fff;border-radius:16px;padding:14px 10px;font-weight:700}
+.steps b{display:block;color:var(--lime);font-size:20px}
+.stock{font-size:13px;font-weight:700;color:#4a3b00;margin-bottom:18px}
+
+.wifi{background:var(--cyan);background-image:linear-gradient(160deg,var(--cyan),var(--cyan-2));color:var(--navy)}
+.wifi .eyebrow{color:var(--navy)}
+.wifi .lead{max-width:700px;margin:0 auto 28px}
+.sig{background:#fff;color:var(--navy);border-radius:20px;max-width:620px;margin:0 auto 28px;padding:6px 22px;text-align:left}
+.sig .r{display:grid;grid-template-columns:78px 110px 1fr;gap:12px;align-items:center;padding:16px 0}
+.sig .r+.r{border-top:1px solid var(--line)}
+.sig .l{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.bars{display:flex;align-items:flex-end;gap:5px;height:34px}
+.bars i{width:16px;border-radius:3px;display:block}
+.bars.bad i{background:var(--bad)}
+.bars.good i{background:var(--ok)}
+.chips{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:820px;margin:0 auto 28px}
+.chips span{background:var(--navy);color:#fff;border-radius:999px;padding:12px 14px;font-weight:700;font-size:15px}
+
+.svc-section{background:var(--white)}
+.svc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:40px;text-align:left}
+.svc-card{background:var(--bg);border:2px solid var(--line);border-radius:20px;padding:28px;transition:transform .15s,box-shadow .15s}
+.svc-card:hover{transform:translateY(-4px);box-shadow:0 14px 30px rgba(0,0,0,.06);border-color:var(--blue)}
+.svc-card h3{font-size:20px;font-weight:800;margin-bottom:10px;color:var(--navy)}
+.svc-card p{color:var(--muted);font-size:14.5px;line-height:1.55;margin-bottom:18px}
+.svc-list{list-style:none;padding:0;margin:0;font-size:14px}
+.svc-list li{margin-bottom:8px;padding-left:22px;position:relative;color:var(--ink)}
+.svc-list li::before{content:"✓";position:absolute;left:0;color:var(--blue-2);font-weight:900}
+
+.why .item{text-align:center;padding:8px}
+.why .em{font-size:40px}
+.why h3{font-size:19px;font-weight:800;margin:6px 0 4px}
+.why p{color:var(--muted);font-size:15px}
+
+.faq{max-width:780px;margin:30px auto 0;text-align:left}
+.faq details{background:#fff;border:2px solid var(--line);border-radius:16px;margin-bottom:12px;padding:0 20px}
+.faq summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:16px;font-weight:800;font-size:17px;padding:18px 0}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";font-size:26px;line-height:1;color:var(--orange-dark);font-weight:800;flex:none}
+.faq details[open]{border-color:var(--blue)}
+.faq details[open] summary::after{content:"–"}
+.faq .ans{color:var(--muted);padding:0 0 18px;font-size:16px}
+
+.final{background:var(--navy);background-image:linear-gradient(160deg,#0b1a3a,#1b3fbf);color:#fff;text-align:center}
+.final .lead{color:#c9d6ff;margin-bottom:26px}
+.picks{display:grid;gap:12px;max-width:520px;margin:0 auto 24px}
+.reach{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+.codebox{margin:24px auto;max-width:520px;border:2px dashed var(--lime);border-radius:14px;padding:16px}
+.codebox .k{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#8fa3d9;margin-bottom:4px}
+.codebox .v{font-size:28px;font-weight:800;letter-spacing:.1em;color:var(--lime)}
+.codebox .d{font-size:12px;color:#8fa3d9}
+
+footer{background:#050d1f;color:#8a98a5;text-align:center;padding:40px 24px 110px;font-size:13px;line-height:1.7}
+footer strong{color:#fff}
+footer .name{font-weight:800;letter-spacing:.14em;color:#fff;text-transform:uppercase;font-size:14px;margin-bottom:10px}
+footer a{color:#a5b1c2}
+footer .legal{font-size:11.5px;color:#7a8794;max-width:760px;margin:14px auto 0}
+
+.sticky{display:none}
+
+/* Offer-ended state */
+.expired-msg{display:none}
+body.expired .live{display:none!important}
+body.expired .expired-msg{display:block}
+
+@media (max-width:900px){
+  .hero-grid{grid-template-columns:1fr;gap:34px}
+  .tiles{grid-template-columns:repeat(2,1fr)}
+  .svc-grid{grid-template-columns:repeat(2,1fr)}
+  .band{padding:56px 0}
+}
+@media (max-width:680px){
+  .wrap{padding:0 18px}
+  .grid3,.devs,.steps,.svc-grid{grid-template-columns:1fr}
+  .ba{grid-template-columns:1fr}
+  .tiles{grid-template-columns:1fr}
+  .chips{grid-template-columns:1fr 1fr}
+  .sig .r{grid-template-columns:62px 100px 1fr}
+  .nav-call{display:none}
+  .nav .brand b{display:none}
+  .cd{gap:6px}.cd div{min-width:0;flex:1;padding:8px 4px}.cd b{font-size:24px}
+  .card-form{padding:22px 18px}
+  .strip{font-size:11px;letter-spacing:.1em}
+  .sticky{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:8px;position:fixed;left:0;right:0;bottom:0;z-index:60;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:rgba(11,26,58,.97);border-top:1px solid rgba(255,255,255,.12)}
+  .sticky a{display:flex;align-items:center;justify-content:center;text-align:center;min-height:46px;border-radius:12px;font-weight:800;font-size:14px;text-decoration:none}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="strip">🔥 Black Friday Tech Revival &nbsp;·&nbsp; Ends Mon 30 Nov 2026</div>
+
+<header class="site">
+  <div class="nav">
+    <a class="brand" href="#top" aria-label="Cyber I.T Masters">
+      <img src="logo.png" alt="Cyber I.T Masters logo" width="48" height="48">
+      <b>Cyber <span>I.T Masters</span></b>
+    </a>
+    <div class="nav-actions">
+      <a href="tel:+27870931138" class="nav-call">087 093 1138</a>
+      <a href="#top-form" class="btn btn-lime">Get a quote</a>
+    </div>
+  </div>
+</header>
+
+<div id="top">
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <span class="badge">Black Friday Tech Revival</span>
+        <h1>Your computer isn’t old.<br>It’s just <em>slow.</em></h1>
+        <p class="lead">Give it a Black Friday makeover. Faster startup, no more freezing, and Wi-Fi that actually reaches every room.</p>
+        <p class="quote">“Don’t buy a new PC yet. Revive it instead.”</p>
+
+        <div class="loadbar" aria-hidden="true">
+          <small>Opening your spreadsheet…</small>
+          <div class="segs">
+            <i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i>
+          </div>
+          <span>…still loading. Again. 😴</span>
+        </div>
+
+        <ul class="ticks">
+          <li>HDD to SSD upgrade with data transfer</li>
+          <li>RAM upgrade for smooth multitasking</li>
+          <li>Windows OS &amp; app updates</li>
+        </ul>
+      </div>
+
+      <div class="cd-wrap" id="top-form">
+        <p class="live">Black Friday pricing ends in:</p>
+        <div class="cd live" id="countdown">
+          <div><b id="cd-d">00</b><small>Days</small></div>
+          <div><b id="cd-h">00</b><small>Hours</small></div>
+          <div><b id="cd-m">00</b><small>Mins</small></div>
+          <div><b id="cd-s">00</b><small>Secs</small></div>
+        </div>
+        <div class="ended expired-msg">The Black Friday offer has ended. You can still request a standard quote below.</div>
+
+        <div class="card-form">
+          <h2>Get your quote</h2>
+          <p class="sub">Fill in your details and we’ll get back to you with a Black Friday price.</p>
+          <form id="lead-form" action="https://formsubmit.co/info@mbulahenigroup.co.za" method="POST">
+            <input type="hidden" name="_subject" value="Black Friday Lead - Cyber I.T Masters">
+            <input type="hidden" name="_template" value="table">
+            <input type="hidden" name="_captcha" value="false">
+            <input type="hidden" name="_next" value="https://cyberit.mbulahenigroup.co.za/?submitted=true#top-form">
+            <input type="hidden" name="Promo" value="BLACKFRIDAY">
+            <input type="text" name="_honey" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+            <div class="field">
+              <label for="name">Name</label>
+              <input type="text" id="name" name="Name" required autocomplete="name" placeholder="Your name">
+            </div>
+            <div class="field">
+              <label for="phone">Phone</label>
+              <input type="tel" id="phone" name="Phone" required autocomplete="tel" placeholder="082 123 4567">
+            </div>
+            <div class="field">
+              <label for="email">Email</label>
+              <input type="email" id="email" name="Email" required autocomplete="email" placeholder="you@company.co.za">
+            </div>
+            <div class="field">
+              <label for="service">What do you need?</label>
+              <select id="service" name="Service" required>
+                <option value="" disabled selected>Select a service…</option>
+                <option value="PC Upgrade (SSD/RAM)">PC / Laptop Upgrade (SSD/RAM)</option>
+                <option value="New Hardware">New Laptops / Desktops / Printers</option>
+                <option value="Wi-Fi Fix">Wi-Fi / Network Fix</option>
+                <option value="Managed IT">Managed I.T Support</option>
+                <option value="Cybersecurity">Cybersecurity Services</option>
+                <option value="Cloud Backup">Cloud Backup &amp; Recovery</option>
+                <option value="Smart Building">Smart Building Management</option>
+                <option value="Network">Network &amp; Infrastructure</option>
+                <option value="Business Continuity">Business Continuity (UPS/Solar)</option>
+              </select>
+            </div>
+            <details class="more">
+              <summary>Add more details (optional)</summary>
+              <div class="field">
+                <label for="business">Business name</label>
+                <input type="text" id="business" name="Business" autocomplete="organization" placeholder="Your company">
+              </div>
+              <div class="field">
+                <label for="device">Device type / age</label>
+                <input type="text" id="device" name="Device" placeholder="e.g. HP Laptop, 2018">
+              </div>
+              <div class="field">
+                <label for="notes">Any specific issues?</label>
+                <input type="text" id="notes" name="Notes" placeholder="e.g. Very slow, Wi-Fi drops">
+              </div>
+            </details>
+            <label class="consent">
+              <input type="checkbox" name="POPIA" value="Yes" required>
+              <span>I consent to Cyber I.T Masters storing my details to contact me regarding this enquiry, in accordance with POPIA. <a href="https://cyberit.mbulahenigroup.co.za/privacy.html" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.</span>
+            </label>
+            <button type="submit" class="btn btn-lime btn-block">Submit &amp; get my quote</button>
+            <p class="form-note">Quotes are free. We’ll never share your details.</p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="offer live">
+    <div class="wrap">
+      <p class="eyebrow">Black Friday Special Pricing</p>
+      <div class="price"><small>From</small>R999</div>
+      <p>Selected computer upgrade specials. Final quote depends on your device and requirements.</p>
+      <p class="code">Quote code <b>BLACKFRIDAY</b></p>
+      <p class="fine">Prices include VAT. Ends Monday, 30 November 2026. T&amp;Cs apply.</p>
+    </div>
+  </section>
+
+  <section class="band center" style="background:#fff;">
+    <div class="wrap">
+      <p class="eyebrow" style="color:var(--orange-dark);">Sound familiar?</p>
+      <h2 class="h2">Three tech headaches that quietly cost your business.</h2>
+      <p class="lead" style="color:var(--muted); max-width:700px; margin:0 auto 40px;">Every day you wait for a slow PC or fight a weak signal, you lose time and money. Let’s fix it.</p>
+
+      <div class="grid3">
+        <a href="#fix1" class="pain">
+          <span class="em">🐌</span>
+          <h3>Slow computers</h3>
+          <p>Long startups, freezing, waiting on every click.</p>
+          <b>Fix this &rarr;</b>
+        </a>
+        <a href="#wifi" class="pain">
+          <span class="em">📶</span>
+          <h3>Patchy Wi-Fi</h3>
+          <p>Dropped calls, dead zones, weak signal.</p>
+          <b>Fix this &rarr;</b>
+        </a>
+        <a href="#fresh" class="pain">
+          <span class="em">🔄</span>
+          <h3>Tired old gear</h3>
+          <p>Past its best and ready for a fresh start.</p>
+          <b>Fix this &rarr;</b>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="band fix1" id="fix1">
+    <div class="wrap text-center">
+      <p class="eyebrow">Fix #1 &middot; PC &amp; laptop upgrade</p>
+      <h2 class="h2">Don’t replace it.<br>Revive it.</h2>
+      <p class="lead" style="margin:0 auto 20px;">Slow laptop or desktop? We upgrade the parts that are holding it back and bring your data with you, so it feels brand new, even with its age.</p>
+
+      <div class="ba">
+        <div class="before">
+          <h3>Before</h3>
+          <ul>
+            <li>Slow spinning hard drive (HDD)</li>
+            <li>Freezes when you run a few things</li>
+            <li>Outdated Windows and apps</li>
+          </ul>
+        </div>
+        <div class="after">
+          <h3>After</h3>
+          <ul>
+            <li>Lightning-fast SSD, quick startup</li>
+            <li>Smooth multitasking, no freezing</li>
+            <li>Up to date, secure and ready to work</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="tiles">
+        <div class="tile">
+          <span class="n">1</span>
+          <h3>HDD to SSD upgrade</h3>
+          <p>Swap the slow drive for a fast SSD. Your data is transferred across, so nothing gets left behind.</p>
+        </div>
+        <div class="tile">
+          <span class="n">2</span>
+          <h3>RAM upgrade</h3>
+          <p>More memory means no more freezing when you run several programs at once.</p>
+        </div>
+        <div class="tile">
+          <span class="n">3</span>
+          <h3>Windows (OS) refresh</h3>
+          <p>Windows updated and running the way it should: current, stable and secure.</p>
+        </div>
+        <div class="tile">
+          <span class="n">4</span>
+          <h3>Application updates</h3>
+          <p>Your business applications updated so everything works smoothly together.</p>
+        </div>
+      </div>
+
+      <div class="safe">
+        <p class="eyebrow">Is my data safe?</p>
+        <div class="row">
+          <span>Full data transfer included</span>
+          <span>We test the drive</span>
+          <span>Backup on request</span>
+        </div>
+      </div>
+
+      <span class="pricechip live">Upgrades from R999 (incl. VAT)</span>
+      <div>
+        <a href="#top-form" class="btn btn-yellow" data-service="PC Upgrade (SSD/RAM)">Revive my PC &rarr;</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="band fresh" id="fresh">
+    <div class="wrap center">
+      <p class="eyebrow">Or start fresh</p>
+      <h2 class="h2">Time for something new?<br>Buy it from us.</h2>
+      <p class="lead">Laptops, desktops and printers supplied by us and set up by our I.T team to your spec and needs, so they’re ready to work the moment you switch on.</p>
+
+      <div class="devs">
+        <div class="dev">
+          <span class="em">💻</span>
+          <h3>Laptops</h3>
+          <p>Work from anywhere</p>
+        </div>
+        <div class="dev">
+          <span class="em">🖥️</span>
+          <h3>Desktops</h3>
+          <p>Power at your desk</p>
+        </div>
+        <div class="dev">
+          <span class="em">🖨️</span>
+          <h3>Printers</h3>
+          <p>Set up and ready to print</p>
+        </div>
+      </div>
+
+      <div class="steps">
+        <div><b>1</b> Tell us your needs</div>
+        <div><b>2</b> We supply &amp; set up</div>
+        <div><b>3</b> You switch on &amp; work</div>
+      </div>
+
+      <p class="stock live">Black Friday hardware pricing while stock lasts.</p>
+      <a href="#top-form" class="btn btn-navy" data-service="New Hardware">Get a quote on new gear &rarr;</a>
+    </div>
+  </section>
+
+  <section class="band wifi" id="wifi">
+    <div class="wrap center">
+      <p class="eyebrow">Fix #2 &middot; Wi-Fi &amp; network</p>
+      <h2 class="h2">Wi-Fi that reaches<br>every corner.</h2>
+      <p class="lead">Keeps disconnecting? Dead zones? Weak coverage in the back office? We upgrade your network to cover your whole office or home space with ease.</p>
+
+      <div class="sig">
+        <div class="r">
+          <span class="l">Before</span>
+          <div class="bars bad" aria-hidden="true">
+            <i style="height:30%"></i><i style="height:20%"></i><i style="height:10%"></i><i style="height:0"></i><i style="height:0"></i>
+          </div>
+          <span>Dropped calls and dead zones</span>
+        </div>
+        <div class="r">
+          <span class="l">After</span>
+          <div class="bars good" aria-hidden="true">
+            <i style="height:100%"></i><i style="height:85%"></i><i style="height:90%"></i><i style="height:95%"></i><i style="height:80%"></i>
+          </div>
+          <span>Strong, steady coverage in every room</span>
+        </div>
+      </div>
+
+      <div class="chips">
+        <span>Network upgrades</span>
+        <span>Mesh Wi-Fi</span>
+        <span>Coverage optimisation</span>
+      </div>
+
+      <a href="#top-form" class="btn btn-white" data-service="Wi-Fi Fix">Fix my Wi-Fi &rarr;</a>
+    </div>
+  </section>
+
+  <section class="band svc-section">
+    <div class="wrap text-center">
+      <p class="eyebrow" style="color:var(--blue-2);">More than just a quick fix</p>
+      <h2 class="h2">Complete I.T &amp; Smart Building Solutions</h2>
+      <p class="lead" style="color:var(--muted); max-width:700px; margin:0 auto;">Beyond upgrading your PC and Wi-Fi, we provide full-scale enterprise technology, security, and smart building management for your business.</p>
+
+      <div class="svc-grid">
+        <div class="svc-card">
+          <h3>🛡️ Managed I.T Support</h3>
+          <p>Proactive monitoring and support so your business never stops.</p>
+          <ul class="svc-list">
+            <li>24/7 Monitoring &amp; Management</li>
+            <li>Help Desk Support</li>
+            <li>IT Strategy &amp; Consulting</li>
+            <li>Business Continuity</li>
+            <li>Cloud backup monitoring</li>
+            <li>Cybersecurity monitoring</li>
+          </ul>
+        </div>
+        <div class="svc-card">
+          <h3>🔒 Cybersecurity Services</h3>
+          <p>Protect your business from evolving digital threats.</p>
+          <ul class="svc-list">
+            <li>Antivirus &amp; Firewalls</li>
+            <li>Penetration Testing (Pentesting)</li>
+            <li>Employee Security Training</li>
+            <li>Security Policies &amp; Compliance</li>
+            <li>Vulnerability Scans</li>
+          </ul>
+        </div>
+        <div class="svc-card">
+          <h3>☁️ Cloud Backup &amp; Recovery</h3>
+          <p>Never lose a file again with automated cloud solutions.</p>
+          <ul class="svc-list">
+            <li>Automated Daily Backups</li>
+            <li>Unlimited Endpoints</li>
+            <li>Encrypted Vaults</li>
+            <li>Rapid Data Recovery</li>
+          </ul>
+        </div>
+        <div class="svc-card">
+          <h3>🏢 Smart Building Management</h3>
+          <p>Automate and secure your physical environment.</p>
+          <ul class="svc-list">
+            <li>Access Control &amp; Security Alarms</li>
+            <li>CCTV Installation &amp; Maintenance</li>
+            <li>Gate &amp; Garage Doors</li>
+            <li>Electrical Services &amp; Solar</li>
+            <li>Building Automation &amp; Integration</li>
+          </ul>
+        </div>
+        <div class="svc-card">
+          <h3>🌐 Network &amp; Infrastructure</h3>
+          <p>Robust networks built for speed and reliability.</p>
+          <ul class="svc-list">
+            <li>Structured Network Cabling</li>
+            <li>Server Cabinet Installation</li>
+            <li>Network Switches &amp; Fibre</li>
+            <li>Wi-Fi Deployment</li>
+            <li>Network Optimization</li>
+          </ul>
+        </div>
+        <div class="svc-card">
+          <h3>⚡ Business Continuity</h3>
+          <p>Keep the power and data flowing, no matter what.</p>
+          <ul class="svc-list">
+            <li>UPS Solutions</li>
+            <li>Inverter Systems</li>
+            <li>Solar Integration</li>
+            <li>Backup Connectivity</li>
+            <li>Server Room Protection</li>
+          </ul>
+        </div>
+      </div>
+      <div class="center" style="margin-top:40px;">
+        <a href="#top-form" class="btn btn-blue" data-service="Managed IT">Enquire about these services &rarr;</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="band why" style="background:var(--bg);">
+    <div class="wrap center">
+      <h2 class="h2" style="margin-bottom:40px;">Why businesses choose Cyber I.T Masters</h2>
+      <div class="grid3">
+        <div class="item">
+          <span class="em">🏆</span>
+          <h3>Group trading since 2014</h3>
+          <p>Years of keeping businesses running</p>
+        </div>
+        <div class="item">
+          <span class="em">📍</span>
+          <h3>Local teams</h3>
+          <p>Polokwane, Limpopo and Gauteng</p>
+        </div>
+        <div class="item">
+          <span class="em">🤝</span>
+          <h3>One team, one call</h3>
+          <p>Upgrades, new gear, setup and Wi-Fi</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" style="background:#fff;">
+    <div class="wrap">
+      <div class="center">
+        <h2 class="h2">Upgrade FAQs</h2>
+        <p class="lead" style="color:var(--muted);">Short answers to the questions we hear most.</p>
+      </div>
+      <div class="faq">
+        <details>
+          <summary>Will my old PC take an SSD?</summary>
+          <div class="ans">In almost all cases, yes. Solid State Drives (SSDs) are compatible with the vast majority of computers made in the last 15 years. If your PC is exceptionally old, we will advise you during the quote process.</div>
+        </details>
+        <details>
+          <summary>Is my data safe during the upgrade?</summary>
+          <div class="ans">Absolutely. Our standard HDD-to-SSD upgrade includes full data migration. We clone your existing drive to the new one, ensuring all your files, photos, and applications are exactly where you left them.</div>
+        </details>
+        <details>
+          <summary>What does the “From R999” price include?</summary>
+          <div class="ans">The starting price of R999 (VAT included) covers a standard 240GB/256GB SSD, the data transfer service, and the labour involved. If you need a larger drive or a RAM upgrade as well, the final quote will be adjusted accordingly.</div>
+        </details>
+        <details>
+          <summary>How long does an upgrade take?</summary>
+          <div class="ans">Most PC and laptop upgrades are completed within 24 to 48 hours. During the Black Friday rush it can take a little longer, so we will give you a clear timeframe when you drop off your device.</div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section class="band final" id="contact">
+    <div class="wrap">
+      <h2 class="h2">What’s your tech headache?</h2>
+      <p class="lead">Tap one. We’ll reply with your Black Friday price.</p>
+
+      <div class="picks">
+        <a href="#top-form" class="btn btn-lime" data-service="PC Upgrade (SSD/RAM)">🐌 My computer is slow &rarr;</a>
+        <a href="#top-form" class="btn btn-cyan" data-service="New Hardware">🛍️ I need new gear &rarr;</a>
+        <a href="#top-form" class="btn btn-orange" data-service="Wi-Fi Fix">📶 My Wi-Fi is bad &rarr;</a>
+      </div>
+
+      <div class="codebox live">
+        <p class="k">Quote this code when you book</p>
+        <p class="v">BLACKFRIDAY</p>
+        <p class="d">Valid until Monday, 30 November 2026</p>
+      </div>
+
+      <p style="margin-bottom:24px; color:#c9d6ff;">Upgrades are booked in the order requests arrive, so message us early.</p>
+
+      <div class="reach">
+        <a href="https://wa.me/27726650565?text=Hello%20Cyber%20I.T%20Masters.%20I%20am%20interested%20in%20your%20Black%20Friday%20specials." class="btn btn-wa" target="_blank" rel="noopener noreferrer" data-track="whatsapp">💬 WhatsApp us</a>
+        <a href="tel:+27870931138" class="btn btn-ghost" data-track="call">📞 Call 087 093 1138</a>
+      </div>
+    </div>
+  </section>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="name">Cyber<span style="color:var(--lime);">.</span>I.T Masters</div>
+    <p style="margin-bottom:16px;">
+      <strong>Polokwane:</strong> 19 Prince Street, Ivy Park, Polokwane, 0699<br>
+      <strong>Gauteng:</strong> Delville South, Germiston, 1401<br>
+      <a href="mailto:info@mbulahenigroup.co.za">info@mbulahenigroup.co.za</a>
+    </p>
+    <p class="legal">
+      Black Friday offer valid until Monday, 30 November 2026. All prices in ZAR and include VAT. Final pricing depends on your device, scope and equipment. Hardware offers while stock lasts. Cannot be combined with other offers. Terms apply.
+    </p>
+    <p class="legal" style="margin-top:10px;">
+      Cyber IT Masters (Pty) Ltd &middot; Reg. 2017/015749/07
+    </p>
+    <p style="margin-top:20px; font-size:11px;">
+      <a href="https://cyberit.mbulahenigroup.co.za/privacy.html">Privacy Policy</a>
+    </p>
+  </div>
+</footer>
+
+<div class="sticky">
+  <a href="#top-form" class="btn btn-lime">Get quote</a>
+  <a href="https://wa.me/27726650565?text=Hello%20Cyber%20I.T%20Masters.%20I%20am%20interested%20in%20your%20Black%20Friday%20specials." class="btn btn-wa" target="_blank" rel="noopener noreferrer" data-track="whatsapp">WhatsApp</a>
+  <a href="tel:+27870931138" class="btn btn-navy" data-track="call">Call us</a>
+</div>
+
+<script>
+// Countdown (ends 30 Nov 2026, South Africa time)
+(function () {
+  var end = new Date("2026-11-30T23:59:59+02:00").getTime();
+  var pad = function (n) { return n < 10 ? "0" + n : String(n); };
+  var timer;
+  function tick() {
+    var distance = end - Date.now();
+    if (distance < 0) {
+      clearInterval(timer);
+      document.body.classList.add("expired");
+      return;
+    }
+    document.getElementById("cd-d").textContent = pad(Math.floor(distance / 86400000));
+    document.getElementById("cd-h").textContent = pad(Math.floor((distance % 86400000) / 3600000));
+    document.getElementById("cd-m").textContent = pad(Math.floor((distance % 3600000) / 60000));
+    document.getElementById("cd-s").textContent = pad(Math.floor((distance % 60000) / 1000));
+  }
+  tick();
+  timer = setInterval(tick, 1000);
+})();
+
+// Pre-select the service when a CTA is clicked
+document.addEventListener("click", function (e) {
+  var el = e.target.closest("[data-service]");
+  if (!el) return;
+  var select = document.getElementById("service");
+  if (select) select.value = el.getAttribute("data-service");
+});
+
+// Pre-select the service from the section hash
+document.addEventListener("DOMContentLoaded", function () {
+  var map = { "#fix1": "PC Upgrade (SSD/RAM)", "#fresh": "New Hardware", "#wifi": "Wi-Fi Fix" };
+  var select = document.getElementById("service");
+  if (select && map[window.location.hash]) select.value = map[window.location.hash];
+
+  // Thank-you message after FormSubmit redirects back
+  var params = new URLSearchParams(window.location.search);
+  if (params.has("submitted")) {
+    var form = document.getElementById("lead-form");
+    if (form) {
+      form.innerHTML =
+        '<div class="success">' +
+        '<div class="big">🎉</div>' +
+        '<h3>Thank you!</h3>' +
+        '<p>We’ve received your request and will get back to you shortly with your Black Friday quote.</p>' +
+        '<a href="https://wa.me/27726650565" class="btn btn-wa" target="_blank" rel="noopener noreferrer" data-track="whatsapp">Chat on WhatsApp</a>' +
+        '</div>';
+      var card = document.getElementById("top-form");
+      if (card) card.scrollIntoView();
+    }
+    if (typeof gtag === "function") gtag("event", "generate_lead", { event_category: "black_friday" });
+  }
+});
+
+// Optional conversion tracking (only fires if Google Analytics gtag is installed)
+document.addEventListener("click", function (e) {
+  var el = e.target.closest("[data-track]");
+  if (el && typeof gtag === "function") {
+    gtag("event", "contact_click", { method: el.getAttribute("data-track") });
+  }
+});
+</script>
+
+</body>
+</html>
