@@ -1,21 +1,8 @@
 {
-  "hosting": {
-    "public": "public",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
-    "headers": [
-      {
-        "source": "**",
-        "headers": [
-          {
-            "key": "Content-Security-Policy",
-            "value": "script-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'self';"
-          }
-        ]
-      }
-    ]
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "storage": {
+    "rules": "storage.rules"
   }
 }
